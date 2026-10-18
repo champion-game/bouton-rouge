@@ -149,10 +149,10 @@
 
     // ---------- Fil 3 · La pièce ----------
     { id: 'P1', objet: 'drawer', fil: 'piece', qui: 'LE TIROIR',
-      quand: function (g) { return !g.done('P1') && !g.flag('tiroirOuvert'); },
+      quand: function (g) { return !g.flag('tiroirOuvert'); }, // « Écouter » ne ferme pas le tiroir : on peut revenir le forcer
       texte: 'Un tiroir sous le bouton. Verrouillé.',
       A: { label: 'Le forcer', fx: function (g) { g.flag('tiroirOuvert', true); g.gain('tournevis'); g.soupcon(1); g.son('thud'); g.narr('Le tiroir cède. Dedans : un tournevis.'); } },
-      B: { label: 'Écouter le mécanisme', fx: function (g) { g.narr('Un verrou électrique. Il s\'ouvrira peut-être si tu obéis.'); } } },
+      B: { label: 'Écouter le mécanisme', fx: function (g) { g.narr('Un verrou électrique. Il s\'ouvrira peut-être si tu obéis. Ou si tu le forces.'); } } },
 
     { id: 'P2', objet: 'grille', fil: 'piece', qui: 'LA GRILLE D\'AÉRATION',
       quand: function (g) { return g.has('tournevis') && !g.done('P2'); },
@@ -294,6 +294,16 @@
     mug: 'Une tasse de café froid. Personne ne l\'a bue.'
   };
 
+  // Description des objets des poches (touchés dans l'inventaire).
+  var DESCRIPTIONS = {
+    tournevis: 'Un tournevis plat. De quoi ouvrir ce qui est vissé.',
+    fusible: 'Un gros fusible. Il doit alimenter quelque chose, quelque part.',
+    code: 'Un code incomplet : 7, deux chiffres effacés, 2.',
+    mot16: 'Le mot de 16 : « ILS MENTENT. »',
+    badge: 'Le badge de 16. La photo a été arrachée.',
+    enregistrement: 'Une cassette étiquetée « 17 ».'
+  };
+
   // Aides affichées les premières fois.
   var AIDES = {
     libre: 'Touche les objets de la pièce pour agir. Le tiroir, par exemple.',
@@ -301,6 +311,6 @@
     appel: 'Touche le téléphone pour décrocher.'
   };
 
-  var api = { FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, ORDRES: ORDRES, VERITES: VERITES, SITUATIONS: SITUATIONS, FINS: FINS, CHRONO: CHRONO, REGARDS: REGARDS, AIDES: AIDES };
+  var api = { FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, ORDRES: ORDRES, VERITES: VERITES, SITUATIONS: SITUATIONS, FINS: FINS, CHRONO: CHRONO, REGARDS: REGARDS, AIDES: AIDES, DESCRIPTIONS: DESCRIPTIONS };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.BRStory = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

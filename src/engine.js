@@ -304,7 +304,7 @@
   }
 
   var api = {
-    newGame: newGame, intro: intro, turn: turn, choose: choose, regarder: regarder, AIDES: S.AIDES,
+    newGame: newGame, intro: intro, turn: turn, choose: choose, regarder: regarder, AIDES: S.AIDES, DESCRIPTIONS: S.DESCRIPTIONS,
     forcedId: forcedId, cameraAveugle: cameraAveugle, porteOuverte: porteOuverte, has: has,
     DUREES: DUREES, DERNIER_CYCLE: DERNIER_CYCLE,
     FILS: S.FILS, OBJETS: S.OBJETS, FINS: S.FINS, VERITES: S.VERITES,

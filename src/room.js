@@ -291,5 +291,16 @@
   }
   function blackout(on) { attr('dark', 'opacity', on ? 0.96 : 0); attr('cone', 'opacity', on ? 0 : 0.6); }
 
-  root.BRRoom = { mount: mount, render: render, fin: fin, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout };
+  // ---------- dessins des objets de l'inventaire (viewBox 0 0 40 40) ----------
+  var ICONES = {
+    tournevis: '<rect x="6" y="15" width="13" height="10" rx="3" fill="#e3262b"/><rect x="8" y="17" width="9" height="1.6" fill="#ff7a70" opacity=".6"/><rect x="19" y="18.5" width="13" height="3" fill="#b9c2bf"/><path d="M32 18.5 L36 19.5 L36 20.5 L32 21.5 Z" fill="#8b9592"/>',
+    fusible: '<rect x="9" y="13" width="22" height="14" rx="2" fill="#d6d1c4"/><rect x="5" y="15" width="5" height="10" rx="1" fill="#9aa4a1"/><rect x="30" y="15" width="5" height="10" rx="1" fill="#9aa4a1"/><rect x="14" y="17" width="12" height="6" fill="#f2c14e" opacity=".85"/>',
+    code: '<path d="M8 7 h20 l5 5 v21 h-25 z" fill="#e7e2d2"/><path d="M28 7 v5 h5" fill="#c9c3b2"/><text x="20" y="25" text-anchor="middle" font-family="VT323, monospace" font-size="11" fill="#3a3a3a">7__2</text>',
+    mot16: '<g transform="rotate(-8 20 20)"><rect x="7" y="10" width="26" height="20" fill="#e7e2d2"/><g stroke="#9a9484" stroke-width="1.2"><line x1="11" y1="16" x2="29" y2="16"/><line x1="11" y1="20" x2="27" y2="20"/><line x1="11" y1="24" x2="22" y2="24"/></g><text x="27" y="28" font-family="Archivo, sans-serif" font-size="6" font-weight="700" fill="#e3262b">16</text></g>',
+    badge: '<rect x="17" y="4" width="6" height="7" rx="2" fill="#8b9592"/><rect x="9" y="9" width="22" height="27" rx="3" fill="#c4ccc9"/><rect x="13" y="13" width="14" height="11" fill="#2a3533"/><path d="M14 24 l3 -4 l2 3 l2 -5 l5 6 z" fill="#46534f"/><rect x="13" y="27" width="14" height="2" fill="#5d6a67"/><rect x="13" y="31" width="9" height="2" fill="#5d6a67"/>',
+    enregistrement: '<rect x="4" y="10" width="32" height="21" rx="2" fill="#2c2c2c"/><rect x="8" y="13" width="24" height="8" fill="#e7e2d2"/><text x="20" y="20" text-anchor="middle" font-family="VT323, monospace" font-size="8" fill="#3a3a3a">17</text><circle cx="14" cy="25" r="2.6" fill="#d6d1c4"/><circle cx="26" cy="25" r="2.6" fill="#d6d1c4"/><path d="M11 31 l3 -3 h12 l3 3z" fill="#1d1d1d"/>'
+  };
+  function icone(k) { return '<svg viewBox="0 0 40 40" aria-hidden="true">' + (ICONES[k] || '') + '</svg>'; }
+
+  root.BRRoom = { icone: icone, mount: mount, render: render, fin: fin, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

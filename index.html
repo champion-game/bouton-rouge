@@ -33,9 +33,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);out
 .btn{white-space:nowrap;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-weight:700;font-size:.8rem;min-height:36px}
 .btn:hover{border-color:var(--muted)}
 
-.main{display:grid;gap:10px}
-@media (min-width:900px){.main{grid-template-columns:minmax(0,1fr) 390px;align-items:start}}
-.scene{position:relative;width:100%;max-width:min(100%,calc(100vh - 70px));margin:0 auto;aspect-ratio:1/1;border-radius:6px;overflow:hidden;background:#000;box-shadow:0 0 0 1px var(--line)}
+.main{display:flex;flex-direction:column;align-items:center;gap:8px}
+.main > *{width:100%;max-width:min(100%,calc(100vh - 200px))}
+@media (max-width:899px){.main > *{max-width:100%}}
+.scene{position:relative;aspect-ratio:1/1;border-radius:6px;overflow:hidden;background:#000;box-shadow:0 0 0 1px var(--line)}
 .scene #scene{position:absolute;inset:0}
 .scene svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .hs{cursor:pointer}
@@ -45,40 +46,52 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);out
 .pulse{animation:pls 1.3s infinite}
 @keyframes pls{50%{opacity:.45}}
 
-.panel{display:flex;flex-direction:column;gap:8px;min-width:0}
 .timer{position:absolute;left:0;right:0;top:0;height:4px;background:rgba(0,0,0,.35);pointer-events:none;z-index:2}
 .timer i{display:block;height:100%;width:100%;background:var(--phos);opacity:.75;transform-origin:left;transition:background .3s}
 .timer.low i{background:var(--red);opacity:1}
 .paused{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);font-family:var(--f-stencil);font-weight:800;font-size:2rem;letter-spacing:.1em;color:var(--amber);z-index:3}
+/* Messages courts posés sur la pièce, qui s'effacent seuls */
+.toast{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);max-width:calc(100% - 24px);background:rgba(5,8,8,.86);border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:.9rem;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s;z-index:2}
+.toast.on{opacity:1}
+.toast.obj{color:var(--green);font-weight:700}
+.toast.ecr{font-family:var(--f-crt);font-size:1.15rem;color:var(--phos)}
+.hintcap{position:absolute;left:50%;top:10px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 24px);background:rgba(5,8,8,.82);border-radius:6px;padding:5px 10px;text-align:center;font-size:.85rem;color:var(--text);pointer-events:none;z-index:2}
 
-.log{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;min-height:84px;max-height:150px;overflow:auto;display:flex;flex-direction:column;gap:4px;cursor:pointer}
-@media (max-width:899px){.log{max-height:118px}}
-@media (min-width:900px){.log{max-height:300px;min-height:160px}}
-.log p{margin:0;font-size:.95rem;color:var(--muted)}
-.log p.new{color:var(--text)}
-.log p.tel{color:var(--amber)}
-.log p.ecr{font-family:var(--f-crt);font-size:1.2rem;line-height:1.05;color:var(--phos)}
-.log p.me{font-weight:700;color:var(--muted);font-size:.85rem}
-.log p.obj{color:var(--green);font-weight:700;font-size:.88rem}
+/* Inventaire : 6 cases dessinées */
+.main > .bag{max-width:min(100%,440px)}
+.bag{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.slot{aspect-ratio:1/1;background:var(--panel);border:1px dashed #222b2a;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:6px}
+.slot svg{width:100%;height:100%}
+button.slot{border:1px solid var(--line);cursor:pointer}
+button.slot:hover{border-color:var(--muted)}
+button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143,.35)}
 
-.sheet[hidden]{display:none}
-.sheet{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:10px;min-height:56px}
-.sheet.on{border-color:var(--amber)}
-.hint{margin:0;color:var(--muted);font-size:.88rem}
-.sit{display:flex;flex-direction:column;gap:6px}
-.sit + .sit{border-top:1px solid var(--line);padding-top:10px}
-.sit .who{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-stencil);font-weight:700;font-size:.85rem;letter-spacing:.12em;color:var(--amber)}
-.x{background:none;border:0;color:var(--muted);font-size:1.3rem;line-height:1;padding:0 4px;min-height:32px}
-.sit p{margin:0;font-size:1rem;text-wrap:pretty}
+/* Historique : une ligne, touchée = tout l'historique */
+.hist{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 12px;text-align:left;font-size:.88rem;color:var(--muted);display:flex;gap:8px;align-items:center;min-height:38px}
+.hist span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist b{font-size:.7rem;letter-spacing:.1em;color:#56625f}
+.histbox{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;max-height:45vh;overflow:auto;display:flex;flex-direction:column;gap:4px}
+.histbox p,.pop .lines p{margin:0;font-size:.92rem;color:var(--muted)}
+.histbox p.tel,.pop .lines p.tel{color:var(--amber)}
+.histbox p.ecr{font-family:var(--f-crt);font-size:1.15rem;line-height:1.05;color:var(--phos)}
+.histbox p.me{font-weight:700;font-size:.82rem}
+.histbox p.obj{color:var(--green);font-weight:700;font-size:.85rem}
+
+/* Popup au centre de l'écran */
+.pop{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.card{width:100%;max-width:420px;background:var(--panel);border:1px solid #3a4644;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.card .who{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-stencil);font-weight:700;font-size:.9rem;letter-spacing:.12em;color:var(--amber)}
+.card p{margin:0;font-size:1.02rem;text-wrap:pretty}
+.card .lines{display:flex;flex-direction:column;gap:8px}
+.card .lines p{font-size:1.02rem;color:var(--text)}
+.x{background:none;border:0;color:var(--muted);font-size:1.4rem;line-height:1;padding:0 4px;min-height:32px}
 .ab{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.ch{background:var(--panel2);border:1px solid #3a4644;border-radius:8px;padding:10px;font-weight:700;font-size:.95rem;text-align:left;min-height:46px}
+.ch{background:var(--panel2);border:1px solid #3a4644;border-radius:8px;padding:11px 10px;font-weight:700;font-size:.95rem;text-align:left;min-height:48px}
 .ch:hover:not(:disabled){border-color:var(--text)}
 .ch:disabled{opacity:.45;cursor:not-allowed}
 .ch small{display:block;font-weight:400;color:var(--muted);font-size:.75rem}
-.pockets{display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-height:30px}
-.pockets .k{font-size:.7rem;font-weight:700;letter-spacing:.1em;color:#56625f}
-.pockets button{font-size:.78rem;font-weight:700;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 11px;color:var(--muted);min-height:30px}
-.pockets button.flash{border-color:var(--green);color:var(--green)}
+.ch.go{text-align:center;grid-column:1/-1}
+.card .sep{border-top:1px solid var(--line)}
 
 .ov{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;overflow:auto;padding-block:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .intro{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
@@ -107,19 +120,18 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);out
     <div class="tb"><button class="btn" id="muteBtn" aria-pressed="false">Son : oui</button><button class="btn" id="pauseBtn" aria-pressed="false">Pause</button><button class="btn" id="restartBtn">Recommencer</button></div>
   </header>
   <div class="main">
-    <div class="scene" id="sceneWrap"><div class="timer" id="timer" hidden><i id="timerFill"></i></div><div id="scene"></div><div class="paused" id="pausedLbl" hidden>PAUSE</div></div>
-    <div class="panel">
-      <div class="log" id="log" aria-live="polite" title="Toucher pour accélérer"></div>
-      <div class="sheet" id="sheet"></div>
-      <div class="pockets" id="pockets"></div>
-    </div>
+    <div class="scene" id="sceneWrap"><div class="timer" id="timer" hidden><i id="timerFill"></i></div><div id="scene"></div><div class="hintcap" id="hintcap" hidden></div><div class="toast" id="toast"></div><div class="paused" id="pausedLbl" hidden>PAUSE</div></div>
+    <div class="bag" id="bag" aria-label="Inventaire"></div>
+    <button class="hist" id="histBtn" aria-expanded="false"><b>HISTORIQUE</b><span id="histLast">…</span></button>
+    <div class="histbox" id="histBox" hidden></div>
   </div>
 </div>
+<div class="pop" id="pop" hidden><div class="card" id="card" role="dialog" aria-modal="true"></div></div>
 
 <div class="ov" id="intro">
   <div class="intro">
     <h1>CHAMBRE 17</h1>
-    <p>Touche les objets de la pièce pour agir. Ne tarde pas trop : le bouton n'aime pas attendre.</p>
+    <p>Une pièce. Un bouton. Touche ce qui t'entoure.</p>
     <p>Le son est recommandé.</p>
     <button class="enter" id="enterBtn">Entrer dans la pièce</button>
   </div>
