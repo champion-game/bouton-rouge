@@ -16,6 +16,7 @@
   var timeLeft = 0, timeTotal = 0, lastTick = 0, lastSec = -1, lastEcran = '', popDone = null, flashItems = [];
   var hist = [];
 
+  function ecranTxt(t) { return t.replace(/-\|/g, '-').replace(/\|/g, ' '); }
   function esc(v) { return String(v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
   // ---------- historique (une ligne, touchée = tout) ----------
@@ -50,7 +51,7 @@
   // Popup d'information : les textes d'une action, puis « Continuer ».
   function infoPop(lines, my) {
     return new Promise(function (res) {
-      var h = '<div class="lines">' + lines.map(function (e) { return '<p class="' + (e.t === 'tel' ? 'tel' : '') + '">' + esc(e.txt) + '</p>'; }).join('') + '</div><div class="ab"><button class="ch go" data-go="1">Continuer</button></div>';
+      var h = '<div class="lines">' + lines.map(function (e) { return '<p class="' + ({ tel: 'tel', voix: 'voix', ecran: 'sys' }[e.t] || '') + '">' + esc(e.t === 'ecran' ? ecranTxt(e.txt) : e.txt) + '</p>'; }).join('') + '</div><div class="ab"><button class="ch go" data-go="1">Continuer</button></div>';
       openPop(h, function () { res(my === run); });
     });
   }
@@ -87,8 +88,8 @@
       var e = events[i];
       switch (e.t) {
         case 'choix': addHist('› ' + e.label, 'me'); break;
-        case 'ecran': R.ecran(e.txt, { glitch: 300 }); lastEcran = e.txt; A.sfx('glitch'); addHist(e.txt.replace(/-\|/g, '-').replace(/\|/g, ' '), 'ecr'); await wait(800, my); break;
-        case 'tel': case 'narr': lines.push(e); addHist(e.txt, e.t === 'tel' ? 'tel' : ''); break;
+        case 'ecran': R.ecran(e.txt, { glitch: 250 }); lastEcran = e.txt; A.sfx('glitch'); lines.push(e); addHist(ecranTxt(e.txt), 'ecr'); await wait(750, my); break;
+        case 'tel': case 'narr': case 'voix': lines.push(e); addHist(e.txt, e.t === 'narr' ? '' : 'tel'); if (e.t === 'voix') A.sfx('knock'); break;
         case 'press': R.press(); A.sfx('clac'); await wait(250, my); break;
         case 'cri': R.harm(e.vie); A.sfx('cry'); await wait(700, my); break;
         case 'soupcon': if (e.d > 0) { A.sfx('blink'); toast('La caméra t\'a vu.', 'ecr'); addHist('La caméra t\'a vu.', 'ecr'); } break;
@@ -104,7 +105,8 @@
         case 'cycle': if (e.n === 6) { R.blackout(true); setTimeout(function () { R.blackout(false); }, 700); } break;
       }
     }
-    if (lines.length && my === run) { R.render(s, roomInfo()); renderBag(); return infoPop(lines, my); }
+    // Popup seulement s'il y a autre chose que des phrases du moniteur (qui restent lisibles à l'écran).
+    if (lines.some(function (e) { return e.t !== 'ecran'; }) && my === run) { R.render(s, roomInfo()); renderBag(); return infoPop(lines, my); }
     return my === run;
   }
 
@@ -196,7 +198,10 @@
     $('timer').hidden = !ordre;
     $('timerFill').style.transform = 'scaleX(' + (timeTotal ? Math.max(0, timeLeft / timeTotal) : 0) + ')';
     $('timer').classList.toggle('low', low);
-    if (ordre && sec !== lastSec) R.ecran(t.forced.ecran + '|' + sec, { color: sec <= 3 ? '#ff5a4a' : '#ff8a7a' });
+    if (ordre && sec !== lastSec) {
+      var M = E.PHRASES.minuteur, top = sec <= 10 ? M[10] : sec <= 15 ? M[15] : t.forced.ecran;
+      R.ecran(top + '|' + sec, { color: sec <= 3 ? '#ff5a4a' : '#ff8a7a' });
+    }
     if (low && sec !== lastSec && sec > 0) A.sfx('tick');
     lastSec = sec;
   }
@@ -264,8 +269,13 @@
     $('histLast').textContent = '…'; $('histBox').innerHTML = ''; $('histBox').hidden = true;
     timeLeft = timeTotal = 0; refresh();
     R.ecran('');
+    // Démarrage : écran noir, le moniteur s'allume, puis la lumière avec le bruit sec d'un relais.
+    R.blackout(true);
     if (!(await wait(600, my))) return;
-    if (!(await play(E.intro(s), my))) return;
+    var ev = E.intro(s);
+    if (!(await play(ev.slice(0, 3), my))) return;
+    R.blackout(false); A.sfx('lock');
+    if (!(await play(ev.slice(3), my))) return;
     startCycle(my);
   }
 

@@ -16,29 +16,30 @@
   --f-body:"Archivo","Segoe UI",system-ui,sans-serif;
   color-scheme:dark;
 }
-html,body{height:100%;margin:0}
+html,body{height:100%;margin:0;overflow:hidden}
 body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:15px;line-height:1.4}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 button{font-family:inherit;cursor:pointer;color:inherit}
 button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 
-.app{max-width:1180px;margin:0 auto;padding-block:8px 20px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:8px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.brand{font-family:var(--f-stencil);font-weight:800;font-size:1.2rem;letter-spacing:.08em;color:var(--red);white-space:nowrap}
+.app{height:100vh;height:100dvh;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.top{position:absolute;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px max(10px,env(safe-area-inset-right,0px)) 0 max(10px,env(safe-area-inset-left,0px));pointer-events:none}
+.top > *{pointer-events:auto}
+.brand{font-family:var(--f-stencil);font-weight:800;font-size:1rem;letter-spacing:.08em;color:var(--red);white-space:nowrap;opacity:.85}
 .brand span{color:var(--muted);font-weight:700}
-@media (max-width:520px){.brand span{display:none}.brand{font-size:1.05rem}}
-@media (max-width:430px){.brand{font-size:.92rem;letter-spacing:.04em}.tb{gap:4px}.btn{padding:5px 7px;font-size:.72rem;min-height:34px}}
-.tb{display:flex;gap:6px}
-.btn{white-space:nowrap;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-weight:700;font-size:.8rem;min-height:36px}
+@media (max-width:520px){.brand span{display:none}.brand{font-size:.9rem}}
+.tb{display:flex;gap:5px}
+.btn{white-space:nowrap;background:rgba(18,23,23,.8);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-weight:700;font-size:.74rem;min-height:32px}
 .btn:hover{border-color:var(--muted)}
-
-.main{display:flex;flex-direction:column;align-items:center;gap:8px}
-.main > *{width:100%;max-width:min(100%,calc(100vh - 200px))}
-@media (max-width:899px){.main > *{max-width:100%}}
-.scene{position:relative;aspect-ratio:1/1;border-radius:6px;overflow:hidden;background:#000;box-shadow:0 0 0 1px var(--line)}
+/* La pièce occupe tout l'écran ; l'inventaire et l'historique forment une bande en bas. */
+.main{flex:1;min-height:0;display:flex;flex-direction:column}
+.scene{position:relative;flex:1;min-height:0;overflow:hidden;background:#000}
 .scene #scene{position:absolute;inset:0}
 .scene svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.hud{position:relative;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px max(10px,env(safe-area-inset-right,0px)) 8px max(10px,env(safe-area-inset-left,0px));background:#0a0d0d;border-top:1px solid var(--line)}
+.hud .bag{flex:0 0 auto;width:min(100%,330px)}
+.hud .hist{flex:1 1 220px;min-width:0}
 .hs{cursor:pointer}
 .hs:hover{filter:brightness(1.3)}
 .ring{animation:shake .12s infinite}
@@ -55,22 +56,21 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);out
 .toast.on{opacity:1}
 .toast.obj{color:var(--green);font-weight:700}
 .toast.ecr{font-family:var(--f-crt);font-size:1.15rem;color:var(--phos)}
-.hintcap{position:absolute;left:50%;top:10px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 24px);background:rgba(5,8,8,.82);border-radius:6px;padding:5px 10px;text-align:center;font-size:.85rem;color:var(--text);pointer-events:none;z-index:2}
+.hintcap{position:absolute;left:50%;top:46px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 24px);background:rgba(5,8,8,.82);border-radius:6px;padding:5px 10px;text-align:center;font-size:.85rem;color:var(--text);pointer-events:none;z-index:2}
 
 /* Inventaire : 6 cases dessinées */
-.main > .bag{max-width:min(100%,440px)}
 .bag{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-.slot{aspect-ratio:1/1;background:var(--panel);border:1px dashed #222b2a;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:6px}
+.slot{aspect-ratio:1/1;max-height:52px;background:var(--panel);border:1px dashed #222b2a;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:6px}
 .slot svg{width:100%;height:100%}
 button.slot{border:1px solid var(--line);cursor:pointer}
 button.slot:hover{border-color:var(--muted)}
 button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143,.35)}
 
 /* Historique : une ligne, touchée = tout l'historique */
-.hist{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 12px;text-align:left;font-size:.88rem;color:var(--muted);display:flex;gap:8px;align-items:center;min-height:38px}
+.hist{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 12px;text-align:left;font-size:.88rem;color:var(--muted);display:flex;gap:8px;align-items:center;min-height:38px}
 .hist span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hist b{font-size:.7rem;letter-spacing:.1em;color:#56625f}
-.histbox{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;max-height:45vh;overflow:auto;display:flex;flex-direction:column;gap:4px}
+.histbox{position:absolute;left:8px;right:8px;bottom:calc(100% + 6px);z-index:6;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;max-height:50vh;overflow:auto;display:flex;flex-direction:column;gap:4px;box-shadow:0 -8px 30px rgba(0,0,0,.5)}
 .histbox p,.pop .lines p{margin:0;font-size:.92rem;color:var(--muted)}
 .histbox p.tel,.pop .lines p.tel{color:var(--amber)}
 .histbox p.ecr{font-family:var(--f-crt);font-size:1.15rem;line-height:1.05;color:var(--phos)}
@@ -78,12 +78,15 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 .histbox p.obj{color:var(--green);font-weight:700;font-size:.85rem}
 
 /* Popup au centre de l'écran */
-.pop{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}
-.card{width:100%;max-width:420px;background:var(--panel);border:1px solid #3a4644;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+/* Popup dans le tiers bas : il ne cache jamais le moniteur ni le bouton. */
+.pop{position:fixed;inset:0;z-index:20;background:linear-gradient(to bottom,rgba(0,0,0,0) 35%,rgba(0,0,0,.6));display:flex;align-items:flex-end;justify-content:center;padding:16px 12px calc(16px + env(safe-area-inset-bottom,0px))}
+.card{width:100%;max-width:440px;max-height:46vh;overflow:auto;background:var(--panel);border:1px solid #3a4644;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
 .card .who{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-stencil);font-weight:700;font-size:.9rem;letter-spacing:.12em;color:var(--amber)}
 .card p{margin:0;font-size:1.02rem;text-wrap:pretty}
 .card .lines{display:flex;flex-direction:column;gap:8px}
-.card .lines p{font-size:1.02rem;color:var(--text)}
+.card .lines p{font-size:1rem;color:var(--text)}
+.card .lines p.sys{font-family:var(--f-crt);font-size:1.15rem;line-height:1.05;color:var(--phos)}
+.card .lines p.voix{color:var(--amber);font-style:italic}
 .x{background:none;border:0;color:var(--muted);font-size:1.4rem;line-height:1;padding:0 4px;min-height:32px}
 .ab{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .ch{background:var(--panel2);border:1px solid #3a4644;border-radius:8px;padding:11px 10px;font-weight:700;font-size:.95rem;text-align:left;min-height:48px}
@@ -121,9 +124,11 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
   </header>
   <div class="main">
     <div class="scene" id="sceneWrap"><div class="timer" id="timer" hidden><i id="timerFill"></i></div><div id="scene"></div><div class="hintcap" id="hintcap" hidden></div><div class="toast" id="toast"></div><div class="paused" id="pausedLbl" hidden>PAUSE</div></div>
-    <div class="bag" id="bag" aria-label="Inventaire"></div>
-    <button class="hist" id="histBtn" aria-expanded="false"><b>HISTORIQUE</b><span id="histLast">…</span></button>
-    <div class="histbox" id="histBox" hidden></div>
+    <div class="hud">
+      <div class="histbox" id="histBox" hidden></div>
+      <div class="bag" id="bag" aria-label="Inventaire"></div>
+      <button class="hist" id="histBtn" aria-expanded="false"><b>HISTORIQUE</b><span id="histLast">…</span></button>
+    </div>
   </div>
 </div>
 <div class="pop" id="pop" hidden><div class="card" id="card" role="dialog" aria-modal="true"></div></div>
