@@ -42,6 +42,7 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 - Mets à jour `docs/ARBORESCENCE_V2.md` quand une décision de conception change.
 - Après chaque changement visible, teste le jeu en largeur téléphone et sur écran d'ordinateur, et vérifie qu'il n'y a aucune erreur dans la console.
 - Fais des commits petits, avec un message clair en français.
+- Travaille et pousse directement sur `main` (demande d'Amine) : pas de branche ni de PR, sauf s'il en demande une.
 - Amine teste lui-même le ressenti : ne modifie pas les durées du chrono ni l'équilibrage des jauges sans son accord.
 
 ## Prochaines étapes (par ordre de priorité)
