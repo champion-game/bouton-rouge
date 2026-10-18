@@ -38,6 +38,7 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 
 ## Règles de travail
 
+- **Propose avant de coder** : pour toute demande de changement, présente d'abord 2 ou 3 options courtes (avec ta recommandation) et attends l'accord d'Amine. Seules exceptions : corriger un bug évident, ou s'il dit explicitement « vas-y ».
 - Garde la séparation moteur / rendu : une règle de jeu va dans `engine.js` ou `story.js`, jamais dans `game.js`.
 - Mets à jour `docs/ARBORESCENCE_V2.md` quand une décision de conception change.
 - Après chaque changement visible, teste le jeu en largeur téléphone et sur écran d'ordinateur, et vérifie qu'il n'y a aucune erreur dans la console.
