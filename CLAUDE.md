@@ -43,6 +43,7 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 - Mets à jour `docs/ARBORESCENCE_V2.md` quand une décision de conception change.
 - Après chaque changement visible, teste le jeu en largeur téléphone et sur écran d'ordinateur, et vérifie qu'il n'y a aucune erreur dans la console.
 - Fais des commits petits, avec un message clair en français.
+- Lien pour jouer : https://champion-game.github.io/bouton-rouge/ (GitHub Pages, mis à jour tout seul après chaque push sur `main`). Ne publie plus d'artefact Claude.
 - Travaille et pousse directement sur `main` (demande d'Amine) : pas de branche ni de PR, sauf s'il en demande une.
 - Le joueur agit en touchant les objets de la pièce, pas via des menus. Ne jamais afficher ni citer le numéro de cycle. Pas de halo sur les objets utiles : la découverte doit rester discrète. Le seul chrono visible est celui des ordres.
 - Amine teste lui-même le ressenti : ne modifie pas les durées du chrono ni l'équilibrage des jauges sans son accord.

@@ -4,6 +4,8 @@ Jeu narratif court et psychologique. Une pièce fermée, un énorme bouton rouge
 
 ## Jouer
 
+En ligne : https://champion-game.github.io/bouton-rouge/
+
 Ouvre `index.html` dans un navigateur. Aucune installation n'est nécessaire.
 
 Le prototype v1 reste jouable dans `prototype-v1.html`.
