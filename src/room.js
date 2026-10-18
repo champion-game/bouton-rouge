@@ -24,8 +24,8 @@
   '<g stroke="#202827" stroke-width="1.2"><line x1="300" y1="470" x2="300" y2="600"/><line x1="200" y1="470" x2="120" y2="600"/><line x1="400" y1="470" x2="480" y2="600"/><line x1="100" y1="470" x2="-60" y2="600"/><line x1="500" y1="470" x2="660" y2="600"/><line x1="0" y1="520" x2="600" y2="520"/></g>' +
   // trappe au sol
   '<g id="trappe" class="hs" data-k="trappe" opacity="0">' +
-  '<polygon id="trappeLid" points="420,528 560,528 578,580 412,580" fill="#151b1a" stroke="#4a5754" stroke-width="2"/>' +
-  '<rect id="trappeRing" x="486" y="548" width="20" height="6" rx="3" fill="#6b7673"/>' +
+  '<polygon id="trappeLid" points="34,526 176,526 186,582 16,582" fill="#151b1a" stroke="#4a5754" stroke-width="2"/>' +
+  '<rect id="trappeRing" x="90" y="550" width="22" height="6" rx="3" fill="#6b7673"/>' +
   '</g>' +
   // porte
   '<g id="door" class="hs" data-k="door">' +
@@ -96,24 +96,25 @@
   '</g>' +
   // socle, tiroir et bouton
   '<rect x="160" y="432" width="280" height="38" fill="#252d2c" stroke="#3a4644" stroke-width="2"/>' +
-  '<g id="drawer" class="hs" data-k="drawer">' +
+  '<g id="drawer" class="hs" data-k="drawer"><rect x="166" y="434" width="74" height="40" fill="transparent"/>' +
   '<rect x="176" y="440" width="54" height="24" fill="#070909"/>' +
   '<g id="drawerFront"><rect x="176" y="440" width="54" height="24" fill="#2f3938" stroke="#46524f"/><rect x="195" y="449" width="16" height="4" rx="2" fill="#8b9592"/></g>' +
   '</g>' +
-  '<rect x="214" y="470" width="172" height="104" fill="#1b2221"/>' +
+  '<g class="hs" data-k="bureau"><rect x="214" y="470" width="172" height="104" fill="#1b2221"/>' +
   '<g opacity=".85"><rect x="228" y="488" width="144" height="12" fill="#f2c14e"/><g fill="#1b2221"><path d="M236 488 h8 l-8 12 h-8z"/><path d="M256 488 h8 l-8 12 h-8z"/><path d="M276 488 h8 l-8 12 h-8z"/><path d="M296 488 h8 l-8 12 h-8z"/><path d="M316 488 h8 l-8 12 h-8z"/><path d="M336 488 h8 l-8 12 h-8z"/><path d="M356 488 h8 l-8 12 h-8z"/><path d="M376 488 h8 l-8 12 h-8z"/></g></g>' +
   '<text x="300" y="526" text-anchor="middle" font-family="' + STENCIL + '" font-weight="800" font-size="16" fill="#3e4a48" letter-spacing="4">ACTIVATION</text>' +
+  '<g stroke="#2d3736" stroke-width="1.4"><line x1="230" y1="545" x2="230" y2="562"/><line x1="236" y1="545" x2="236" y2="562"/><line x1="242" y1="545" x2="242" y2="562"/><line x1="248" y1="545" x2="248" y2="562"/><line x1="226" y1="556" x2="252" y2="550"/></g></g>' +
   '<g id="btn" class="hs" data-k="btn" role="button" tabindex="0" aria-label="Appuyer sur le bouton rouge">' +
   '<ellipse cx="300" cy="434" rx="74" ry="15" fill="#0b0d0d"/>' +
   '<ellipse cx="300" cy="428" rx="64" ry="13" fill="#3a3f3f"/>' +
   '<g id="dome"><path d="M240 426 Q240 376 300 374 Q360 376 360 426 Q330 438 300 438 Q270 438 240 426 Z" fill="url(#btnG)"/><ellipse cx="283" cy="392" rx="20" ry="8" fill="#fff" opacity=".32"/></g>' +
   '</g>' +
   // objets sur le socle et au sol
-  '<g id="phone" class="hs" data-k="phone" opacity="0" transform="translate(-36 0)"><g id="phoneInner">' +
+  '<g id="phone" class="hs" data-k="phone" opacity="0" transform="translate(-36 0)"><rect x="196" y="388" width="64" height="50" fill="transparent"/><g id="phoneInner">' +
   '<rect x="208" y="414" width="40" height="18" rx="4" fill="#1d1d1d"/><rect x="204" y="402" width="48" height="12" rx="6" fill="#2c2c2c"/><circle cx="228" cy="423" r="4" fill="#3a3a3a"/>' +
   '</g></g>' +
-  '<g class="hs" data-k="mug" transform="translate(34 0)"><rect x="364" y="406" width="18" height="24" rx="3" fill="#d6d1c4"/><path d="M382 412 q8 0 8 7 q0 7 -8 7" fill="none" stroke="#d6d1c4" stroke-width="3"/></g>' +
-  '<g id="note" class="hs" data-k="note" opacity="0"><g transform="rotate(-8 112 528)"><rect x="94" y="518" width="38" height="24" fill="#e7e2d2"/><g stroke="#9a9484" stroke-width="1"><line x1="99" y1="526" x2="126" y2="526"/><line x1="99" y1="531" x2="122" y2="531"/><line x1="99" y1="536" x2="118" y2="536"/></g></g></g>' +
+  '<g class="hs" data-k="mug" transform="translate(34 0)"><rect x="358" y="398" width="40" height="36" fill="transparent"/><rect x="364" y="406" width="18" height="24" rx="3" fill="#d6d1c4"/><path d="M382 412 q8 0 8 7 q0 7 -8 7" fill="none" stroke="#d6d1c4" stroke-width="3"/></g>' +
+  '<g id="note" class="hs" data-k="note" opacity="0"><rect x="50" y="462" width="80" height="44" fill="transparent"/><g transform="rotate(-6 90 482)"><rect x="70" y="472" width="40" height="22" fill="#e7e2d2"/><g stroke="#9a9484" stroke-width="1"><line x1="75" y1="479" x2="104" y2="479"/><line x1="75" y1="484" x2="100" y2="484"/><line x1="75" y1="489" x2="96" y2="489"/></g></g></g>' +
   // lumière et alarme
   '<rect id="tint" x="0" y="0" width="600" height="600" fill="#ff1e1e" opacity="0" style="pointer-events:none"/>' +
   '<rect id="dark" x="0" y="0" width="600" height="600" fill="#000" opacity="0" style="pointer-events:none"/>' +
@@ -164,7 +165,6 @@
     // objets
     attr('phone', 'opacity', s.cycle >= 3 ? 1 : 0);
     attr('note', 'opacity', s.cycle >= 4 && !s.done.H1 ? 1 : 0);
-    attr('note', 'class', 'hs' + (s.cycle >= 4 && !s.done.H1 ? ' pulse' : ''));
     attr('drawerFront', 'transform', s.flags.tiroirOuvert ? 'translate(0 16)' : '');
     attr('grilleSlats', 'opacity', has('conduit') ? 0 : 1);
     var known = has('trappe') || has('fusible') || s.done.P4;
@@ -188,6 +188,16 @@
     light(mode);
     // téléphone qui sonne
     attr('phoneInner', 'class', info.sonne ? 'ring' : '');
+  }
+
+  // Halo sur les objets avec lesquels on peut agir.
+  var LIVE_IDS = { btn: 'btn', phone: 'phone', drawer: 'drawer', grille: 'grille', box: 'box', trappe: 'trappe', camera: 'camRot', note: 'note', bureau: null, door: 'door' };
+  function live(keys) {
+    Array.prototype.forEach.call(svg.querySelectorAll('.live'), function (e) { e.classList.remove('live'); });
+    keys.forEach(function (k) {
+      var e = LIVE_IDS[k] ? $(LIVE_IDS[k]) : svg.querySelector('[data-k="' + k + '"]');
+      if (e) e.classList.add('live');
+    });
   }
 
   function light(mode) {
@@ -249,5 +259,5 @@
   }
   function blackout(on) { attr('dark', 'opacity', on ? 0.96 : 0); attr('cone', 'opacity', on ? 0 : 0.6); }
 
-  root.BRRoom = { mount: mount, render: render, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout };
+  root.BRRoom = { mount: mount, render: render, live: live, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

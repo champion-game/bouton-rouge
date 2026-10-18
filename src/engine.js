@@ -136,7 +136,7 @@
   function describe(s, x) {
     var g = ctx(s, [], x.fil);
     function opt(c) { var o = x[c], ok = !o.req || !!o.req(g); return { label: o.label, ok: ok, raison: ok ? '' : (o.raison || '') }; }
-    return { id: x.id, fil: x.fil, qui: x.qui, texte: resolve(x.texte, g), ecran: x.ecran || '', ordre: !!x.ordre, appel: !!x.appel, A: opt('A'), B: opt('B') };
+    return { id: x.id, objet: x.objet, fil: x.fil, qui: x.qui, texte: resolve(x.texte, g), ecran: x.ecran || '', ordre: !!x.ordre, appel: !!x.appel, A: opt('A'), B: opt('B') };
   }
 
   // Ce que le joueur peut faire pendant le cycle en cours.
@@ -154,14 +154,21 @@
     var sorties = [];
     if (porteOuverte(s)) sorties.push({ via: 'porte', label: 'Sortir par la porte' });
     if (has(s, 'sortieCachee')) sorties.push({ via: 'trappe', label: 'Fuir par la trappe cachée' });
+    // Les situations rangées par objet de la pièce (ce que le joueur touche).
+    var objets = {};
+    if (forced) objets[BY_ID[fid].objet] = [forced];
+    else fils.forEach(function (f) { f.situations.forEach(function (x) { (objets[BY_ID[x.id].objet] = objets[BY_ID[x.id].objet] || []).push(x); }); });
     return {
-      cycle: s.cycle, dernier: DERNIER_CYCLE, duree: duree(s), forced: forced, fils: fils, sorties: sorties,
+      cycle: s.cycle, dernier: DERNIER_CYCLE, duree: duree(s), forced: forced, fils: fils, sorties: sorties, objets: objets,
       peutAppuyer: !forced || forced.ordre, prochainOrdre: prochainOrdre(s)
     };
   }
 
+  // Texte affiché quand on touche un objet sans rien pouvoir y faire.
+  function regarder(s, k) { return resolve(S.REGARDS[k], ctx(s, [], null)) || ''; }
+
   function noteFil(s, fil) {
-    if (fil === 'bouton') { var p = prochainOrdre(s); return p ? 'Prochain ordre au cycle ' + p + '.' : 'Plus aucun ordre.'; }
+    if (fil === 'bouton') return 'Le bouton attend.';
     if (fil === 'piece' && s.flags.noirCycle === s.cycle) return 'Noir complet : tu ne vois plus la pièce.';
     if ((fil === 'camera' || fil === 'passe') && s.cycle < 4) return 'Rien pour l\'instant.';
     if (fil === 'telephone') {
@@ -206,11 +213,21 @@
         gs.fin('porteDerobee');
       } else throw new Error('Sortie impossible : ' + action.via);
     } else if (action.type === 'temps') {
-      var gt = ctx(s, ev, 'bouton');
-      gt.narr('Trop tard. Le bouton s\'enfonce tout seul.');
-      gt.press(false); gt.conformite(1);
-      if (fid === 'T1') gt.ignorerAppel();
-      else if (fid) s.done[fid] = s.done[fid] || 'auto';
+      // Temps écoulé : pendant un ordre, ne rien faire = refuser ; un appel sans réponse = laisser sonner ;
+      // pendant un moment libre, le bouton s'enfonce tout seul.
+      if (forced && (forced.ordre || fid === 'T1')) {
+        var gf = ctx(s, ev, forced.fil);
+        if (forced.ordre) gf.narr('Tu n\'as pas appuyé.');
+        s.done[fid] = 'B';
+        forced.B.fx(gf);
+      } else if (fid === 'T4') {
+        s.done.T4 = 'auto';
+        ctx(s, ev, null).narr('Le téléphone finit par se taire.');
+      } else {
+        var gt = ctx(s, ev, 'bouton');
+        gt.narr('Trop tard. Le bouton s\'enfonce tout seul.');
+        gt.press(false); gt.conformite(1);
+      }
     } else throw new Error('Action inconnue : ' + action.type);
 
     checkEnds(s, ev);
@@ -288,7 +305,7 @@
   }
 
   var api = {
-    newGame: newGame, intro: intro, turn: turn, choose: choose,
+    newGame: newGame, intro: intro, turn: turn, choose: choose, regarder: regarder, AIDES: S.AIDES,
     forcedId: forcedId, cameraAveugle: cameraAveugle, porteOuverte: porteOuverte, has: has,
     DUREES: DUREES, DERNIER_CYCLE: DERNIER_CYCLE,
     FILS: S.FILS, OBJETS: S.OBJETS, FINS: S.FINS, VERITES: S.VERITES,

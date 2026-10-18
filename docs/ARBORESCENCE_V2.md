@@ -225,7 +225,8 @@ Ces points n'étaient pas couverts par l'arbre. Ils sont codés ainsi dans `src/
 - **Cycle 20 avec la 18 morte et sans sortie** → fin 1 Sujet conforme.
 - **Sortie par la porte du badge (H3 A)** → fin 4 Seul dehors.
 - **Sortie par la porte de B5 ou B6** : la 18 vivante → Le marché ; la 18 morte → Sujet conforme (B6 A avec le bouton désactivé laisse la 18 en vie, donc Le marché).
-- **Chrono écoulé** = pression automatique : Vie −1, Conformité +1, sans récompense (pas de fusible, pas de porte). Un appel T1 non décroché compte comme « laisser sonner ».
+- **Chrono écoulé** (changé le 18/10 avec la nouvelle interface) : pendant un ordre, ne rien faire = **refuser** (choix B) ; un appel non décroché = **laisser sonner** (T1 B) ou appel manqué (T4) ; pendant un moment libre, le bouton s'enfonce tout seul (Vie −1, Conformité +1, sans récompense).
+- **Interface** : le joueur agit en touchant les objets de la pièce (téléphone, tiroir, grille, boîtier, trappe, caméra, mot sous la porte, dessous du bureau, porte). Les objets avec lesquels on peut agir brillent. Le badge et la cassette se touchent dans les poches. **Aucun numéro de cycle n'est affiché ni cité** : le joueur ne sait pas s'il est proche de la fin.
 - **Appuyer de soi-même pendant un cycle libre** : prend le cycle, Vie −1, Conformité +1. Si une porte est ouverte → Curiosité (les pressions automatiques ne déclenchent jamais Curiosité).
 - **Les sorties** (porte ouverte, trappe cachée) restent proposées même pendant un ordre ou un appel.
 - **B2 A** ouvre le tiroir : fusible + tournevis (si le tiroir n'a pas déjà été forcé avec P1 A). P1 B (« écouter le mécanisme ») ne donne rien et ferme P1.
