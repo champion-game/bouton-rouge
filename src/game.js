@@ -5,11 +5,13 @@
   'use strict';
   var E = window.BREngine, R = window.BRRoom, A = window.BRAudio;
   var $ = function (id) { return document.getElementById(id); };
-  var FOUND_KEY = 'bouton-rouge-v2-fins';
+  var FOUND_KEY = 'bouton-rouge-v2-fins', TUTO_KEY = 'bouton-rouge-v2-tuto';
+  // Indices (connaissances) montrés dans l'inventaire de fin.
+  var INDICES = ['angleMort', 'operateur', 'mensonge', 'miroir', 'objectif', 'plan', 'verite'];
   // Objets qu'on garde dans ses poches, et l'objet de la pièce auquel chacun renvoie.
   var POCHES = { tournevis: null, fusible: null, code: null, mot16: 'note', badge: 'badge', enregistrement: 'cassette' };
 
-  var s = null, t = null, run = 0, busy = true, paused = false, sel = null;
+  var s = null, t = null, run = 0, busy = true, paused = false, sel = null, tuto = false;
   var timeLeft = 0, timeTotal = 0, lastTick = 0, lastSec = -1, skipWait = null, lastEcran = '';
 
   // ---------- sous-titres ----------
@@ -73,22 +75,14 @@
     else if (k) { R.ecran(t.forced.ecran); A.ring(true); log(k === 'T1' ? 'Le téléphone sonne.' : 'Le téléphone sonne encore.'); }
     else if (!lastEcran) R.ecran('TEST EN|COURS.');
     lastEcran = '';
-    timeTotal = timeLeft = t.duree * 1000; lastTick = performance.now(); lastSec = -1;
+    timeTotal = timeLeft = (t.duree || 0) * 1000;
+    if (tuto && s.cycle > 3) { tuto = false; try { localStorage.setItem(TUTO_KEY, '1'); } catch (e) {} } lastTick = performance.now(); lastSec = -1;
     refresh();
   }
 
   function refresh() {
     R.render(s, roomInfo());
-    R.live(busy || !t ? [] : liveKeys());
     renderSheet(); renderPockets(); updateTimer();
-  }
-  function liveKeys() {
-    var k = forcedKind(), keys = [];
-    if (k === 'ordre') keys.push('btn');
-    else if (k) keys.push('phone');
-    else Object.keys(t.objets).forEach(function (o) { if (o !== 'badge' && o !== 'cassette') keys.push(o); });
-    t.sorties.forEach(function (x) { keys.push(x.via === 'porte' ? 'door' : 'trappe'); });
-    return keys;
   }
 
   // ---------- la carte d'action (sous la pièce) ----------
@@ -100,15 +94,16 @@
   function renderSheet() {
     var box = $('sheet'), k = forcedKind(), list = sel && t && t.objets[sel], h = '';
     box.classList.toggle('on', !!(list && list.length && !busy));
-    if (busy || !t) { box.innerHTML = '<p class="hint">…</p>'; return; }
+    if (busy || !t) { box.innerHTML = ''; box.hidden = true; return; }
     if (list && list.length && (k !== 'ordre')) {
       h = list.map(function (x, i) {
         return '<div class="sit"><div class="who"><span>' + esc(x.qui) + '</span>' + (i === 0 && k !== 'T4' ? '<button class="x" data-close="1" aria-label="Fermer">×</button>' : '') + '</div><p>' + esc(x.texte) + '</p><div class="ab">' + choiceBtn(x, 'A') + choiceBtn(x, 'B') + '</div></div>';
       }).join('');
-    } else {
+    } else if (tuto && s.cycle <= 3) {
+      // Tutoriel discret : seulement pendant les premiers moments de la toute première partie.
       h = '<p class="hint">' + esc(k === 'ordre' ? E.AIDES.ordre : k ? E.AIDES.appel : E.AIDES.libre) + '</p>';
     }
-    box.innerHTML = h;
+    box.innerHTML = h; box.hidden = !h;
   }
   $('sheet').addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b || b.disabled) return;
@@ -122,8 +117,8 @@
     var items = s.items.filter(function (k) { return POCHES.hasOwnProperty(k); });
     var h = items.length ? '<span class="k">POCHES</span>' : '';
     h += items.map(function (k) {
-      var o = POCHES[k], use = !busy && t && o && t.objets[o];
-      return '<button data-o="' + (o || '') + '" data-k="' + k + '" class="' + (use ? 'use' : flash && flash.indexOf(k) >= 0 ? 'flash' : '') + '">' + esc(E.OBJETS[k]) + '</button>';
+      var o = POCHES[k];
+      return '<button data-o="' + (o || '') + '" data-k="' + k + '" class="' + (flash && flash.indexOf(k) >= 0 ? 'flash' : '') + '">' + esc(E.OBJETS[k]) + '</button>';
     }).join('');
     $('pockets').innerHTML = h;
   }
@@ -162,7 +157,7 @@
     busy = true; A.ring(false); sel = null;
     var before = s.items.slice();
     s = res.state;
-    R.live([]); renderSheet();
+    renderSheet();
     var my = run;
     var ok = await play(res.events, my);
     if (!ok) return;
@@ -174,16 +169,17 @@
 
   // ---------- chrono (sans aucun chiffre) ----------
   function updateTimer() {
-    var sec = Math.max(0, Math.ceil(timeLeft / 1000)), low = sec <= 5 && !busy && timeTotal > 0;
+    var sec = Math.max(0, Math.ceil(timeLeft / 1000)), low = sec <= 5 && !busy && timeTotal > 0, ordre = !busy && forcedKind() === 'ordre';
+    $('timer').hidden = !ordre;
     $('timerFill').style.transform = 'scaleX(' + (timeTotal ? Math.max(0, timeLeft / timeTotal) : 0) + ')';
     $('timer').classList.toggle('low', low);
     if (!busy && t && forcedKind() === 'ordre' && sec !== lastSec) R.ecran(t.forced.ecran + '|' + sec, { color: sec <= 3 ? '#ff5a4a' : '#ff8a7a' });
-    if (low && sec !== lastSec && sec > 0) A.sfx('tick');
+    if (ordre && low && sec !== lastSec && sec > 0) A.sfx('tick');
     lastSec = sec;
   }
   setInterval(function () {
     var nowT = performance.now(), dt = nowT - lastTick; lastTick = nowT;
-    if (busy || paused || !s || s.fin || document.hidden) return;
+    if (busy || paused || !s || s.fin || document.hidden || !t || !timeTotal) return;
     timeLeft -= dt; updateTimer();
     if (timeLeft <= 0) act({ type: 'temps' });
   }, 100);
@@ -194,13 +190,17 @@
   $('pausedLbl').addEventListener('click', function () { setPaused(false); });
 
   // ---------- fin ----------
+  // Son de la dernière image de chaque fin.
+  var SONS_FIN = { conforme: 'lock', employe: 'lock', marche: 'ring', seulDehors: 'thud', porteDerobee: 'thud', evasion: 'alarm', cooperation: 'lock', sauvetage: 'thud', tropTard: 'blink', complice: 'alarm', sujet18: 'thud', miroir: 'glitch', boucle: 'blink', isolement: 'slam', gardien: 'alarm', temoin: 'pickup', revolte: 'alarm', tempsEcoule: 'cry', curiosite: 'slam' };
+
   async function finale(my) {
     var F = E.FINS[s.fin];
-    A.ring(false); R.live([]);
+    A.ring(false); $('sheet').hidden = true; $('timer').hidden = true;
     R.ecran(F.crt === '_' ? '' : F.crt, { glitch: 500 });
-    if (s.fin === 'isolement' || s.fin === 'boucle') R.blackout(true);
-    if (s.fin === 'curiosite') A.sfx('slam');
-    if (!(await wait(2600, my))) return;
+    R.fin(s.fin);
+    var son = SONS_FIN[s.fin];
+    if (son === 'ring') { A.ring(true); setTimeout(function () { A.ring(false); }, 2600); } else if (son) A.sfx(son);
+    if (!(await wait(3200, my))) return;
     endScreen();
   }
   function loadFound() { try { return JSON.parse(localStorage.getItem(FOUND_KEY) || '{}') || {}; } catch (e) { return {}; } }
@@ -215,6 +215,9 @@
     if (F.crt !== '_') h += '<div class="crt">' + esc(F.crt) + '</div>';
     h += '<p>' + esc(F.texte) + '</p>';
     h += '<p class="truth">' + (E.has(s, 'verite') ? esc(E.VERITES[s.truth].texte) : 'Ce que cachait la Chambre 18 : tu ne l\'as pas découvert.') + '</p>';
+    var objs = s.items.filter(function (k) { return POCHES.hasOwnProperty(k); }), inds = s.items.filter(function (k) { return INDICES.indexOf(k) >= 0; });
+    h += '<div class="k">DANS TES POCHES</div><div class="fins">' + (objs.length ? objs.map(function (k) { return '<span class="on">' + esc(E.OBJETS[k]) + '</span>'; }).join('') : '<span>Rien</span>') + '</div>';
+    if (inds.length) h += '<div class="k">CE QUE TU AS COMPRIS</div><div class="fins">' + inds.map(function (k) { return '<span class="on">' + esc(E.OBJETS[k]) + '</span>'; }).join('') + '</div>';
     h += '<div class="stats">' + rows.map(function (r) { return '<span>' + r[0] + '</span><span>' + r[1] + '</span>'; }).join('') + '</div>';
     h += '<div class="k">FINS DÉCOUVERTES : ' + nb + ' / 18</div><div class="fins">' + ids.map(function (k) {
       return '<span class="' + (k === s.fin ? 'cur' : found[k] ? 'on' : '') + '">' + (found[k] ? esc(E.FINS[k].titre) : '???') + '</span>';
@@ -235,6 +238,7 @@
     run++; var my = run;
     A.stopAll(); setPaused(false);
     s = E.newGame(); t = null; busy = true; sel = null; lastEcran = '';
+    try { tuto = !localStorage.getItem(TUTO_KEY); } catch (e) { tuto = true; }
     $('log').innerHTML = '';
     timeLeft = timeTotal = 0; refresh();
     R.ecran('');

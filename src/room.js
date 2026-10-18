@@ -149,6 +149,7 @@
   var GLASS = ['#000', '#463f30', '#5e553e', '#7d7150'];
   function render(s, info) {
     info = info || {};
+    resetFx();
     var has = function (k) { return s.items.indexOf(k) >= 0; };
     // vie de la 18
     for (var i = 1; i <= 3; i++) attr('vie' + i, 'fill', s.vie >= i ? '#f2c14e' : '#262c2b');
@@ -188,16 +189,6 @@
     light(mode);
     // téléphone qui sonne
     attr('phoneInner', 'class', info.sonne ? 'ring' : '');
-  }
-
-  // Halo sur les objets avec lesquels on peut agir.
-  var LIVE_IDS = { btn: 'btn', phone: 'phone', drawer: 'drawer', grille: 'grille', box: 'box', trappe: 'trappe', camera: 'camRot', note: 'note', bureau: null, door: 'door' };
-  function live(keys) {
-    Array.prototype.forEach.call(svg.querySelectorAll('.live'), function (e) { e.classList.remove('live'); });
-    keys.forEach(function (k) {
-      var e = LIVE_IDS[k] ? $(LIVE_IDS[k]) : svg.querySelector('[data-k="' + k + '"]');
-      if (e) e.classList.add('live');
-    });
   }
 
   function light(mode) {
@@ -243,6 +234,47 @@
     }, 50);
   }
 
+  // ---------- animations de fin ----------
+  var fxTimers = [];
+  function later(ms, f) { fxTimers.push(setTimeout(f, ms)); }
+  function fade(id, op, ms, col) { var e = $(id); if (!e) return; if (col) e.setAttribute('fill', col); e.style.transition = 'opacity ' + ms + 'ms ease'; e.style.opacity = op; }
+  function resetFx() {
+    fxTimers.forEach(clearTimeout); fxTimers = [];
+    ['dark', 'flash', 'tint'].forEach(function (id) { var e = $(id); if (e) { e.style.transition = ''; e.style.opacity = ''; } });
+    attr('flash', 'fill', '#fff'); attr('screen', 'fill', '#071311');
+  }
+  function door(open) {
+    attr('doorLed', 'fill', open ? '#3ee08f' : '#e3262b');
+    attr('doorPanel', 'transform', open ? 'translate(32 0) scale(.25 1) translate(-32 0)' : '');
+    attr('doorLight', 'opacity', open ? 0.85 : 0);
+  }
+  function glass(col, silhouette) { attr('glass', 'fill', col); attr('sil', 'opacity', silhouette ? 0.82 : 0); }
+  function white(ms) { fade('flash', 0.92, ms, '#f4fbf8'); }
+  function black(ms, op) { fade('dark', op == null ? 1 : op, ms); }
+  // Dernière image de chaque fin (2 à 3 secondes), avant l'écran de fin.
+  var FIN_FX = {
+    conforme: function () { glass('#000', false); later(500, function () { door(true); }); },
+    employe: function () { light('cold'); later(700, function () { door(true); }); },
+    marche: function () { door(true); later(1600, function () { black(1200, 0.5); }); },
+    seulDehors: function () { attr('grilleSlats', 'opacity', 0); later(400, function () { white(2000); }); },
+    porteDerobee: function () { attr('trappeLid', 'fill', '#030404'); later(300, function () { black(2200, 0.92); }); },
+    evasion: function () { door(true); alarm(2400); },
+    cooperation: function () { glass('#fff2c0', false); later(600, function () { door(true); }); },
+    sauvetage: function () { glass('#fff2c0', false); later(700, function () { white(1800); }); },
+    tropTard: function () { glass('#000', false); later(900, function () { light('off'); }); },
+    complice: function () { door(true); alarm(2000); },
+    sujet18: function () { later(300, function () { black(1600); }); },
+    miroir: function () { glitch(1800); var n = 0, iv = setInterval(function () { attr('sil', 'opacity', n % 2 ? 0.82 : 0); if (++n > 9) { clearInterval(iv); attr('sil', 'opacity', 0); } }, 180); fxTimers.push(iv); },
+    boucle: function () { ecran(''); attr('screen', 'fill', '#000'); attr('btnGlow', 'opacity', 0); later(500, function () { black(1800, 0.95); }); },
+    isolement: function () { black(700); },
+    gardien: function () { alarm(2400); attr('camLed', 'fill', '#e3262b'); later(300, function () { door(true); }); later(1600, function () { door(false); }); },
+    temoin: function () { attr('camLed', 'fill', '#3ee08f'); attr('camMask', 'opacity', 0); },
+    revolte: function () { door(true); alarm(2400); later(900, function () { fade('flash', 0.5, 1500, '#f4fbf8'); }); },
+    tempsEcoule: function () { light('red'); later(600, function () { door(true); harm(0); }); },
+    curiosite: function () { door(false); flash(); }
+  };
+  function fin(id) { resetFx(); if (FIN_FX[id]) FIN_FX[id](); }
+
   // ---------- animations ----------
   function press() {
     attr('dome', 'transform', 'translate(0 9)');
@@ -259,5 +291,5 @@
   }
   function blackout(on) { attr('dark', 'opacity', on ? 0.96 : 0); attr('cone', 'opacity', on ? 0 : 0.6); }
 
-  root.BRRoom = { mount: mount, render: render, live: live, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout };
+  root.BRRoom = { mount: mount, render: render, fin: fin, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

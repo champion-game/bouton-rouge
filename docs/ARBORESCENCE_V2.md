@@ -14,10 +14,12 @@ Document de référence pour coder la v2. Toute règle de jeu vient d'ici : si u
 
 ## La tension
 
-- **Chrono** : chaque cycle dure 30 s. Sans choix à temps, **le bouton s'enfonce tout seul** (Vie −1, Conformité +1).
-- **Ordres imposés** : 6 ordres du système (fil 1), 10 s pour répondre, ils consomment le cycle.
-- **Prix visible** : 3 lumières sur la vitre de la Chambre 18 (sa vie). La LED de la caméra passe vert → orange → rouge selon le soupçon.
-- **Étau** : inspection au cycle 10, cycles de 20 s à partir du cycle 15, verdict au cycle 20.
+- **Pas de chrono pendant les moments libres** (décision d'Amine, 18/10) : le joueur prend son temps pour explorer.
+- **Ordres imposés** : 6 ordres du système (fil 1). Le seul chrono visible : **30 s** (barre + décompte sur le moniteur). Sans pression, l'ordre est **refusé**. Ils consomment le cycle.
+- **Appels** (T1, T4) : le téléphone sonne 30 s (sans chrono affiché), puis s'arrête : T1 compte comme « laisser sonner », T4 est manqué.
+- **Aucun numéro de cycle n'est jamais affiché ni cité** : le joueur ne sait pas s'il est proche de la fin.
+- **Prix visible** : 3 lumières au-dessus de la vitre de la Chambre 18 (sa vie). La LED de la caméra passe vert → orange → rouge selon le soupçon.
+- **Étau** : inspection au cycle 10, air raréfié au cycle 15, verdict au cycle 20.
 
 ## Les jauges
 
@@ -218,15 +220,15 @@ Ordre de vérification conseillé : fins immédiates (Isolement, Gardien, Évasi
 | 18 | Le Temps est écoulé | Cycle 20 sans être sorti, sans plan, la 18 vivante. | C'est toi qu'on entend souffrir derrière la vitre. |
 | bonus | Curiosité | Une porte est ouverte et le joueur appuie. | « NOUS SAVIONS QUE VOUS LE FERIEZ. » |
 
-## Décisions prises pendant le code (à valider par Amine)
+## Décisions prises pendant le code (validées par Amine le 18/10)
 
-Ces points n'étaient pas couverts par l'arbre. Ils sont codés ainsi dans `src/engine.js` et `src/story.js` ; chacun se change en une ligne.
+Ces points n'étaient pas couverts par l'arbre. Ils sont codés ainsi dans `src/engine.js` et `src/story.js`.
 
 - **Cycle 20 avec la 18 morte et sans sortie** → fin 1 Sujet conforme.
 - **Sortie par la porte du badge (H3 A)** → fin 4 Seul dehors.
 - **Sortie par la porte de B5 ou B6** : la 18 vivante → Le marché ; la 18 morte → Sujet conforme (B6 A avec le bouton désactivé laisse la 18 en vie, donc Le marché).
-- **Chrono écoulé** (changé le 18/10 avec la nouvelle interface) : pendant un ordre, ne rien faire = **refuser** (choix B) ; un appel non décroché = **laisser sonner** (T1 B) ou appel manqué (T4) ; pendant un moment libre, le bouton s'enfonce tout seul (Vie −1, Conformité +1, sans récompense).
-- **Interface** : le joueur agit en touchant les objets de la pièce (téléphone, tiroir, grille, boîtier, trappe, caméra, mot sous la porte, dessous du bureau, porte). Les objets avec lesquels on peut agir brillent. Le badge et la cassette se touchent dans les poches. **Aucun numéro de cycle n'est affiché ni cité** : le joueur ne sait pas s'il est proche de la fin.
+- **Chrono écoulé** : voir « La tension ». Un ordre sans réponse = refusé ; un appel sans réponse = laissé sonner ou manqué. (Le moteur sait encore faire s'enfoncer le bouton tout seul pendant un moment libre, mais l'interface ne le déclenche plus.)
+- **Interface** : le joueur agit en touchant les objets de la pièce (téléphone, tiroir, grille, boîtier, trappe, caméra, mot sous la porte, dessous du bureau, porte). Aucun halo ne signale les objets utiles : c'est au joueur de comprendre. Le badge et la cassette se touchent dans les poches. Un tutoriel discret (3 aides en texte) n'apparaît que pendant les premiers moments de la toute première partie. Chaque fin a sa dernière image animée, puis l'écran de fin montre les poches et les indices compris.
 - **Appuyer de soi-même pendant un cycle libre** : prend le cycle, Vie −1, Conformité +1. Si une porte est ouverte → Curiosité (les pressions automatiques ne déclenchent jamais Curiosité).
 - **Les sorties** (porte ouverte, trappe cachée) restent proposées même pendant un ordre ou un appel.
 - **B2 A** ouvre le tiroir : fusible + tournevis (si le tiroir n'a pas déjà été forcé avec P1 A). P1 B (« écouter le mécanisme ») ne donne rien et ferme P1.

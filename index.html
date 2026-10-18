@@ -49,8 +49,6 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);out
 .timer{position:absolute;left:0;right:0;top:0;height:4px;background:rgba(0,0,0,.35);pointer-events:none;z-index:2}
 .timer i{display:block;height:100%;width:100%;background:var(--phos);opacity:.75;transform-origin:left;transition:background .3s}
 .timer.low i{background:var(--red);opacity:1}
-.live{animation:glow 1.6s ease-in-out infinite}
-@keyframes glow{0%,100%{filter:drop-shadow(0 0 0 rgba(242,193,78,0))}50%{filter:drop-shadow(0 0 5px rgba(242,193,78,1)) drop-shadow(0 0 12px rgba(242,193,78,.7)) brightness(1.25)}}
 .paused{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);font-family:var(--f-stencil);font-weight:800;font-size:2rem;letter-spacing:.1em;color:var(--amber);z-index:3}
 
 .log{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;min-height:84px;max-height:150px;overflow:auto;display:flex;flex-direction:column;gap:4px;cursor:pointer}
@@ -63,6 +61,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);out
 .log p.me{font-weight:700;color:var(--muted);font-size:.85rem}
 .log p.obj{color:var(--green);font-weight:700;font-size:.88rem}
 
+.sheet[hidden]{display:none}
 .sheet{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:10px;min-height:56px}
 .sheet.on{border-color:var(--amber)}
 .hint{margin:0;color:var(--muted);font-size:.88rem}
@@ -79,7 +78,6 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);out
 .pockets{display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-height:30px}
 .pockets .k{font-size:.7rem;font-weight:700;letter-spacing:.1em;color:#56625f}
 .pockets button{font-size:.78rem;font-weight:700;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 11px;color:var(--muted);min-height:30px}
-.pockets button.use{border-color:var(--amber);color:var(--amber);animation:pls 1.6s infinite}
 .pockets button.flash{border-color:var(--green);color:var(--green)}
 
 .ov{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;overflow:auto;padding-block:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -109,7 +107,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);out
     <div class="tb"><button class="btn" id="muteBtn" aria-pressed="false">Son : oui</button><button class="btn" id="pauseBtn" aria-pressed="false">Pause</button><button class="btn" id="restartBtn">Recommencer</button></div>
   </header>
   <div class="main">
-    <div class="scene" id="sceneWrap"><div class="timer" id="timer"><i id="timerFill"></i></div><div id="scene"></div><div class="paused" id="pausedLbl" hidden>PAUSE</div></div>
+    <div class="scene" id="sceneWrap"><div class="timer" id="timer" hidden><i id="timerFill"></i></div><div id="scene"></div><div class="paused" id="pausedLbl" hidden>PAUSE</div></div>
     <div class="panel">
       <div class="log" id="log" aria-live="polite" title="Toucher pour accélérer"></div>
       <div class="sheet" id="sheet"></div>

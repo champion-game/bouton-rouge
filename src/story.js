@@ -267,7 +267,7 @@
     1: { ecran: 'APPUYEZ SUR|LE BOUTON|ROUGE.', narr: 'Une pièce. Un bouton. Une vitre. Le moniteur s\'allume.' },
     4: { narr: 'Un papier glisse sous ta porte. La caméra se met à te suivre.' },
     6: { narr: 'Coupure de courant. La caméra clignote : pour l\'instant, elle ne voit rien.' },
-    15: { narr: 'L\'air se raréfie. Tout va plus vite.', ecran: 'OXYGÈNE :|RÉDUIT.' }
+    15: { narr: 'L\'air se raréfie.', ecran: 'OXYGÈNE :|RÉDUIT.' }
   };
 
 
@@ -296,7 +296,7 @@
 
   // Aides affichées les premières fois.
   var AIDES = {
-    libre: 'Touche les objets de la pièce pour agir. Si tu ne fais rien, le bouton finira par s\'enfoncer tout seul.',
+    libre: 'Touche les objets de la pièce pour agir. Le tiroir, par exemple.',
     ordre: 'Appuie sur le bouton pour obéir. Ne touche à rien pour refuser.',
     appel: 'Touche le téléphone pour décrocher.'
   };

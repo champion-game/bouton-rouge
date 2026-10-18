@@ -6,8 +6,9 @@
   'use strict';
   var S = (typeof module === 'object' && module.exports) ? require('./story.js') : root.BRStory;
 
-  // Durées des cycles, en secondes (ne pas changer sans l'accord d'Amine).
-  var DUREES = { normal: 30, ordre: 10, air: 20, compte: 15 };
+  // Durées, en secondes (décidées par Amine le 18/10) : un ordre attend 30 s puis compte comme refusé ;
+  // un appel sonne 30 s puis s'arrête ; les moments libres n'ont pas de limite de temps.
+  var DUREES = { ordre: 30, appel: 30 };
   var DERNIER_CYCLE = 20;
 
   var BY_ID = {};
@@ -52,10 +53,8 @@
 
   function duree(s) {
     var fid = forcedId(s);
-    if (fid && BY_ID[fid].ordre) return DUREES.ordre;
-    if (s.flags.compte && s.cycle >= 18) return DUREES.compte;
-    if (s.cycle >= 15) return DUREES.air;
-    return DUREES.normal;
+    if (!fid) return null;
+    return BY_ID[fid].ordre ? DUREES.ordre : DUREES.appel;
   }
 
   function prochainOrdre(s) {
@@ -214,7 +213,7 @@
       } else throw new Error('Sortie impossible : ' + action.via);
     } else if (action.type === 'temps') {
       // Temps écoulé : pendant un ordre, ne rien faire = refuser ; un appel sans réponse = laisser sonner ;
-      // pendant un moment libre, le bouton s'enfonce tout seul.
+      // pendant un moment libre (plus utilisé par l'interface : pas de chrono), le bouton s'enfonce tout seul.
       if (forced && (forced.ordre || fid === 'T1')) {
         var gf = ctx(s, ev, forced.fil);
         if (forced.ordre) gf.narr('Tu n\'as pas appuyé.');

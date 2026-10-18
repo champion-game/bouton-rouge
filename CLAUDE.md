@@ -25,7 +25,7 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 - `index.html` est la **v2** jouable : 20 cycles avec chrono réel, 5 fils, 23 situations, 18 fins + Curiosité. Code dans `src/`.
 - `prototype-v1.html` garde le prototype v1 (histoire linéaire, 4 fins) pour comparaison.
 - Tests : `node tools/test-engine.js` (30 000 parties au hasard par défaut).
-- Les décisions prises pendant le code sont listées en bas de `docs/ARBORESCENCE_V2.md` : à valider avec Amine.
+- Les décisions prises pendant le code sont listées en bas de `docs/ARBORESCENCE_V2.md` (validées par Amine le 18/10).
 
 ## Structure visée pour la v2
 
@@ -44,12 +44,12 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 - Après chaque changement visible, teste le jeu en largeur téléphone et sur écran d'ordinateur, et vérifie qu'il n'y a aucune erreur dans la console.
 - Fais des commits petits, avec un message clair en français.
 - Travaille et pousse directement sur `main` (demande d'Amine) : pas de branche ni de PR, sauf s'il en demande une.
-- Le joueur agit en touchant les objets de la pièce, pas via des menus. Ne jamais afficher ni citer le numéro de cycle.
+- Le joueur agit en touchant les objets de la pièce, pas via des menus. Ne jamais afficher ni citer le numéro de cycle. Pas de halo sur les objets utiles : la découverte doit rester discrète. Le seul chrono visible est celui des ordres.
 - Amine teste lui-même le ressenti : ne modifie pas les durées du chrono ni l'équilibrage des jauges sans son accord.
 
 ## Prochaines étapes (par ordre de priorité)
 
-1. ~~Coder la v2 avec un chrono réel et les 18 fins.~~ Fait. Faire valider les décisions de conception, puis polir les textes et les animations de fin.
+1. ~~Coder la v2 avec un chrono réel et les 18 fins.~~ Fait, décisions validées, fins animées. Reste : polir les textes.
 2. Faire tester à 5 personnes qui ne connaissent pas le jeu. Question clé : relancent-elles une partie d'elles-mêmes après leur première fin ?
 3. Direction artistique et son au niveau Steam (une seule pièce : chaque détail compte).
 4. Page Steam tôt, pour récolter des wishlists.

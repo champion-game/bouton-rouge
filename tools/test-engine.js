@@ -25,7 +25,7 @@ function actions(t) {
   else t.fils.forEach(function (f) { f.situations.forEach(sit); });
   if (t.peutAppuyer && !t.forced) list.push({ w: 0.15, a: { type: 'appuyer' } });
   t.sorties.forEach(function (s) { list.push({ w: 0.25, a: { type: 'sortir', via: s.via } }); });
-  list.push({ w: t.forced ? 0.1 : 0.2, a: { type: 'temps' } });
+  if (t.forced) list.push({ w: 0.3, a: { type: 'temps' } }); // pas de chrono pendant les moments libres
   return list;
 }
 function pick(list, r) {
