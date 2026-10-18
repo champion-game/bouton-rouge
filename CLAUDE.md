@@ -22,8 +22,10 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 
 ## État actuel
 
-- `index.html` est le **prototype v1** : histoire linéaire (acte 1, appels de la Chambre 18, boîtier 2-4-1, climax, 4 fins). Il tient en un seul fichier.
-- Prochaine étape : coder la **v2** décrite dans `docs/ARBORESCENCE_V2.md`.
+- `index.html` est la **v2** jouable : 20 cycles avec chrono réel, 5 fils, 23 situations, 18 fins + Curiosité. Code dans `src/`.
+- `prototype-v1.html` garde le prototype v1 (histoire linéaire, 4 fins) pour comparaison.
+- Tests : `node tools/test-engine.js` (30 000 parties au hasard par défaut).
+- Les décisions prises pendant le code sont listées en bas de `docs/ARBORESCENCE_V2.md` : à valider avec Amine.
 
 ## Structure visée pour la v2
 
@@ -44,7 +46,7 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 
 ## Prochaines étapes (par ordre de priorité)
 
-1. Coder la v2 avec un chrono réel et au moins 8 à 10 fins jouables, puis les 18.
+1. ~~Coder la v2 avec un chrono réel et les 18 fins.~~ Fait. Faire valider les décisions de conception, puis polir les textes et les animations de fin.
 2. Faire tester à 5 personnes qui ne connaissent pas le jeu. Question clé : relancent-elles une partie d'elles-mêmes après leur première fin ?
 3. Direction artistique et son au niveau Steam (une seule pièce : chaque détail compte).
 4. Page Steam tôt, pour récolter des wishlists.

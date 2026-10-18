@@ -218,4 +218,23 @@ Ordre de vérification conseillé : fins immédiates (Isolement, Gardien, Évasi
 | 18 | Le Temps est écoulé | Cycle 20 sans être sorti, sans plan, la 18 vivante. | C'est toi qu'on entend souffrir derrière la vitre. |
 | bonus | Curiosité | Une porte est ouverte et le joueur appuie. | « NOUS SAVIONS QUE VOUS LE FERIEZ. » |
 
-**Cas à trancher pendant le code** (non couverts par l'arbre, à décider avec Amine) : cycle 20 atteint avec la 18 morte et sans sortie ; sortie par la porte avec la 18 vivante en dehors de B5 (badge H3 A).
+## Décisions prises pendant le code (à valider par Amine)
+
+Ces points n'étaient pas couverts par l'arbre. Ils sont codés ainsi dans `src/engine.js` et `src/story.js` ; chacun se change en une ligne.
+
+- **Cycle 20 avec la 18 morte et sans sortie** → fin 1 Sujet conforme.
+- **Sortie par la porte du badge (H3 A)** → fin 4 Seul dehors.
+- **Sortie par la porte de B5 ou B6** : la 18 vivante → Le marché ; la 18 morte → Sujet conforme (B6 A avec le bouton désactivé laisse la 18 en vie, donc Le marché).
+- **Chrono écoulé** = pression automatique : Vie −1, Conformité +1, sans récompense (pas de fusible, pas de porte). Un appel T1 non décroché compte comme « laisser sonner ».
+- **Appuyer de soi-même pendant un cycle libre** : prend le cycle, Vie −1, Conformité +1. Si une porte est ouverte → Curiosité (les pressions automatiques ne déclenchent jamais Curiosité).
+- **Les sorties** (porte ouverte, trappe cachée) restent proposées même pendant un ordre ou un appel.
+- **B2 A** ouvre le tiroir : fusible + tournevis (si le tiroir n'a pas déjà été forcé avec P1 A). P1 B (« écouter le mécanisme ») ne donne rien et ferme P1.
+- **P4 A (2 cycles)** : le cycle suivant se passe au sous-sol. Si un ordre tombe pendant ce cycle, le bouton s'enfonce tout seul ; un appel sonne dans le vide. On remonte avec le badge et l'enregistrement.
+- **Coopération** se déclenche dès que le plan commun existe et que la caméra est aveugle (coupée **ou** masquée), la 18 vivante.
+- **Trop tard** se déclenche dès que la vie tombe à 0 avec l'objectif « sauver 18 », et aussi si on arrive par le conduit (P5 A, vérité A) quand la 18 est déjà morte.
+- **Vérité C révélée** (P5 A ou H4 A) : Briser la boucle si bouton désactivé **et** badge en main, sinon Le Miroir.
+- **L'employé du mois** : immédiat à H4 A (vérité B) si la conformité est déjà ≥ 5, sinon vérifié au verdict.
+- **H1 B** ferme tout le fil 5 (H2, H3 et H4).
+- **Code partiel (T3 B)** : n'a pas encore d'usage. À décider (ouvrir P4 ? un coffre ?).
+- **Soupçon venu d'ailleurs que la caméra** (panne remarquée après P3 A, dénonciation T4 B, alarme H3 A) : compte même caméra aveugle.
+- La confiance n'est pas affichée ; la vie de la 18 (3 lumières) et le soupçon (LED de la caméra) le sont.
