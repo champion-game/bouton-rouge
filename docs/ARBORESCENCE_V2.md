@@ -241,3 +241,10 @@ Ces points n'étaient pas couverts par l'arbre. Ils sont codés ainsi dans `src/
 - **Code partiel (T3 B)** : n'a pas encore d'usage. À décider (ouvrir P4 ? un coffre ?).
 - **Soupçon venu d'ailleurs que la caméra** (panne remarquée après P3 A, dénonciation T4 B, alarme H3 A) : compte même caméra aveugle.
 - La confiance n'est pas affichée ; la vie de la 18 (3 lumières) et le soupçon (LED de la caméra) le sont.
+
+## Textes et mise en page (18/10)
+
+- **Textes** : tirés de `docs/SCRIPT_NARRATIF.md`. Démarrage (INITIALISATION…), annonce de chaque ordre avec la réaction de la 18, réactions selon le soupçon, la conformité et la vie de la 18, mémoire du Système, répliques des objets, inspection, coupure, air raréfié, compte final, phrases rares et faux bugs, fins réécrites. Les variantes sont tirées au hasard de façon reproductible (même graine = même partie).
+- **Adapté du script** pour respecter les règles d'Amine : aucune phrase ne cite un cycle (« 3 CYCLES », « CYCLE 08/20 », « combien de cycles il te reste ») ; pas de « ACTION PAR DÉFAUT » ni de chrono de 20 s (pas de chrono hors des ordres) ; le compte final ne montre pas de minutes.
+- **Mise en page** : la pièce occupe tout l'écran, quelle que soit son orientation. Le moniteur et le bouton sont toujours au centre ; sur écran large, la porte est à gauche et la vitre de la 18, le boîtier et la grille à droite ; sur écran haut, la caméra et la grille vont en haut, la porte et la vitre de chaque côté, la trappe et le mot au sol. L'inventaire et l'historique forment une bande en bas ; les popups s'ouvrent dans le tiers bas.
+

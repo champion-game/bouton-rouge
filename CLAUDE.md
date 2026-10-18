@@ -4,6 +4,7 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 
 - `docs/CONCEPT.md` : le concept d'origine écrit par Amine.
 - `docs/ARBORESCENCE_V2.md` : **la référence de conception de la v2** (5 fils, 20 cycles, jauges, 18 fins). Lis-le avant toute modification de règles.
+- `docs/SCRIPT_NARRATIF.md` : **la référence des textes** (dialogues, phrases du Système et de la 18, fins), écrite par Amine. Les textes du jeu (`src/story.js`) en viennent.
 
 ## Contexte du créateur
 

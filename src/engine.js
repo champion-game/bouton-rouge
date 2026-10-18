@@ -28,14 +28,26 @@
     var s = {
       seed: seed, truth: truth, cycle: 1,
       vie: 3, confiance: 0, soupcon: 0, conformite: 0,
-      items: [], found: [], done: {}, flags: { ligne: 'fermee', t1Ignore: 0 }, fin: null,
+      rng: (seed ^ 0x9E3779B9) >>> 0, // pour tirer les variantes de texte (même graine = même partie)
+      items: [], found: [], done: {}, flags: { ligne: 'fermee', t1Ignore: 0, memoire: {}, soupconDit: 0 }, fin: null,
       stats: { presses: 0, auto: 0, suivis: 0, refus: 0, blessures: 0, actions: 0 }
     };
     return s;
   }
 
   // Événements du début de partie (cycle 1).
-  function intro(s) { var ev = []; chronoTexts(s, ev, 1); return ev; }
+  function intro(s) {
+    var ev = [], g = ctx(s, ev, null), P = S.PHRASES;
+    P.intro.forEach(function (l) { g.ecran(l); });
+    g.ecran(g.pick(P.introVariantes));
+    chronoTexts(s, ev, 1);
+    return ev;
+  }
+  function tirer(s) { // mulberry32, l'état est gardé dans la partie
+    s.rng = (s.rng + 0x6D2B79F5) >>> 0; var t = s.rng;
+    t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
 
   // ---------- état dérivé ----------
   function has(s, k) { return s.items.indexOf(k) >= 0; }
@@ -67,7 +79,16 @@
     var g = {
       s: s, truth: s.truth, cycle: s.cycle, fil: fil,
       has: function (k) { return has(s, k); },
-      gain: function (k) { if (!has(s, k)) { s.items.push(k); s.found.push(k); ev.push({ t: 'objet', k: k, gain: true }); } },
+      gain: function (k) {
+        if (has(s, k)) return;
+        var first = s.found.indexOf(k) < 0;
+        s.items.push(k); s.found.push(k); ev.push({ t: 'objet', k: k, gain: true });
+        var r = S.REPLIQUES_OBJETS[k];
+        if (r && first) { if (r.voix) g.voix(r.voix); if (!cameraAveugle(s)) r.sys.forEach(function (l) { g.ecran(l); }); }
+      },
+      hasard: function () { return tirer(s); },
+      pick: function (list) { return list[Math.floor(tirer(s) * list.length)]; },
+      voix: function (txt) { ev.push({ t: 'voix', txt: txt }); },
       lose: function (k) { var i = s.items.indexOf(k); if (i >= 0) { s.items.splice(i, 1); ev.push({ t: 'objet', k: k, gain: false }); } },
       flag: function (k, v) { if (arguments.length > 1) s.flags[k] = v; return s.flags[k]; },
       done: function (id) { return s.done[id]; },
@@ -94,7 +115,8 @@
         if (s.vie <= 0) return;
         s.vie = Math.max(0, s.vie - n); s.stats.blessures++;
         ev.push({ t: 'cri', vie: s.vie });
-        if (s.vie === 0) g.narr('Derrière la vitre, la lumière de la Chambre 18 s\'éteint.');
+        if (s.vie === 0) { g.narr('Un dernier bruit. Puis silence.'); g.ecran('CHAMBRE 18 :|AUCUN SIGNAL'); g.ecran(g.pick(S.PHRASES.mort18)); }
+        else g.voix(g.pick(S.PHRASES.vie18[s.vie]));
       },
       // Pression sur le bouton. Renvoie false si la partie s'arrête (Curiosité).
       press: function (joueur) {
@@ -108,13 +130,12 @@
       obey: function () {
         if (!g.press(true)) return false;
         g.conformite(1); s.stats.suivis++;
-        g.ecran('MERCI.');
         return true;
       },
       refuse: function () { s.stats.refus++; },
       ignorerAppel: function () {
         s.flags.t1Ignore++;
-        if (s.flags.t1Ignore >= 2 && s.flags.ligne === 'fermee') { s.flags.ligne = 'coupee'; g.narr('La sonnerie s\'arrête. Pour de bon.'); }
+        if (s.flags.t1Ignore >= 2 && s.flags.ligne === 'fermee') { s.flags.ligne = 'coupee'; g.narr('La sonnerie s\'arrête. Pour de bon.'); g.ecran('LIGNE|TERMINÉE.'); }
         else g.narr('La sonnerie s\'arrête.');
       },
       ouvrirPorte: function (kind, until) { s.flags.porte = { kind: kind, until: until }; ev.push({ t: 'porte', open: true }); },
@@ -195,12 +216,14 @@
       ev.push({ t: 'choix', id: x.id, choix: c, label: x[c].label });
       s.done[x.id] = c;
       x[c].fx(g);
+      // Micro-réaction du Système après une exploration vue par la caméra.
+      if (!s.fin && !forced && x.fil !== 'telephone' && !cameraAveugle(s) && s.cycle >= 4 && g.hasard() < 0.25) g.ecran(g.pick(S.PHRASES.apresExploration));
     } else if (action.type === 'appuyer') {
       if (forced && !forced.ordre) throw new Error('Impossible d\'appuyer pendant un appel.');
       if (forced) return choose(state, { type: 'situation', id: fid, choix: 'A' });
       var gp = ctx(s, ev, 'bouton');
       ev.push({ t: 'choix', id: null, label: 'Appuyer sur le bouton' });
-      if (gp.press(true)) { gp.conformite(1); gp.ecran('MERCI.'); }
+      if (gp.press(true)) { gp.conformite(1); gp.ecran(gp.hasard() < 0.4 ? 'MERCI.' : gp.pick(S.PHRASES.apresPression)); }
     } else if (action.type === 'sortir') {
       var gs = ctx(s, ev, null);
       if (action.via === 'porte' && porteOuverte(s)) {
@@ -251,7 +274,35 @@
   function chronoTexts(s, ev, c) {
     var t = S.CHRONO[c]; if (!t) return;
     if (t.narr) ev.push({ t: 'narr', txt: t.narr });
-    if (t.ecran) ev.push({ t: 'ecran', txt: t.ecran });
+    if (t.voix) ev.push({ t: 'voix', txt: t.voix });
+    if (t.apres) ev.push({ t: 'narr', txt: t.apres });
+    (t.ecran || []).forEach(function (l) { ev.push({ t: 'ecran', txt: l }); });
+  }
+
+  // Début d'un moment libre : une phrase du Système (mémoire, soupçon, conformité, ambiance…) et parfois la 18.
+  function ambiance(s, g) {
+    var P = S.PHRASES, dit = false;
+    for (var i = 0; i < S.MEMOIRE.length && !dit; i++) {
+      var m = S.MEMOIRE[i];
+      if (!s.flags.memoire[m.id] && m.quand(g)) { s.flags.memoire[m.id] = 1; m.lignes.forEach(function (l) { g.ecran(l); }); dit = true; }
+    }
+    if (!dit && s.soupcon !== s.flags.soupconDit) { s.flags.soupconDit = s.soupcon; g.ecran(g.pick(P.soupcon[Math.min(3, s.soupcon)])); dit = true; }
+    if (!dit && s.conformite >= 4 && g.hasard() < 0.4) { g.ecran(g.pick(P.conformite)); dit = true; }
+    if (!dit && g.hasard() < 0.04) {
+      if (g.hasard() < 0.5) { var b = g.pick(P.fauxBugs); g.ecran(b[0]); g.ecran(b[1]); } else g.ecran(g.pick(P.rares));
+      dit = true;
+    }
+    if (!dit && g.hasard() < 0.12) { g.ecran(g.pick(P.douteSysteme)); dit = true; }
+    if (!dit && g.hasard() < 0.6) g.ecran(g.pick(P.ambiance));
+    if (s.vie > 0 && g.hasard() < 0.4) {
+      var r = g.hasard(), l;
+      if (s.vie < 3 && r < 0.5) l = g.pick(P.vie18[s.vie]);
+      else if (s.confiance >= 3 && r < 0.7) l = g.pick(P.confianceHaute);
+      else if (s.confiance === 0 && s.stats.suivis >= 2 && r < 0.7) l = g.pick(P.confianceBasse);
+      else if (r > 0.9) l = g.pick(P.doute18);
+      else l = g.pick(P.voix18);
+      g.voix(l);
+    }
   }
 
   function enterCycle(s, ev) {
@@ -265,11 +316,17 @@
     if (s.flags.noirCycle === c) g.narr('Noir complet. Tu ne vois plus rien de la pièce.');
     if (c === 10) inspection(s, g);
     if (s.flags.compte && c >= 18) {
-      var tot = s.stats.suivis + s.stats.refus, pct = tot ? Math.round(s.stats.suivis / tot * 100) : 0;
-      g.ecran(c === 18 ? 'VOUS AVEZ APPUYÉ|' + (s.stats.presses + s.stats.auto) + ' FOIS.' : 'VOUS AVEZ SUIVI|' + pct + ' % DES|ORDRES.');
+      if (c === 18) { g.ecran('Vous avez refusé ' + s.stats.refus + ' instruction' + (s.stats.refus > 1 ? 's' : '') + '.'); g.ecran('Vous avez appuyé ' + (s.stats.presses + s.stats.auto) + ' fois.'); }
+      g.ecran(g.pick(S.PHRASES.compteFinal.slice(1, -1)));
+      if (c === 19) g.ecran('Choisissez.');
     }
     checkEnds(s, ev);
     if (s.fin) return;
+    var fidA = forcedId(s, c);
+    if (s.flags.awayCycle !== c) {
+      if (fidA && BY_ID[fidA].annonce) BY_ID[fidA].annonce(ctx(s, ev, BY_ID[fidA].fil));
+      else if (!fidA && c > 1 && !(s.flags.compte && c >= 18)) ambiance(s, g);
+    }
     if (s.flags.awayCycle === c) {
       var fid = forcedId(s, c);
       if (fid === 'T1') g.ignorerAppel();
@@ -283,28 +340,28 @@
   }
 
   function inspection(s, g) {
-    if (s.soupcon < 2) { g.narr('Inspection. Un gardien jette un œil par le hublot, puis repart.'); return; }
-    if (s.flags.gravuresEffacees) { g.narr('Inspection. Ils fouillent sous le bureau. Rien.'); return; }
+    g.ecran(g.pick(S.PHRASES.inspection));
+    if (s.soupcon < 2) { g.narr('Il jette un œil autour de lui. Il regarde la vitre de la 18, puis toi. Il repart.'); return; }
+    if (s.flags.gravuresEffacees) { g.narr('Il fouille sous le bureau.'); g.ecran('Aucun élément inhabituel détecté.'); return; }
     var k = null;
     for (var i = s.found.length - 1; i >= 0; i--) {
       var it = s.found[i];
       if (S.CONFISCABLES.indexOf(it) >= 0 && has(s, it) && !(it === 'badge' && s.flags.badgeCache)) { k = it; break; }
     }
-    g.ecran('INSPECTION.');
-    if (k) { g.lose(k); g.narr('Inspection. Ils fouillent la pièce et confisquent : ' + S.OBJETS[k].toLowerCase() + '.'); }
-    else g.narr('Inspection. Ils fouillent la pièce. Rien à confisquer.');
+    if (k) { g.lose(k); g.ecran('OBJET NON|AUTORISÉ.'); g.narr('Il fouille la pièce et confisque : ' + S.OBJETS[k].toLowerCase() + '. Avant de partir, il regarde la vitre de la 18, puis toi.'); }
+    else g.narr('Il fouille la pièce. Rien. Avant de partir, il regarde la vitre de la 18, puis toi.');
   }
 
   function verdict(s, ev) {
     var g = ctx(s, ev, null);
-    g.ecran('VERDICT.');
+    g.ecran('Évaluation terminée.');
     if (has(s, 'verite') && s.truth === 'B' && s.conformite >= 5) g.fin('employe');
     else if (s.vie === 0) g.fin('conforme');
     else g.fin('tempsEcoule');
   }
 
   var api = {
-    newGame: newGame, intro: intro, turn: turn, choose: choose, regarder: regarder, AIDES: S.AIDES, DESCRIPTIONS: S.DESCRIPTIONS,
+    newGame: newGame, intro: intro, turn: turn, choose: choose, regarder: regarder, AIDES: S.AIDES, DESCRIPTIONS: S.DESCRIPTIONS, PHRASES: S.PHRASES,
     forcedId: forcedId, cameraAveugle: cameraAveugle, porteOuverte: porteOuverte, has: has,
     DUREES: DUREES, DERNIER_CYCLE: DERNIER_CYCLE,
     FILS: S.FILS, OBJETS: S.OBJETS, FINS: S.FINS, VERITES: S.VERITES,
