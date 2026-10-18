@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Le Bouton Rouge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -100,6 +101,7 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 .intro{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
 .intro h1{font-family:var(--f-stencil);font-weight:800;font-size:clamp(3rem,14vw,5.5rem);letter-spacing:.06em;margin:0;line-height:.9}
 .intro p{margin:0;color:var(--muted);max-width:34ch}
+.intro .ver{font-size:.72rem;color:#56625f;letter-spacing:.06em}
 .enter{background:var(--red);color:#fff;border:0;border-radius:999px;padding:14px 28px;font-weight:700;font-size:1rem;box-shadow:0 0 30px rgba(227,38,43,.45)}
 .end{width:100%;max-width:540px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:12px;margin:auto}
 .end .k{font-family:var(--f-stencil);font-weight:700;letter-spacing:.14em;font-size:.85rem;color:var(--muted)}
@@ -139,14 +141,15 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
     <p>Une pièce. Un bouton. Touche ce qui t'entoure.</p>
     <p>Le son est recommandé.</p>
     <button class="enter" id="enterBtn">Entrer dans la pièce</button>
+    <p class="ver">Version 2.4 · 18/10</p>
   </div>
 </div>
 <div class="ov" id="endOv" hidden><div class="end" id="endBox"></div></div>
 
-<script src="src/story.js"></script>
-<script src="src/engine.js"></script>
-<script src="src/audio.js"></script>
-<script src="src/room.js"></script>
-<script src="src/game.js"></script>
+<script src="src/story.js?v=2.4"></script>
+<script src="src/engine.js?v=2.4"></script>
+<script src="src/audio.js?v=2.4"></script>
+<script src="src/room.js?v=2.4"></script>
+<script src="src/game.js?v=2.4"></script>
 </body>
 </html>
