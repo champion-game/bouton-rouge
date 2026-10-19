@@ -136,3 +136,9 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - Pièce plus sombre et plus contrastée, cône de lumière adouci, dessous de la lampe lumineux avec halo.
 - Bouton plus éclatant (lueur rouge sur le plateau), éclat de la lampe sur le bureau.
 - Vitre de la 18 embrumée avec un néon au plafond ; écran du moniteur noir ; léger grain sur toute l’image.
+
+## Version 5.4 (19/10) : profondeur
+
+- Sol carrelé en perspective (point de fuite au-dessus du bureau), murs de côté dégradés, ombre au pied des murs.
+- Ombres portées sur le mur derrière la porte, le moniteur, la vitre, les témoins, le boîtier et les tuyaux ; ombre de contact sous la porte.
+- Liserés de lumière de la lampe sur le haut du moniteur et le bord du bureau (éteints avec la lampe).

@@ -32,9 +32,18 @@
     return '<clipPath id="' + id + '"><rect x="' + x.toFixed(1) + '" y="' + y + '" width="' + w.toFixed(1) + '" height="' + h + '"/></clipPath>' +
       I('', name, +(x - sx * k).toFixed(1), y, +(SW * k).toFixed(1), h, ' clip-path="url(#' + id + ')"' + (op ? ' opacity="' + op + '"' : ''));
   }
+  // Ombre portée d'un objet sur le mur, poussée à l'opposé de la lampe (x 838).
+  function ombre(x1, y1, x2, y2, op) {
+    var ox = ((x1 + x2) / 2 - 838) * 0.03;
+    return '<rect x="' + (x1 + ox).toFixed(1) + '" y="' + (y1 + 14) + '" width="' + (x2 - x1) + '" height="' + (y2 - y1) + '" rx="6" fill="#000" opacity="' + (op || 0.6) + '" filter="url(#ombreF)" style="pointer-events:none"/>';
+  }
+  // Liseré de lumière sur un bord tourné vers la lampe.
+  function lisere(x1, x2, y, op) {
+    return '<rect class="lit" x="' + x1 + '" y="' + y + '" width="' + (x2 - x1) + '" height="2.5" fill="url(#liseG)" opacity="' + op + '" style="pointer-events:none"/>';
+  }
   // Tuyau vertical (cylindre ombré) avec ses colliers, comme sur le modèle.
   function tuyau(x, y1, y2, w) {
-    var t = '<rect x="' + x + '" y="' + y1 + '" width="' + w + '" height="' + (y2 - y1) + '" fill="url(#pipeG)"/>';
+    var t = '<rect x="' + (x + w * 0.7) + '" y="' + y1 + '" width="' + w + '" height="' + (y2 - y1) + '" fill="#000" opacity=".45" filter="url(#ombreP)"/><rect x="' + x + '" y="' + y1 + '" width="' + w + '" height="' + (y2 - y1) + '" fill="url(#pipeG)"/>';
     for (var y = y1 + 90; y < y2 - 40; y += 210) t += '<rect x="' + (x - 3) + '" y="' + y + '" width="' + (w + 6) + '" height="7" rx="1.5" fill="url(#pipeG)" stroke="#060808" stroke-width="1"/>';
     return t;
   }
@@ -70,6 +79,13 @@
   '<radialGradient id="specG"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".55" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>' +
   '<radialGradient id="fogG" cx="50%" cy="8%" r="75%"><stop offset="0" stop-color="#f2f7f6" stop-opacity=".75"/><stop offset=".45" stop-color="#d9e3e1" stop-opacity=".28"/><stop offset="1" stop-color="#c9d4d2" stop-opacity=".12"/></radialGradient>' +
   '<filter id="coneBlur" x="-20%" y="-5%" width="140%" height="110%"><feGaussianBlur stdDeviation="16"/></filter>' +
+  '<filter id="ombreF" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="11"/></filter>' +
+  '<filter id="ombreP" x="-100%" y="-5%" width="300%" height="110%"><feGaussianBlur stdDeviation="3"/></filter>' +
+  '<linearGradient id="liseG" x1="0" x2="1"><stop offset="0" stop-color="#fff6e0" stop-opacity="0"/><stop offset=".5" stop-color="#fff6e0" stop-opacity="1"/><stop offset="1" stop-color="#fff6e0" stop-opacity="0"/></linearGradient>' +
+  '<linearGradient id="aoUp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></linearGradient>' +
+  '<linearGradient id="aoDown" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".6"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>' +
+  '<linearGradient id="sideL" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".82"/><stop offset="1" stop-color="#000" stop-opacity=".42"/></linearGradient>' +
+  '<linearGradient id="sideR" x1="1" x2="0"><stop offset="0" stop-color="#000" stop-opacity=".82"/><stop offset="1" stop-color="#000" stop-opacity=".42"/></linearGradient>' +
   '<pattern id="scan" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="2.5" fill="#000" opacity=".22"/></pattern>' +
   '</defs>' +
   '<g id="bg"></g>' +
@@ -81,7 +97,7 @@
   I('camMask', 'camera_drap', -92.6, -45.5, 117.3, 89.5, ' opacity="0"') +
   '</g></g></g>' +
   // porte et mot de 16 glissé dessous
-  '<g id="gDoor"><g style="pointer-events:none">' + tuyau(376, -20, SOL + 8, 14) + tuyau(397, -20, SOL + 8, 7) +
+  '<g id="gDoor"><g style="pointer-events:none">' + ombre(32, 45, 350, 690, 0.65) + '<ellipse cx="191" cy="702" rx="175" ry="9" fill="#000" opacity=".7" filter="url(#ombreP)"/>' + tuyau(376, -20, SOL + 8, 14) + tuyau(397, -20, SOL + 8, 7) +
   '<rect x="368" y="372" width="34" height="44" rx="2" fill="#262c2b" stroke="#0a0d0d" stroke-width="2"/><circle cx="385" cy="394" r="6" fill="#141818" stroke="#4c5553" stroke-width="1.5"/>' +
   '<g mask="url(#reflD)"><use href="#door" transform="translate(0 1402) scale(1 -1)"/></g></g>' +
   '<g id="door" class="hs" data-k="door">' +
@@ -93,7 +109,7 @@
   // trappe au sol, devant le bureau (apparaît quand on la connaît)
   '<g id="gTrappe"><g id="trappe" class="hs" data-k="trappe" opacity="0">' + I('trappeImg', 'trappe_fermee', 584.1, 636, 502.4, 456.8) + '</g></g>' +
   // vitre de la Chambre 18 : la pièce floue, la silhouette, puis le verre dépoli (partiellement transparent)
-  '<g id="gWin"><g id="win" class="hs" data-k="window">' +
+  '<g id="gWin">' + ombre(1116, 70, 1475, 385) + '<g id="win" class="hs" data-k="window">' +
   '<g clip-path="url(#glassClip)">' +
   I('', 'chambre18', GL.x, GL.y - 15, GL.w, GL.w, ' opacity=".9"') +
   '<g id="silMove" style="transition:transform .6s ease"><g id="sil" filter="url(#flou)" style="transition:opacity 1.2s ease">' + I('silImg', 'sil_debout', SIL.x, SIL.y, SIL.s, SIL.s) + '</g></g>' +
@@ -108,11 +124,11 @@
   '<rect id="glassTint" x="' + GL.x + '" y="' + GL.y + '" width="' + GL.w + '" height="' + GL.h + '" fill="#000" opacity="0"/>' +
   '</g></g></g>' +
   // témoins CH. 18 — SIGNES VITAUX
-  '<g id="gSig"><g id="vies">' + I('', 'signes', 1165, 393, 197, 76.5) +
+  '<g id="gSig">' + ombre(1165, 393, 1362, 470, 0.5) + '<g id="vies">' + I('', 'signes', 1165, 393, 197, 76.5) +
   VIES.map(function (x, i) { return '<circle id="vieGlow' + (i + 1) + '" cx="' + x + '" cy="' + VIES_Y + '" r="20" fill="url(#ledG)" style="color:#3ee08f" opacity="0"/><circle id="vie' + (i + 1) + '" cx="' + x + '" cy="' + VIES_Y + '" r="9" fill="#3ee08f" opacity="0"/>'; }).join('') +
   '</g></g>' +
   // boîtier électrique de maintenance : ouvert, trois leviers (caméra, actionneur de la 18, auxiliaire)
-  '<g id="gBox"><g style="pointer-events:none">' + tuyau(BX.x + 0.392 * BX.w, -20, BX.y + 4, 0.07 * BX.w) +
+  '<g id="gBox"><g style="pointer-events:none">' + ombre(1522, 205, 1660, 479) + tuyau(BX.x + 0.392 * BX.w, -20, BX.y + 4, 0.07 * BX.w) +
   tuyau(BX.x + 0.335 * BX.w, BX.y + BX.h - 4, SOL + 8, 0.061 * BX.w) + tuyau(BX.x + 0.462 * BX.w, BX.y + BX.h - 4, SOL + 8, 0.061 * BX.w) + '</g>' +
   '<g id="box" class="hs" data-k="box"><rect x="' + BX.x + '" y="' + BX.y + '" width="' + BX.w + '" height="' + BX.h + '" fill="transparent"/>' + I('boxImg', 'boitier_ferme', BX.x, BX.y, BX.w, BX.h) +
   '<g id="boxOpen" opacity="0" font-family="VT323, monospace" font-size="8" fill="#202421" text-anchor="middle">' +
@@ -125,7 +141,8 @@
   '<g id="gCenter">' +
   '<polygon id="cone" points="810,70 866,70 1140,850 530,850" fill="url(#coneG)" opacity=".55" filter="url(#coneBlur)" style="pointer-events:none"/>' +
   '<ellipse cx="836" cy="818" rx="340" ry="34" fill="url(#shadowG)" style="pointer-events:none"/>' +
-  '<g class="hs" data-k="monitor">' + I('', 'moniteur', 560, 92, 530, 274.5) + '</g>' +
+  ombre(560, 92, 1090, 366, 0.7) +
+  '<g class="hs" data-k="monitor">' + I('', 'moniteur', 560, 92, 530, 274.5) + '</g>' + lisere(600, 1050, 92.5, 0.55) +
   '<g class="hs" data-k="light">' + I('', 'lampe', 745, -130, 187.3, 206) +
   '<circle id="bulb" cx="838" cy="68" r="30" fill="url(#bulbG)" style="pointer-events:none"/>' +
   '<g class="lit" style="pointer-events:none"><circle cx="838" cy="70" r="240" fill="url(#bulbG)" opacity=".16"/><ellipse cx="838" cy="63" rx="74" ry="9" fill="url(#bulbG)"/><ellipse cx="838" cy="63" rx="52" ry="5" fill="#fffdf6" opacity=".9"/></g></g>' +
@@ -138,7 +155,7 @@
   '<g class="hs" data-k="bureau">' + I('socleImg', 'bureau_socle', 737.5, 562.5, 188.5, 254.6) + '</g>' +
   '<g id="compart" class="hs" data-k="compart">' + I('compImg', 'compart_ferme', 991.5, 575, 225.6, 207.5) + '</g>' +
   '<g id="drawer" class="hs" data-k="drawer">' + I('drawerImg', 'tiroir2_ferme', 464.5, 562.1, 251.6, 169.4) + '</g>' +
-  I('', 'bureau_plateau', 457, 496, 756, 84, ' style="pointer-events:none"') +
+  I('', 'bureau_plateau', 457, 496, 756, 84, ' style="pointer-events:none"') + lisere(500, 1170, 496.5, 0.4) +
   '<ellipse cx="836" cy="518" rx="270" ry="40" fill="url(#poolG)" style="pointer-events:none"/>' +
   '<g style="pointer-events:none"><ellipse class="lit" cx="836" cy="508" rx="230" ry="20" fill="url(#specG)"/><ellipse cx="837" cy="522" rx="135" ry="26" fill="url(#glowG)" opacity=".4"/></g>' +
   '<ellipse id="btnGlow" cx="837" cy="495" rx="120" ry="60" fill="url(#glowG)" opacity="0" style="pointer-events:none"/>' +
@@ -199,6 +216,14 @@
 
   // ---------- mise en page selon l'écran (paysage) ----------
   function shift(id, dx, dy) { attr(id, 'transform', 'translate(' + dx.toFixed(1) + ' ' + dy.toFixed(1) + ')'); }
+  // Joints du sol en perspective : lignes vers le point de fuite (au-dessus du bureau), rangées qui s'écartent vers le joueur.
+  function sol(W, H, fy, dy) {
+    var vx = W / 2, vy = 300 + dy, d = '', k, t, y;
+    for (k = -16; k <= 16; k++) { var xb = vx + k * 150; d += 'M' + (vx + (xb - vx) * (fy - vy) / (H - vy)).toFixed(1) + ' ' + fy + 'L' + xb.toFixed(1) + ' ' + H + ' '; }
+    for (t = 1; t <= 6; t++) { y = fy + (H - fy) * Math.pow(t / 6, 1.7); d += 'M0 ' + y.toFixed(1) + 'L' + W + ' ' + y.toFixed(1) + ' '; }
+    return '<path d="' + d + '" stroke="#000" stroke-opacity=".45" stroke-width="2" fill="none"/>' +
+      '<path d="' + d + '" stroke="#cfd8d5" stroke-opacity=".05" stroke-width="1" fill="none" transform="translate(1.5 1.5)"/>';
+  }
   function layout() {
     if (!svg || !host) return;
     var w = host.clientWidth, h = host.clientHeight; if (!w || !h) return;
@@ -213,7 +238,7 @@
     attr('ombre', 'x', dx - 400); attr('ombre', 'y', dy - 220);
     ['tint', 'dark', 'flash', 'vig', 'grain'].forEach(function (id) { attr(id, 'width', W); attr(id, 'height', H); });
     // Mur, plinthe, sol, et les deux coins de la pièce en perspective.
-    var c = 64, g = '<rect x="0" y="0" width="' + W + '" height="' + floorY + '" fill="url(#wallP)"/>' +
+    var c = 84, g = '<rect x="0" y="0" width="' + W + '" height="' + floorY + '" fill="url(#wallP)"/>' +
       '<rect x="0" y="0" width="' + W + '" height="' + floorY + '" fill="#0d1212" opacity=".5"/>' +
       // soubassement vert-gris, comme sur le modèle
       '<rect x="0" y="' + (375 + dy) + '" width="' + W + '" height="' + (floorY - 375 - dy) + '" fill="#1b2725" opacity=".5"/>' +
@@ -222,8 +247,11 @@
       '<rect x="0" y="' + floorY + '" width="' + W + '" height="' + (H - floorY) + '" fill="#050707" opacity=".55"/>' +
       '<rect x="0" y="' + (floorY - 34) + '" width="' + W + '" height="36" fill="url(#plinthP)"/>' +
       '<rect x="0" y="' + (floorY - 34) + '" width="' + W + '" height="36" fill="#000" opacity=".4"/>' +
-      '<polygon points="0,0 ' + c + ',0 ' + c + ',' + floorY + ' 0,' + (floorY + 60) + '" fill="#000" opacity=".45"/>' +
-      '<polygon points="' + W + ',0 ' + (W - c) + ',0 ' + (W - c) + ',' + floorY + ' ' + W + ',' + (floorY + 60) + '" fill="#000" opacity=".45"/>' +
+      '<rect x="0" y="' + (floorY - 110) + '" width="' + W + '" height="78" fill="url(#aoUp)"/>' +
+      '<rect x="0" y="' + floorY + '" width="' + W + '" height="70" fill="url(#aoDown)"/>' +
+      sol(W, H, floorY, dy) +
+      '<polygon points="0,0 ' + c + ',0 ' + c + ',' + floorY + ' 0,' + (floorY + 70) + '" fill="url(#sideL)"/>' +
+      '<polygon points="' + W + ',0 ' + (W - c) + ',0 ' + (W - c) + ',' + floorY + ' ' + W + ',' + (floorY + 70) + '" fill="url(#sideR)"/>' +
       '<g stroke="#000" stroke-opacity=".6" stroke-width="3"><line x1="' + c + '" y1="0" x2="' + c + '" y2="' + floorY + '"/><line x1="' + (W - c) + '" y1="0" x2="' + (W - c) + '" y2="' + floorY + '"/></g>';
     $('bg').innerHTML = g;
   }
