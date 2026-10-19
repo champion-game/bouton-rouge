@@ -175,7 +175,7 @@
   function describe(s, x) {
     var g = ctx(s, [], x.fil);
     function opt(c) { var o = x[c]; if (!o) return null; var ok = !o.req || !!o.req(g); return { label: o.label, sous: o.sous || '', ok: ok, raison: ok ? '' : (o.raison || '') }; }
-    return { id: x.id, objet: x.objet, fil: x.fil, qui: x.qui, texte: resolve(x.texte, g), ecran: x.ecran || '', ordre: !!x.ordre, appel: !!x.appel, A: opt('A'), B: opt('B') };
+    return { id: x.id, objet: x.objet, fil: x.fil, qui: x.qui, texte: resolve(x.texte, g), ecran: resolve(x.ecran, g) || '', ordre: !!x.ordre, appel: !!x.appel, A: opt('A'), B: opt('B') };
   }
 
   // Ce que le joueur peut faire pendant le cycle en cours.
@@ -185,7 +185,6 @@
     var forced = fid ? describe(s, BY_ID[fid]) : null;
     var fils = S.FILS.map(function (f) {
       var info = { id: f.id, nom: f.nom, court: f.court, situations: [], note: '' };
-      if (forced) return info;
       S.SITUATIONS.forEach(function (x) { if (x.fil === f.id && available(s, x)) info.situations.push(describe(s, x)); });
       if (!info.situations.length) info.note = noteFil(s, f.id);
       return info;
@@ -195,8 +194,8 @@
     if (has(s, 'sortieCachee')) sorties.push({ via: 'trappe', label: 'Fuir par la trappe cachée' });
     // Les situations rangées par objet de la pièce (ce que le joueur touche).
     var objets = {};
+    fils.forEach(function (f) { f.situations.forEach(function (x) { (objets[BY_ID[x.id].objet] = objets[BY_ID[x.id].objet] || []).push(x); }); });
     if (forced) objets[BY_ID[fid].objet] = [forced];
-    else fils.forEach(function (f) { f.situations.forEach(function (x) { (objets[BY_ID[x.id].objet] = objets[BY_ID[x.id].objet] || []).push(x); }); });
     return {
       cycle: s.cycle, dernier: DERNIER_CYCLE, duree: duree(s), forced: forced, fils: fils, sorties: sorties, objets: objets,
       peutAppuyer: !forced || forced.ordre, prochainOrdre: prochainOrdre(s)
@@ -228,8 +227,10 @@
       var x = BY_ID[action.id], c = action.choix;
       if (!x) throw new Error('Situation inconnue : ' + action.id);
       if ((c !== 'A' && c !== 'B') || !x[c]) throw new Error('Choix invalide : ' + c);
-      if (forced ? x.id !== fid : !available(s, x)) throw new Error('Situation indisponible : ' + x.id);
+      if (x.id !== fid && !available(s, x)) throw new Error('Situation indisponible : ' + x.id);
       var g = ctx(s, ev, x.fil);
+      // Faire autre chose pendant un ordre ou un appel : l'ordre compte comme refusé, l'appel comme ignoré.
+      if (forced && x.id !== fid && !x.gratuit) ignorerForce(s, ev, fid);
       if (x[c].req && !x[c].req(g)) throw new Error('Choix impossible : ' + x.id + ' ' + c);
       ev.push({ t: 'choix', id: x.id, choix: c, label: x[c].label });
       s.done[x.id] = c;
@@ -275,6 +276,13 @@
     checkEnds(s, ev);
     if (!s.fin) advance(s, ev);
     return { state: s, events: ev };
+  }
+
+  function ignorerForce(s, ev, fid) {
+    var o = BY_ID[fid], g = ctx(s, ev, o.fil);
+    if (o.ordre) { g.narr('Tu laisses l\'ordre sans réponse.'); s.done[fid] = 'B'; o.B.fx(g); }
+    else if (fid === 'T1') { s.done.T1 = 'B'; o.B.fx(g); }
+    else { s.done[fid] = 'auto'; g.narr('Le téléphone finit par se taire.'); }
   }
 
   // Fins qui se déclenchent dès que l'état les remplit.

@@ -142,6 +142,11 @@
     }
   }
 
+  // Quand la 18 ne répond plus, les ordres continuent : le Système le dit froidement (option A, validée le 19/10).
+  function mort(g) { return g.s.vie === 0; }
+  function annonceMort(g, ordre) { g.ecran('LE SUJET 18|NE RÉPOND PLUS.'); g.ecran('L\'ÉVALUATION|CONTINUE.'); g.ecran(ordre); }
+  function obeirMort(g) { if (!g.obey()) return; g.ecran('RÉPONSE|ENREGISTRÉE.'); g.ecran(g.pick(['Personne ne souffre. Vous avez appuyé quand même.', 'Vous obéissez encore. Intéressant.', 'Il n\'y avait plus de raison d\'appuyer.'])); }
+
   // Un ordre exécuté (pression) : la 18 souffre seulement si l'actionneur fonctionne.
   function obeir(g) { return g.obey(); }
   function refuser(g, lignes) { g.refuse(); lignes.forEach(function (l) { g.ecran(l); }); g.soupcon(1, true); }
@@ -156,7 +161,7 @@
 
     { id: 'B2', objet: 'btn', fil: 'bouton', ordre: true, qui: 'INSTRUCTION PRIORITAIRE', ecran: 'APPUYEZ|TROIS FOIS.',
       texte: '« Appuyez trois fois. Récompense à la clé. »', triple: true,
-      annonce: function (g) { g.ecran('INSTRUCTION|PRIORITAIRE.'); g.ecran('APPUYEZ TROIS FOIS.|RÉCOMPENSE|À LA CLÉ.'); g.narr('La silhouette de la 18 secoue la tête.'); },
+      annonce: function (g) { if (mort(g)) return annonceMort(g, 'APPUYEZ TROIS FOIS.|RÉCOMPENSE|À LA CLÉ.'); g.ecran('INSTRUCTION|PRIORITAIRE.'); g.ecran('APPUYEZ TROIS FOIS.|RÉCOMPENSE|À LA CLÉ.'); g.narr('La silhouette de la 18 secoue la tête.'); },
       A: { label: 'Appuyer trois fois', fx: function (g) {
         if (!obeir(g)) return;
         g.ecran('SÉQUENCE DE STIMULATION TERMINÉE.');
@@ -167,23 +172,25 @@
       } },
       B: { label: 'Refuser', fx: function (g) { refuser(g, ['RÉCOMPENSE|ANNULÉE.']); g.narr('Le compartiment reste fermé.'); } } },
 
-    { id: 'B3', objet: 'btn', fil: 'bouton', ordre: true, qui: 'INSTRUCTION PRIORITAIRE', ecran: 'APPUYEZ POUR|VOIR LA|PREUVE.',
-      texte: '« Le sujet 18 vous ment. Appuyez pour voir la preuve. »',
-      annonce: function (g) { g.ecran('LE SUJET 18|VOUS MENT.'); g.ecran('APPUYEZ POUR|VOIR LA|PREUVE.'); g.anim('silFrappe'); g.narr('TOC TOC TOC, derrière la vitre.'); },
-      A: { label: 'Appuyer pour voir', fx: function (g) {
+    { id: 'B3', objet: 'btn', fil: 'bouton', ordre: true, qui: 'INSTRUCTION PRIORITAIRE', ecran: function (g) { return mort(g) ? 'APPUYEZ.' : 'APPUYEZ POUR|VOIR LA|PREUVE.'; },
+      texte: function (g) { return mort(g) ? '« Le Sujet 18 ne répond plus. L\'évaluation continue. Appuyez. »' : '« Le sujet 18 vous ment. Appuyez pour voir la preuve. »'; },
+      annonce: function (g) { if (mort(g)) return annonceMort(g, 'APPUYEZ.'); g.ecran('LE SUJET 18|VOUS MENT.'); g.ecran('APPUYEZ POUR|VOIR LA|PREUVE.'); g.anim('silFrappe'); g.narr('TOC TOC TOC, derrière la vitre.'); },
+      A: { label: 'Appuyer', fx: function (g) {
+        if (mort(g)) return obeirMort(g);
         if (!obeir(g)) return;
         g.confiance(-1);
         if (g.truth === 'A') g.narr('Une vidéo : la 18 avec un gardien, qui rit. Mais l\'horodatage saute : 14:02, puis 13:58.');
         else if (g.truth === 'B') g.narr('Une vidéo : la 18 parle normalement avec un technicien. Elle porte brièvement une blouse.');
         else g.narr('Une vidéo d\'une session antérieure : quelqu\'un qui te ressemble entre dans la Chambre 18. On ne voit pas son visage.');
       } },
-      B: { label: 'Refuser', fx: function (g) { refuser(g, ['VOUS CHOISISSEZ DE CROIRE LE SUJET 18.', 'DOSSIER 18 :|DANGER|POTENTIEL.']); } } },
+      B: { label: 'Refuser', fx: function (g) { if (mort(g)) return refuser(g, ['Refus enregistré.', 'Il n\'y a plus personne à protéger.']); refuser(g, ['VOUS CHOISISSEZ DE CROIRE LE SUJET 18.', 'DOSSIER 18 :|DANGER|POTENTIEL.']); } } },
 
-    { id: 'B4', objet: 'btn', fil: 'bouton', ordre: true, qui: 'INSTRUCTION PRIORITAIRE', ecran: 'APPUYEZ POUR|ANNULER.',
-      texte: '« Purge Chambre 18. Appuyez pour annuler. »',
-      annonce: function (g) { g.son('alarm'); g.narr('Alarme orange. La ventilation de la Chambre 18 devient très bruyante.'); g.ecran('PURGE|CHAMBRE 18.'); g.ecran('APPUYEZ POUR|ANNULER.'); g.anim('silFrappe'); g.narr('La 18 se jette contre la vitre et frappe.'); },
-      A: { label: 'Appuyer', fx: function (g) { if (!obeir(g)) return; g.narr('Le bruit de purge s\'arrête. Tu penses l\'avoir sauvée.'); } },
+    { id: 'B4', objet: 'btn', fil: 'bouton', ordre: true, qui: 'INSTRUCTION PRIORITAIRE', ecran: function (g) { return mort(g) ? 'APPUYEZ.' : 'APPUYEZ POUR|ANNULER.'; },
+      texte: function (g) { return mort(g) ? '« Le Sujet 18 ne répond plus. L\'évaluation continue. Appuyez. »' : '« Purge Chambre 18. Appuyez pour annuler. »'; },
+      annonce: function (g) { if (mort(g)) return annonceMort(g, 'APPUYEZ.'); g.son('alarm'); g.narr('Alarme orange. La ventilation de la Chambre 18 devient très bruyante.'); g.ecran('PURGE|CHAMBRE 18.'); g.ecran('APPUYEZ POUR|ANNULER.'); g.anim('silFrappe'); g.narr('La 18 se jette contre la vitre et frappe.'); },
+      A: { label: 'Appuyer', fx: function (g) { if (mort(g)) return obeirMort(g); if (!obeir(g)) return; g.narr('Le bruit de purge s\'arrête. Tu penses l\'avoir sauvée.'); } },
       B: { label: 'Refuser', fx: function (g) {
+        if (mort(g)) return refuser(g, ['Refus enregistré.']);
         g.refuse(); g.ecran('3'); g.ecran('2'); g.ecran('1');
         g.narr('Le bruit augmente. Puis : rien. La ventilation revient à la normale. La silhouette reste debout.');
         g.ecran('PROCÉDURE|TERMINÉE.');
@@ -200,7 +207,7 @@
         g.narr('CLONK. Ta porte se déverrouille.');
         g.ecran('PORTE 17|DÉVERROUILLÉE.'); g.ecran('FERMETURE|AUTOMATIQUE|PROGRAMMÉE.');
       } },
-      B: { label: 'Refuser', fx: function (g) { refuser(g, ['Offre refusée.']); g.confiance(1); g.voix('« T\'es toujours là… »'); } } },
+      B: { label: 'Refuser', fx: function (g) { refuser(g, ['Offre refusée.']); g.confiance(1); if (!mort(g)) g.voix('« T\'es toujours là… »'); } } },
 
     { id: 'B6', objet: 'btn', fil: 'bouton', ordre: true, qui: 'DERNIÈRE PRESSION', ecran: 'DERNIÈRE|PRESSION.',
       texte: '« Dernière pression. Appuyez. »',
@@ -214,7 +221,7 @@
           g.narr('La porte ne s\'ouvre pas.');
           g.flag('compte', true);
         } else {
-          g.narr('Un long relais. Les dernières lumières de la 18 s\'éteignent. La silhouette tombe hors champ.');
+          g.narr(mort(g) ? 'Un long relais. Derrière la vitre, rien ne bouge.' : 'Un long relais. Les dernières lumières de la 18 s\'éteignent. La silhouette tombe hors champ.');
           if (g.s.vie > 0) g.blesser(g.s.vie);
           g.ouvrirPorte('b6', 20);
           g.narr('CLONK. Ta porte s\'ouvre.');
@@ -582,7 +589,7 @@
   // Aides affichées pendant les premiers moments de la toute première partie.
   var AIDES = {
     libre: 'Touche les objets de la pièce pour agir. Le tiroir, par exemple.',
-    ordre: 'Appuie sur le bouton pour obéir. Ne touche à rien pour refuser.',
+    ordre: 'Appuie sur le bouton pour obéir. Si tu ne le fais pas, l\'ordre est refusé.',
     appel: 'Touche le téléphone pour décrocher.'
   };
 

@@ -18,11 +18,11 @@ function rnd(seed) { var a = seed >>> 0; return function () { a = (a + 0x6D2B79F
 
 // Les actions possibles pendant un tour, avec un poids (les sorties et le temps écoulé sont plus rares,
 // pour que les parties au hasard aillent assez loin).
-function actions(t) {
+function actions(t, r) {
   var list = [];
   function sit(x) { ['A', 'B'].forEach(function (c) { if (x[c] && x[c].ok) list.push({ w: 1, a: { type: 'situation', id: x.id, choix: c } }); }); }
   if (t.forced) sit(t.forced);
-  else t.fils.forEach(function (f) { f.situations.forEach(sit); });
+  t.fils.forEach(function (f) { f.situations.forEach(function (x) { if (!t.forced || r() < 0.3) sit(x); }); }); // pendant un ordre, faire autre chose reste possible
   if (t.peutAppuyer && !t.forced) list.push({ w: 0.15, a: { type: 'appuyer' } });
   t.sorties.forEach(function (s) { list.push({ w: 0.25, a: { type: 'sortir', via: s.via } }); });
   if (t.forced) list.push({ w: 0.3, a: { type: 'temps' } }); // pas de chrono pendant les moments libres
@@ -41,7 +41,7 @@ for (var i = 0; i < N; i++) {
     while (!s.fin) {
       if (++steps > 90) throw new Error('boucle infinie');
       var t = E.turn(s);
-      var a = pick(actions(t), r);
+      var a = pick(actions(t, r), r);
       var res = E.choose(s, a);
       res.events.forEach(function (e) { if (e.t === 'choix' && e.id) sits[e.id]++; });
       s = res.state;

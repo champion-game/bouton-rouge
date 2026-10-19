@@ -33,7 +33,6 @@
   function addHist(text, cls) {
     hist.push({ txt: text, cls: cls || '' });
     if (hist.length > 80) hist.shift();
-    $('histLast').textContent = text;
     if (!$('histBox').hidden) renderHist();
   }
   function renderHist() {
@@ -85,12 +84,14 @@
   function closePop() { $('pop').hidden = true; $('card').innerHTML = ''; var d = popDone; popDone = null; if (d) d(); }
   function openPop(html, onClose) { $('card').innerHTML = html; $('pop').hidden = false; popDone = onClose || null; var b = $('card').querySelector('button.ch:not([disabled]), button.go'); if (b) b.focus({ preventScroll: true }); }
   // Popup d'information : les textes d'une action, puis « Continuer ».
-  function infoPop(lines, my) {
+  function infoPop(lines, my, auto) {
     return new Promise(function (res) {
       var textes = lines.map(function (e) { return e.t === 'ecran' ? ecranTxt(e.txt) : e.txt; });
       var h = '<div class="lines">' + lines.map(function (e) { return '<p class="' + ({ tel: 'tel', voix: 'voix', ecran: 'sys' }[e.t] || '') + '"></p>'; }).join('') + '</div><div class="ab"><button class="ch go" data-go="1">Continuer</button></div>';
       openPop(h, function () { res(my === run); });
       taper(Array.prototype.slice.call($('card').querySelectorAll('.lines p')), textes);
+      // Popup qui se referme tout seul (intro) : pas besoin de toucher « Continuer ».
+      if (auto) { var n = textes.join('').length, card = $('card').firstChild; setTimeout(function () { if (!$('pop').hidden && $('card').firstChild === card) closePop(); }, n * 11 + 2600 + n * 40); }
     });
   }
   function choiceBtn(x, c) {
@@ -121,7 +122,7 @@
   });
 
   // ---------- lecture des événements du moteur ----------
-  async function play(events, my) {
+  async function play(events, my, auto) {
     var lines = [];
     for (var i = 0; i < events.length; i++) {
       if (my !== run) return false;
@@ -151,7 +152,7 @@
       }
     }
     // Popup seulement s'il y a autre chose que des phrases du moniteur (qui restent lisibles à l'écran).
-    if (lines.some(function (e) { return e.t !== 'ecran'; }) && my === run) { R.render(s, roomInfo()); renderBag(); return infoPop(lines, my); }
+    if (lines.some(function (e) { return e.t !== 'ecran'; }) && my === run) { R.render(s, roomInfo()); renderBag(); return infoPop(lines, my, auto); }
     return my === run;
   }
 
@@ -200,7 +201,7 @@
   $('bag').addEventListener('click', function (e) {
     var b = e.target.closest('button.slot'); if (!b || !s || s.fin || paused) return;
     A.init();
-    var k = b.dataset.k, o = POCHE_OBJET[k], list = !busy && t && !t.forced && o ? t.objets[o] : null;
+    var k = b.dataset.k, o = POCHE_OBJET[k], list = !busy && t && o ? t.objets[o] : null;
     flashItems = flashItems.filter(function (x) { return x !== k; }); renderBag();
     if (list && list.length) { sel = o; objetPop(nomPoche(k), '', list, true); }
     else if (E.LETTRES[k]) { openPop('<div class="who"><span>' + esc(nomPoche(k)) + '</span><button class="x" data-close="1" aria-label="Fermer">×</button></div>' + lettreHtml(k, true), null); }
@@ -226,7 +227,6 @@
     }
     if (kind === 'T1' && k === 'phone') return act({ type: 'situation', id: 'T1', choix: 'A' });
     if (kind === 'T4' && k === 'phone') { sel = 'phone'; A.ring(false); A.sfx('pickup'); R.render(s, roomInfo()); objetPop('', '', t.objets.phone, false); return; }
-    if (kind) return toast('Pas maintenant.');
     if (t.objets[k]) { sel = k; objetPop(t.objets[k].length > 1 ? (TITRES[k] || '') : '', '', t.objets[k], true); return; }
     var txt = E.regarder(s, k);
     if (txt) objetPop(TITRES[k] || '', txt, null, true);
@@ -330,14 +330,14 @@
     s = E.newGame({ memoire: { session: mem ? mem.sessions + 1 : 1, dernier: mem ? mem.dernier : null } });
     t = null; busy = true; sel = null; lastEcran = ''; hist = []; flashItems = []; introSil = true;
     try { tuto = !localStorage.getItem(TUTO_KEY); } catch (e) { tuto = true; }
-    $('histLast').textContent = '…'; $('histBox').innerHTML = ''; $('histBox').hidden = true;
+    $('histBox').innerHTML = ''; $('histBox').hidden = true;
     timeLeft = timeTotal = 0; refresh();
     R.ecran('');
     // Démarrage : écran noir, le moniteur s'allume, puis la lumière avec le bruit sec d'un relais.
     // Écran noir, un souffle de ventilation, puis le relais (anim « lumiere »).
     R.blackout(true);
     if (!(await wait(1800, my))) return;
-    if (!(await play(E.intro(s), my))) return;
+    if (!(await play(E.intro(s), my, true))) return;
     introSil = false;
     startCycle(my);
   }

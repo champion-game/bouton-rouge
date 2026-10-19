@@ -55,3 +55,10 @@ Coopération et Briser la boucle sortent rarement dans les parties au hasard, ca
 - **L'écran de fin donne un indice** vers une fin pas encore découverte : « Une autre fin t'attendait si tu avais… ».
 - **L'ambiance sonore évolue** : respiration derrière la vitre (calme, rapide, hachée, puis silence), bourdonnement grave qui monte avec le soupçon, ventilation coupée pendant l'autotest et affaiblie quand l'air se raréfie, bruits lointains de temps en temps (pas, porte, métal, coups).
 
+## Ajustements du 19/10 (suite)
+
+- **Quand la 18 ne répond plus** (vie à 0), les ordres continuent, mais le Système le dit froidement : « LE SUJET 18 NE RÉPOND PLUS. L'ÉVALUATION CONTINUE. APPUYEZ. » Plus de purge ni de preuve ; obéir ne fait souffrir personne (« Personne ne souffre. Vous avez appuyé quand même. »). Refuser la purge ne donne plus « Mensonge prouvé ».
+- **Pendant un ordre ou un appel, le joueur peut faire autre chose** en touchant un objet. L'ordre compte alors comme refusé (soupçon +1), l'appel comme ignoré. Prendre un objet (tournevis, fusible) ne compte pas.
+- **L'intro se déroule seule** : son popup se referme tout seul, pas besoin de toucher « Continuer ».
+- **L'historique n'affiche rien** tant qu'on ne touche pas le bouton « Historique ». Les messages passent par le moniteur et les popups.
+

@@ -38,9 +38,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);out
 .scene{position:relative;flex:1;min-height:0;overflow:hidden;background:#000}
 .scene #scene{position:absolute;inset:0}
 .scene svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:manipulation;user-select:none;-webkit-user-select:none}
-.hud{position:relative;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px max(10px,env(safe-area-inset-right,0px)) 8px max(10px,env(safe-area-inset-left,0px));background:#0a0d0d;border-top:1px solid var(--line)}
-.hud .bag{flex:0 0 auto;width:min(100%,330px)}
-.hud .hist{flex:1 1 220px;min-width:0}
+.hud{position:relative;display:flex;flex-wrap:nowrap;gap:6px;align-items:center;padding:6px max(10px,env(safe-area-inset-right,0px)) 8px max(10px,env(safe-area-inset-left,0px));background:#0a0d0d;border-top:1px solid var(--line)}
+.hud .bag{flex:1 1 auto;max-width:330px;min-width:0}
+.hud .hist{flex:0 0 auto;margin-left:auto}
 .hs{cursor:pointer}
 .hs:hover{filter:brightness(1.3)}
 .ring{animation:shake .12s infinite}
@@ -68,7 +68,7 @@ button.slot:hover{border-color:var(--muted)}
 button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143,.35)}
 
 /* Historique : une ligne, touchée = tout l'historique */
-.hist{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 12px;text-align:left;font-size:.88rem;color:var(--muted);display:flex;gap:8px;align-items:center;min-height:38px}
+.hist{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:.78rem;font-weight:700;letter-spacing:.06em;color:var(--muted);min-height:38px}
 .hist span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hist b{font-size:.7rem;letter-spacing:.1em;color:#56625f}
 .histbox{position:absolute;left:8px;right:8px;bottom:calc(100% + 6px);z-index:6;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;max-height:50vh;overflow:auto;display:flex;flex-direction:column;gap:4px;box-shadow:0 -8px 30px rgba(0,0,0,.5)}
@@ -137,7 +137,7 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
     <div class="hud">
       <div class="histbox" id="histBox" hidden></div>
       <div class="bag" id="bag" aria-label="Inventaire"></div>
-      <button class="hist" id="histBtn" aria-expanded="false"><b>HISTORIQUE</b><span id="histLast">…</span></button>
+      <button class="hist" id="histBtn" aria-expanded="false">Historique</button>
     </div>
   </div>
 </div>
@@ -149,15 +149,15 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
     <p>Une pièce. Un bouton. Touche ce qui t'entoure.</p>
     <p>Le son est recommandé.</p>
     <button class="enter" id="enterBtn">Entrer dans la pièce</button>
-    <p class="ver">Version 3.2 · 19/10</p>
+    <p class="ver">Version 3.3 · 19/10</p>
   </div>
 </div>
 <div class="ov" id="endOv" hidden><div class="end" id="endBox"></div></div>
 
-<script src="src/story.js?v=3.2"></script>
-<script src="src/engine.js?v=3.2"></script>
-<script src="src/audio.js?v=3.2"></script>
-<script src="src/room.js?v=3.2"></script>
-<script src="src/game.js?v=3.2"></script>
+<script src="src/story.js?v=3.3"></script>
+<script src="src/engine.js?v=3.3"></script>
+<script src="src/audio.js?v=3.3"></script>
+<script src="src/room.js?v=3.3"></script>
+<script src="src/game.js?v=3.3"></script>
 </body>
 </html>
