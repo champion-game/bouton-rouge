@@ -344,7 +344,7 @@
     { id: 'P1', objet: 'drawer', fil: 'piece', qui: 'LE TIROIR',
       quand: function (g) { return !g.flag('tiroirOuvert'); }, // « Le laisser » ne ferme pas le tiroir
       texte: 'Le tiroir est verrouillé. Quelqu\'un a déjà forcé cette serrure. Par une fente, tu distingues le manche d\'un tournevis.',
-      A: { label: 'Le forcer', fx: function (g) { g.flag('tiroirOuvert', true); g.son('thud'); g.narr('Tu fais levier avec un pied métallique du bureau. CRAC. La caméra pivote légèrement.'); g.ecran('BRUIT ANORMAL|DÉTECTÉ.'); g.soupcon(1); g.gain('tournevis'); g.surveiller('tournevis'); } },
+      A: { label: 'Le forcer', fx: function (g) { g.flag('tiroirOuvert', true); g.son('thud'); if (g.vu()) { g.narr('Tu fais levier avec un pied métallique du bureau. CRAC. La caméra pivote légèrement.'); g.ecran('BRUIT ANORMAL|DÉTECTÉ.'); } else g.narr('Tu fais levier avec un pied métallique du bureau. CRAC. La caméra ne bouge pas.'); g.soupcon(1); g.gain('tournevis'); g.surveiller('tournevis'); } },
       B: { label: 'Le laisser tranquille', fx: function (g) { g.narr('Tu reposes la poignée. Le tiroir reste verrouillé. Il y aura peut-être une autre manière de l\'ouvrir.'); } } },
 
     // Prendre un objet laissé à sa place : ne coûte pas de cycle.
@@ -403,7 +403,7 @@
 
     // ---------- Fil 4 · La caméra ----------
     { id: 'C1', objet: 'camera', fil: 'camera', qui: 'LA CAMÉRA',
-      quand: function (g) { return g.cycle >= 4 && !g.done('C1'); },
+      quand: function (g) { return g.cycle >= 4 && g.cycle !== 6 && !g.done('C1'); },
       texte: 'La caméra balaie la pièce et te suit.',
       A: { label: 'Étudier son mouvement', fx: function (g) { g.narr('Gauche, centre, droite, puis retour. Un coin du bureau n\'est jamais visible.'); g.gain('angleMort'); g.ecran('ANGLE MORT|REPÉRÉ.'); } },
       B: { label: 'Lui faire signe', fx: function (g) { g.narr('Un petit signe. Rien. Tu recommences.'); g.ecran('NOUS VOUS|VOYONS.'); g.narr('La caméra s\'immobilise, puis fait un mouvement minuscule. Comme une réponse humaine. Sur le téléphone, un numéro apparaît : 00 — CONTRÔLE.'); g.gain('operateur'); } } },
@@ -437,7 +437,7 @@
       quand: function (g) { return g.cycle >= 4 && !g.done('H1'); },
       texte: 'Une feuille pliée, glissée sous la porte : « ILS MENTENT. —16 »',
       A: { label: 'Garder le mot', fx: function (g) { g.son('paper'); g.narr('Au dos : « NE FAIS PAS CE QUE J\'AI FAIT. »'); g.gain('mot16'); } },
-      B: { label: 'Le montrer à la caméra', fx: function (g) { g.narr('Tu lèves le papier. La caméra zoome.'); g.ecran('OBJET NON AUTORISÉ|IDENTIFIÉ.'); g.ecran('MERCI DE L\'AVOIR|SIGNALÉ.'); g.conformite(1); g.soupcon(-1); g.flag('fil5Ferme', true); g.narr('Tu glisses le papier dans la fente de destruction.'); } } },
+      B: { label: 'Le montrer à la caméra', req: function (g) { return !g.aveugle(); }, raison: 'La caméra ne voit rien.', fx: function (g) { g.narr('Tu lèves le papier. La caméra zoome.'); g.ecran('OBJET NON AUTORISÉ|IDENTIFIÉ.'); g.ecran('MERCI DE L\'AVOIR|SIGNALÉ.'); g.conformite(1); g.soupcon(-1); g.flag('fil5Ferme', true); g.narr('Tu glisses le papier dans la fente de destruction.'); } } },
 
     { id: 'H2', objet: 'bureau', fil: 'passe', qui: 'LES GRAVURES DE 16',
       quand: function (g) { return g.done('H1') === 'A' && !g.done('H2'); },

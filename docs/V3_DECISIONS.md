@@ -86,3 +86,8 @@ Coopération et Briser la boucle sortent rarement dans les parties au hasard, ca
 - Indices discrets sur la vérité (deux au plus par partie) : pleurs au téléphone (A), un pan de blouse (B), ton reflet qui se superpose à la silhouette (C).
 - Un murmure synthétisé accompagne la voix de la 18 pendant que son texte se tape (plus grave pour l'homme, plus aigu pour la femme et l'enfant).
 - Vrais objets à voir : le papier qui revient par la grille, les gravures de 16, la vidéo de B3 sur le moniteur, et les images floues de la Chambre 18 quand on la rejoint par le conduit.
+
+## Corrections 4.1 (19/10)
+
+- **Pendant la coupure (cycle 6), la caméra est hors ligne** : elle compte comme aveuglée. Le Système ne commente plus un objet pris dans le noir (« TOURNEVIS OBTENU » apparaissait au retour de la lumière), forcer le tiroir ne déclenche plus « BRUIT ANORMAL », et on ne peut pas montrer le mot à une caméra éteinte.
+- **Les messages restent dans l'ordre** : le popup (téléphone, voix, ce qu'on voit) s'affiche avant la suite du moniteur, au lieu d'arriver après.

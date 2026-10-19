@@ -146,7 +146,10 @@
       var e = events[i];
       switch (e.t) {
         case 'choix': addHist('› ' + e.label, 'me'); break;
-        case 'ecran': var n = R.ecran(e.txt, { glitch: 250 }); lastEcran = e.txt; A.sfx('glitch'); addHist(ecranTxt(e.txt), 'ecr'); await wait(tempsEcran(n), my); break;
+        case 'ecran':
+          // Le popup passe avant la suite du moniteur : tout reste dans l'ordre.
+          if (lines.length) { R.render(s, roomInfo()); renderBag(); var l0 = lines; lines = []; if (!(await infoPop(l0, my, auto))) return false; }
+          var n = R.ecran(e.txt, { glitch: 250 }); lastEcran = e.txt; A.sfx('glitch'); addHist(ecranTxt(e.txt), 'ecr'); await wait(tempsEcran(n), my); break;
         case 'tel': case 'narr': case 'voix': lines.push(e); addHist(e.txt, e.t === 'narr' ? '' : 'tel'); break;
         case 'image': lines.push(e); break;
         case 'papier': lines.push(e); addHist((e.p.titre ? e.p.titre + ' : ' : '') + e.p.recto.join(' '), 'tel'); break;

@@ -60,7 +60,8 @@
 
   // ---------- état dérivé ----------
   function has(s, k) { return s.items.indexOf(k) >= 0; }
-  function cameraAveugle(s) { return has(s, 'cameraCoupee') || has(s, 'cameraTournee') || (s.flags.maskedUntil != null && s.cycle <= s.flags.maskedUntil); }
+  // Pendant la coupure du cycle 6, la caméra est hors ligne : elle ne voit rien.
+  function cameraAveugle(s) { return s.cycle === 6 || has(s, 'cameraCoupee') || has(s, 'cameraTournee') || (s.flags.maskedUntil != null && s.cycle <= s.flags.maskedUntil); }
   function porteOuverte(s) { return !!(s.flags.porte && s.cycle <= s.flags.porte.until); }
 
   function forcedId(s, c) {
