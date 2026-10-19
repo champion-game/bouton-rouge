@@ -32,7 +32,7 @@ HTML/CSS/JS sans framework ni build (`index.html` suffit). Pièce en SVG vue de 
 
 ## État actuel
 
-- Version **5.5** : 20 moments (12 libres, 8 imposés), 6 ordres, appels, archives, 18 fins + Curiosité. Pack graphique v1 placé d'après le modèle d'Amine.
+- Version **5.6** : 20 moments (12 libres, 8 imposés), 6 ordres, appels, archives, 18 fins + Curiosité. Pack graphique v1 placé d'après le modèle d'Amine.
 - Silhouette de la 18 : une seule série pour toutes les vérités ; séries homme / femme / enfant attendues (`SIL_PAR_VERITE` dans `room.js`).
 - Rendu 5.5 : mur de fond `mur_fond.webp` reconstruit d'après le modèle (`tools/fond-mur.py`), profondeur (sol en perspective `sol()`, murs latéraux, ombres portées `ombre()`, liserés de lampe `lisere()`), carte d'ombre `ombre.webp` tirée de `keyart.webp` (`tools/carte-lumiere.py 0.2 38 0.56`), lampe lumineuse, vitre embrumée, grain `grain.webp`, sol mouillé (reflet du bureau et de la porte), tuyaux, reflets vitre et écran (classe `lit`, éteints avec la lampe).
 - Ensuite : tests avec 5 joueurs, direction artistique et son niveau Steam, page Steam, traduction anglaise.

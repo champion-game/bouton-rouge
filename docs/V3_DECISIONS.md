@@ -146,3 +146,9 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 ## Version 5.5 (19/10) : mur de fond tiré du modèle
 
 - Le motif répété du mur est remplacé par un mur reconstruit à partir des zones vides de l’image de référence : béton taché en haut, soubassement vert-gris, trait au bandeau. Image `mur_fond.webp`, refaite avec `tools/fond-mur.py`. `mur.webp` n’est plus utilisé.
+
+## Version 5.6 (19/10) : moins de popups, coupure chronométrée
+
+- Popup seulement pour une discussion (téléphone, voix de la 18), un papier, un gardien ou un indice (`narr(txt, true)`). Les autres descriptions passent en bandeau et dans l’historique.
+- Un objet donné par le Système (`autorise_…`) ne déclenche plus sa réplique « Veuillez reposer… ».
+- Coupure (moment 5) : 10 s (`DUREES.coupure`), décomptées sur le moniteur « RÉTABLISSEMENT RÉSEAU DANS N S ». Exception voulue à « seul chrono visible : les ordres ».
