@@ -49,6 +49,13 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 - Mets à jour `docs/V3_DECISIONS.md` quand une décision de conception change.
 - Après chaque changement visible, teste le jeu sur téléphone en paysage et sur écran d'ordinateur, et vérifie qu'il n'y a aucune erreur dans la console.
 - **Tests rapides seulement** (demande d'Amine, 19/10) : pas de longues séries de tests navigateur pendant le développement. Un passage court du moteur suffit ; Amine teste lui-même quand une version est consolidée.
+- **Économiser les tokens** (demande d'Amine, 19/10) :
+  - modifier seulement les lignes concernées (Edit ciblé), jamais réécrire un fichier entier sans nécessité ;
+  - lire seulement la partie utile d'un fichier (grep, plages de lignes) ;
+  - pas de capture d'écran ni de lecture d'image, sauf si Amine le demande ou si un problème visuel l'exige ;
+  - une seule vérification rapide par changement, pas de séries de tests ;
+  - réponses courtes ;
+  - conseiller une nouvelle conversation quand un sujet est terminé (tout le contexte utile est dans ce fichier et `docs/`).
 - Fais des commits petits, avec un message clair en français.
 - **Version** : à chaque push qui change le jeu, augmente le numéro dans `index.html` (texte « Version X.Y » de l'écran d'accueil et `?v=X.Y` des scripts), pour qu'Amine voie qu'il a la bonne version et que les scripts se rechargent.
 - Lien pour jouer : https://champion-game.github.io/bouton-rouge/ (GitHub Pages, mis à jour tout seul après chaque push sur `main`). Ne publie plus d'artefact Claude.
