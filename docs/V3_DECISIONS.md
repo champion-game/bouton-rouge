@@ -117,3 +117,10 @@ Référence complète : `docs/DIRECTIVES_REV2.txt`. Résumé de ce qui a changé
 - **Interface** : toutes les voix ont le même filtre (le murmure ne change plus selon la vérité) ; bilan de fin en 3 éléments ; « Ce que tu sais » en haut de l'Historique ; réglages « passer les passages déjà vus » et « effacer la mémoire ». Son en trois phases (installation, surveillance, final plus silencieux).
 
 Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le chrono en pause ; pas de rappel des objets utilisables, seulement « Ce que tu sais » dans l'Historique.
+
+## Pack graphique v1 (19/10, version 5.1)
+
+- Pièce recomposée d'après le nouveau modèle d'Amine (base 1672 × 941) : caméra et boîtier en haut à droite, grille en bas à droite, trappe devant le bureau, compartiment = caisson droit du bureau.
+- Silhouette de la 18 : une seule série pour A, B et C (consigne de l'artiste, choix d'Amine). Les séries homme / femme / enfant viendront plus tard : il suffira de les nommer `sil_A_*`, `sil_B_*`, `sil_C_*` et de passer `SIL_PAR_VERITE` à `true` dans `src/room.js`.
+- Boîtier ouvert : trois leviers (CAMÉRA A, ACTIONNEUR CH.18, AUX 24 V), baissés quand le circuit est coupé.
+- `porte_ouverte.png` était tronqué dans l'archive : reconstruit depuis le PSD `Chambre17_calques.psd`.

@@ -26,8 +26,8 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 
 ## État actuel
 
-- `index.html` est la version jouable **5.0** (directives révision 2 appliquées) : 20 moments cachés (12 libres, 8 imposés), 6 ordres, appels, archives, 18 fins + Curiosité. Code dans `src/`, dessins de l'artiste dans `assets/img/`.
-- La silhouette de la 18 change selon la vérité cachée : homme (A), femme (B), enfant (C).
+- `index.html` est la version jouable **5.1** (directives révision 2 appliquées, pack graphique v1) : 20 moments cachés (12 libres, 8 imposés), 6 ordres, appels, archives, 18 fins + Curiosité. Code dans `src/`, dessins de l'artiste dans `assets/img/`.
+- Silhouette de la 18 : une seule série pour toutes les vérités (pack v1) ; les séries homme / femme / enfant sont attendues (voir `docs/V3_DECISIONS.md`).
 - La pièce reprend l'image de référence d'Amine (vue de face, base 1672 × 941). `docs/RESUME_JEU.txt` résume le jeu et tous les scénarios.
 - `prototype-v1.html` garde le prototype v1 (histoire linéaire, 4 fins) pour comparaison.
 - Tests : `node tools/test-engine.js` (2 000 parties au hasard, un parcours par fin, tests d'acceptation des directives).

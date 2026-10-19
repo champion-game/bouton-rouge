@@ -6,27 +6,42 @@
   var IMG = 'assets/img/';
   var reduce = root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function I(id, name, x, y, w, h, extra) {
-    return '<image' + (id ? ' id="' + id + '"' : '') + ' href="' + IMG + name + '.webp" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" preserveAspectRatio="none"' + (extra || '') + '/>';
+    return '<image' + (id ? ' id="' + id + '"' : '') + ' href="' + IMG + name + '.webp" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '"' + (extra && extra.indexOf('preserveAspectRatio') >= 0 ? '' : ' preserveAspectRatio="none"') + (extra || '') + '/>';
   }
   // Positions dans la pièce de base (1672 × 941, d'après l'image de référence d'Amine).
   // layout() élargit le mur et le sol selon l'écran ; le moniteur et le bouton restent au centre.
-  var W0 = 1672, H0 = 941, SOL = 715;
-  var GL = { x: 1201.8, y: 175, w: 326.4, h: 190.7 };                          // verre de la vitre de la 18
-  var KG = GL.h / 86.6;                                                          // échelle de la silhouette
-  var SC = { x: 707.5, y: 228, w: 252.5, h: 139, cx: 833.8, cy: 297.5 };      // écran du moniteur
-  var KS = SC.w / 213.4;                                                         // échelle du texte du moniteur
-  var VIES = [1317, 1354, 1390.5], VIES_Y = 496.8;
-  var BTN = { x: 770, y: 452, w: 130, h: 78 }, BTN2 = { x: 772.7, y: 466.3, w: 124.5, h: 63.7 };
-  var BX = { x: 1455, y: 505, w: 140, h: 147.4 };                               // boîtier électrique
+  // Pack graphique v1 (19/10) : chaque dessin garde son canevas d'export, les états d'une même famille se superposent.
+  var W0 = 1672, H0 = 941, SOL = 684;
+  var VT = { x: 1115, y: 70, w: 360, h: 315, k: 315 / 738 };                  // vitre (dessin 620 × 738, élargi par tranches)
+  var GL = { x: 1138.5, y: 97.7, w: 308.8, h: 260.4 };                         // verre de la vitre de la 18
+  var SIL = { x: GL.x + GL.w / 2 - 168, y: GL.y + 60, s: 336 };                // canevas commun des silhouettes (800 × 800)
+  // Silhouettes : une seule série pour l'instant. Passer à true quand les séries homme / femme / enfant (sil_A_, sil_B_, sil_C_) seront livrées.
+  var SIL_PAR_VERITE = false;
+  var SC = { x: 579.1, y: 111.1, w: 490.8, h: 178.1, cx: 824.5, cy: 200.2 };  // écran du moniteur
+  var KS = SC.h / 117.8;                                                         // échelle du texte du moniteur
+  var VIES = [1214.2, 1264.9, 1311.3], VIES_Y = 440.8;
+  var BTN = { x: 760.4, y: 449.3, w: 153.8, h: 97.8 };
+  var BX = { x: 1517.4, y: 205, w: 172.5, h: 274 };                            // boîtier électrique (canevas 260 × 413)
+  var LEV = 42.5, SOCK = [0.277, 0.487, 0.689];                                 // leviers posés sur les trois prises
   function bx(rx, ry) { return (BX.x + rx * BX.w).toFixed(1) + '" cy="' + (BX.y + ry * BX.h).toFixed(1); }
   function bt(rx, ry, t) { return '<text x="' + (BX.x + rx * BX.w).toFixed(1) + '" y="' + (BX.y + ry * BX.h).toFixed(1) + '">' + t + '</text>'; }
+  function lev(id, ry) { return I(id, 'levier_haut', BX.x + 0.575 * BX.w - LEV / 2, BX.y + ry * BX.h - LEV / 2, LEV, LEV); }
+  // Une tranche verticale d'un dessin (pour élargir la vitre sans déformer son cadre).
+  function tranche(name, sx, sw, SW, SH, x, y, w, h, op) {
+    var k = w / sw, id = 'tr' + Math.round(sx);
+    return '<clipPath id="' + id + '"><rect x="' + x.toFixed(1) + '" y="' + y + '" width="' + w.toFixed(1) + '" height="' + h + '"/></clipPath>' +
+      I('', name, +(x - sx * k).toFixed(1), y, +(SW * k).toFixed(1), h, ' clip-path="url(#' + id + ')"' + (op ? ' opacity="' + op + '"' : ''));
+  }
+  var bord = 80 * VT.k;
+  var VITRE = tranche('vitre', 0, 80, 620, 738, VT.x, VT.y, bord, VT.h) + tranche('vitre', 80, 460, 620, 738, VT.x + bord, VT.y, VT.w - 2 * bord, VT.h, 0.62) +
+    tranche('vitre', 540, 80, 620, 738, VT.x + VT.w - bord, VT.y, bord, VT.h);
 
   var SVG = '' +
   '<svg id="room" viewBox="0 0 ' + W0 + ' ' + H0 + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="La Chambre 17">' +
   '<defs>' +
-  '<pattern id="wallP" width="380" height="380" patternUnits="userSpaceOnUse">' + I('', 'mur', 0, 0, 380, 380) + '</pattern>' +
-  '<pattern id="floorP" width="300" height="300" patternUnits="userSpaceOnUse">' + I('', 'sol', 0, 0, 300, 300) + '</pattern>' +
-  '<pattern id="plinthP" width="200" height="40" patternUnits="userSpaceOnUse">' + I('', 'plinthe', 0, 0, 200, 40) + '</pattern>' +
+  '<pattern id="wallP" width="420" height="420" patternUnits="userSpaceOnUse">' + I('', 'mur', 0, 0, 420, 420) + '</pattern>' +
+  '<pattern id="floorP" width="340" height="340" patternUnits="userSpaceOnUse">' + I('', 'sol', 0, 0, 340, 340) + '</pattern>' +
+  '<pattern id="plinthP" width="560" height="36" patternUnits="userSpaceOnUse">' + I('', 'plinthe', 0, 0, 560, 36) + '</pattern>' +
   '<linearGradient id="coneG" x1="0" y1="0" x2="0" y2="1"><stop id="coneStop" offset="0" stop-color="#fff3d6" stop-opacity=".38"/><stop offset="1" stop-color="#fff3d6" stop-opacity="0"/></linearGradient>' +
   '<radialGradient id="poolG"><stop id="poolStop" offset="0" stop-color="#fff3d6" stop-opacity=".22"/><stop offset="1" stop-color="#fff3d6" stop-opacity="0"/></radialGradient>' +
   '<radialGradient id="bulbG"><stop id="bulbStop" offset="0" stop-color="#fff3d6" stop-opacity=".95"/><stop offset="1" stop-color="#fff3d6" stop-opacity="0"/></radialGradient>' +
@@ -40,63 +55,66 @@
   '<pattern id="scan" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="2.5" fill="#000" opacity=".22"/></pattern>' +
   '</defs>' +
   '<g id="bg"></g>' +
-  // caméra de surveillance, dans le coin (support fixe, corps qui pivote)
-  '<g id="gCam">' + I('', 'camera_support', 34, 58, 96, 67, ' transform="translate(164 0) scale(-1 1)" style="pointer-events:none"') +
-  '<g id="camPivot" transform="translate(150 62)" class="hs" data-k="camera"><g id="camRot">' +
-  I('camImg', 'camera', -62, -54, 124, 107.8) +
-  '<circle id="camLed" cx="-40" cy="-26" r="4.5" fill="#3b3f3e"/>' +
-  I('camMask', 'camera_drap', -64, -58, 128, 104, ' opacity="0"') +
+  // caméra de surveillance, en haut à droite (support fixe, corps qui pivote ; le dessin regarde la pièce)
+  '<g id="gCam">' + I('', 'camera_support', 1520, 111, 80, 48.6, ' style="pointer-events:none"') +
+  '<g id="camPivot" transform="translate(1560 135)" class="hs" data-k="camera"><g id="camRot">' +
+  I('camImg', 'camera', -92.6, -45.5, 117.3, 89.5) +
+  '<circle id="camLed" cx="12" cy="-20" r="3.5" fill="#3b3f3e"/>' +
+  I('camMask', 'camera_drap', -92.6, -45.5, 117.3, 89.5, ' opacity="0"') +
   '</g></g></g>' +
   // porte et mot de 16 glissé dessous
   '<g id="gDoor"><g id="door" class="hs" data-k="door">' +
-  '<rect id="doorLight" x="110" y="180" width="280" height="540" fill="#f4fbf8" opacity="0" filter="url(#flou)"/>' +
-  I('doorImg', 'porte_fermee', 72, 152, 350, 563) + '</g></g>' +
-  '<g id="gNote"><g id="note" class="hs" data-k="note" opacity="0"><rect x="130" y="694" width="110" height="52" fill="transparent"/>' + I('', 'mot_plie', 150, 708, 72, 29, ' transform="rotate(-8 186 722)"') + '</g></g>' +
+  '<rect id="doorLight" x="60" y="90" width="240" height="600" fill="#f4fbf8" opacity="0" filter="url(#flou)"/>' +
+  I('doorImg', 'porte_fermee', -15.7, 17.5, 377.9, 709.6) + '</g></g>' +
+  '<g id="gNote"><g id="note" class="hs" data-k="note" opacity="0"><rect x="140" y="672" width="108" height="44" fill="transparent"/>' + I('', 'mot_plie', 150, 682, 88, 26.4) + '</g></g>' +
   // grille d'aération
-  '<g id="gGrille"><g id="grille" class="hs" data-k="grille">' + I('grilleImg', 'grille', 443, 249, 112, 110) + '</g></g>' +
-  // trappe au sol (apparaît quand on la connaît)
-  '<g id="gTrappe"><g id="trappe" class="hs" data-k="trappe" opacity="0">' + I('trappeImg', 'trappe_fermee', 1240, 788, 310, 98) + '</g></g>' +
-  // vitre de la Chambre 18 : la pièce floue, la silhouette, le verre dépoli
-  '<g id="gWin"><g id="win" class="hs" data-k="window">' + I('', 'vitre', 1128, 112, 484, 330) +
+  '<g id="gGrille"><g id="grille" class="hs" data-k="grille">' + I('grilleImg', 'grille', 1282.4, 518.9, 178.2, 92.3) + '</g></g>' +
+  // trappe au sol, devant le bureau (apparaît quand on la connaît)
+  '<g id="gTrappe"><g id="trappe" class="hs" data-k="trappe" opacity="0">' + I('trappeImg', 'trappe_fermee', 584.1, 636, 502.4, 456.8) + '</g></g>' +
+  // vitre de la Chambre 18 : la pièce floue, la silhouette, puis le verre dépoli (partiellement transparent)
+  '<g id="gWin"><g id="win" class="hs" data-k="window">' +
   '<g clip-path="url(#glassClip)">' +
-  I('', 'chambre18', GL.x - 8.8, GL.y - 13, 330 * KG / 2.2, 214.5 * KG / 2.2, ' opacity=".9"') +
-  '<g id="silMove" style="transition:transform .6s ease"><g id="sil" filter="url(#flou)" style="transition:opacity 1.2s ease">' + I('silImg', 'sil_A_debout', 0, 0, 10, 10) + '</g></g>' +
-  I('hand', 'main', GL.x + 12 * KG, GL.y + 9.4 * KG, 40 * KG, 47 * KG, ' opacity="0" style="transition:opacity .5s ease"') +
-  I('buee', 'fleche', GL.x + 38 * KG, GL.y + 31.4 * KG, 74 * KG, 43.5 * KG, ' opacity="0" style="transition:opacity .8s ease"') +
-  '<rect x="' + GL.x + '" y="' + GL.y + '" width="' + GL.w + '" height="' + GL.h + '" fill="#e8f0ec" opacity=".2"/>' +
+  I('', 'chambre18', GL.x, GL.y - 15, GL.w, GL.w, ' opacity=".9"') +
+  '<g id="silMove" style="transition:transform .6s ease"><g id="sil" filter="url(#flou)" style="transition:opacity 1.2s ease">' + I('silImg', 'sil_debout', SIL.x, SIL.y, SIL.s, SIL.s) + '</g></g>' +
+  '</g>' + VITRE +
+  '<g clip-path="url(#glassClip)">' +
+  I('hand', 'main', GL.x + GL.w / 2 - 185, GL.y + 20, 370, 370, ' opacity="0" style="transition:opacity .5s ease"') +
+  I('buee', 'fleche', GL.x + GL.w / 2 - 185, GL.y - 40, 370, 370, ' opacity="0" style="transition:opacity .8s ease"') +
   '<rect id="glassTint" x="' + GL.x + '" y="' + GL.y + '" width="' + GL.w + '" height="' + GL.h + '" fill="#000" opacity="0"/>' +
   '</g></g></g>' +
   // témoins CH. 18 — SIGNES VITAUX
-  '<g id="gSig"><g id="vies">' + I('', 'signes', 1272, 445, 160, 84.2) +
-  VIES.map(function (x, i) { return '<circle id="vieGlow' + (i + 1) + '" cx="' + x + '" cy="' + VIES_Y + '" r="18" fill="url(#ledG)" style="color:#3ee08f" opacity="0"/><circle id="vie' + (i + 1) + '" cx="' + x + '" cy="' + VIES_Y + '" r="8.6" fill="#3ee08f" opacity="0"/>'; }).join('') +
+  '<g id="gSig"><g id="vies">' + I('', 'signes', 1165, 393, 197, 76.5) +
+  VIES.map(function (x, i) { return '<circle id="vieGlow' + (i + 1) + '" cx="' + x + '" cy="' + VIES_Y + '" r="20" fill="url(#ledG)" style="color:#3ee08f" opacity="0"/><circle id="vie' + (i + 1) + '" cx="' + x + '" cy="' + VIES_Y + '" r="9" fill="#3ee08f" opacity="0"/>'; }).join('') +
   '</g></g>' +
-  // boîtier électrique de maintenance
-  '<g id="gBox"><g id="box" class="hs" data-k="box">' + I('boxImg', 'boitier_ferme', BX.x, BX.y, BX.w, BX.h) +
-  '<g id="boxOpen" opacity="0" font-family="VT323, monospace" font-size="12" fill="#e8f0ec" text-anchor="middle">' +
-  bt(0.26, 0.238, 'CAM') + bt(0.5, 0.238, 'BTN') + bt(0.74, 0.238, 'AUX') +
-  '<circle id="ledCam" cx="' + bx(0.26, 0.807) + '" r="4" fill="#3ee08f"/><circle id="ledBtn" cx="' + bx(0.5, 0.807) + '" r="4" fill="#3ee08f"/><circle id="ledAux" cx="' + bx(0.74, 0.807) + '" r="4" fill="#3ee08f"/></g>' +
-  '<circle id="auxLed" cx="' + bx(0.88, 0.1) + '" r="5" fill="#3ee08f"/>' +
+  // boîtier électrique de maintenance : ouvert, trois leviers (caméra, actionneur de la 18, auxiliaire)
+  '<g id="gBox"><g id="box" class="hs" data-k="box"><rect x="' + BX.x + '" y="' + BX.y + '" width="' + BX.w + '" height="' + BX.h + '" fill="transparent"/>' + I('boxImg', 'boitier_ferme', BX.x, BX.y, BX.w, BX.h) +
+  '<g id="boxOpen" opacity="0" font-family="VT323, monospace" font-size="8" fill="#202421" text-anchor="middle">' +
+  bt(0.361, 0.284, 'CAMÉRA A') + bt(0.361, 0.478, 'ACTIONNEUR') + bt(0.361, 0.503, 'CH.18') + bt(0.361, 0.692, 'AUX 24 V') +
+  lev('levCam', SOCK[0]) + lev('levBtn', SOCK[1]) + lev('levAux', SOCK[2]) +
+  '<circle id="ledCam" cx="' + bx(0.74, SOCK[0]) + '" r="3" fill="#3ee08f"/><circle id="ledBtn" cx="' + bx(0.74, SOCK[1]) + '" r="3" fill="#3ee08f"/><circle id="ledAux" cx="' + bx(0.74, SOCK[2]) + '" r="3" fill="#3ee08f"/></g>' +
+  '<circle id="auxLed" cx="' + bx(0.7, 0.22) + '" r="4" fill="#3ee08f"/>' +
   '</g></g>' +
   // le centre : lampe, moniteur, bureau, bouton
   '<g id="gCenter">' +
-  '<polygon id="cone" points="806,168 870,168 1130,880 540,880" fill="url(#coneG)" opacity=".55" style="pointer-events:none"/>' +
-  '<ellipse cx="838" cy="884" rx="300" ry="42" fill="url(#shadowG)" style="pointer-events:none"/>' +
-  '<g class="hs" data-k="monitor">' + I('', 'moniteur', 657, 190, 355, 230.6) + '</g>' +
-  '<g class="hs" data-k="light"><line x1="838" y1="-400" x2="838" y2="40" stroke="#1a1f1e" stroke-width="4"/>' + I('', 'lampe', 758, 28, 160, 155.7) +
-  '<circle id="bulb" cx="838" cy="163" r="34" fill="url(#bulbG)" style="pointer-events:none"/></g>' +
-  '<g class="hs" data-k="bureau">' + I('socleImg', 'bureau_socle', 590, 554, 480, 318) + '</g>' +
-  '<g id="compart" class="hs" data-k="compart"><rect x="896" y="762" width="72" height="64" fill="transparent"/>' +
-  I('compFuse', 'fusible', 908, 788, 48, 15.6, ' opacity="0"') + I('compImg', 'compart2_ferme', 901, 768.5, 62, 54) + '</g>' +
-  '<g id="drawer" class="hs" data-k="drawer">' + I('drawerImg', 'tiroir2_ferme', 722.5, 563, 222, 60) + '</g>' +
-  I('', 'bureau_plateau', 568, 462, 520, 115.6, ' style="pointer-events:none"') +
-  '<ellipse cx="830" cy="505" rx="250" ry="48" fill="url(#poolG)" style="pointer-events:none"/>' +
-  '<ellipse id="btnGlow" cx="835" cy="495" rx="120" ry="60" fill="url(#glowG)" opacity="0" style="pointer-events:none"/>' +
+  '<polygon id="cone" points="810,70 866,70 1140,850 530,850" fill="url(#coneG)" opacity=".55" style="pointer-events:none"/>' +
+  '<ellipse cx="836" cy="818" rx="340" ry="34" fill="url(#shadowG)" style="pointer-events:none"/>' +
+  '<g class="hs" data-k="monitor">' + I('', 'moniteur', 560, 92, 530, 274.5) + '</g>' +
+  '<g class="hs" data-k="light">' + I('', 'lampe', 745, -130, 187.3, 206) +
+  '<circle id="bulb" cx="838" cy="68" r="30" fill="url(#bulbG)" style="pointer-events:none"/></g>' +
+  // pieds du bureau : montant gauche et caisson droit, derrière les dessins
+  '<g style="pointer-events:none" fill="#2f3534" stroke="#151918" stroke-width="2"><rect x="466" y="572" width="16" height="242"/><rect x="1004" y="572" width="206" height="244"/></g>' +
+  '<g class="hs" data-k="bureau">' + I('socleImg', 'bureau_socle', 737.5, 562.5, 188.5, 254.6) + '</g>' +
+  '<g id="compart" class="hs" data-k="compart">' + I('compImg', 'compart_ferme', 991.5, 575, 225.6, 207.5) + '</g>' +
+  '<g id="drawer" class="hs" data-k="drawer">' + I('drawerImg', 'tiroir2_ferme', 464.5, 562.1, 251.6, 169.4) + '</g>' +
+  I('', 'bureau_plateau', 457, 496, 756, 84, ' style="pointer-events:none"') +
+  '<ellipse cx="836" cy="518" rx="270" ry="40" fill="url(#poolG)" style="pointer-events:none"/>' +
+  '<ellipse id="btnGlow" cx="837" cy="495" rx="120" ry="60" fill="url(#glowG)" opacity="0" style="pointer-events:none"/>' +
   '<g id="btn" class="hs" data-k="btn" role="button" tabindex="0" aria-label="Appuyer sur le bouton rouge">' +
-  I('btnImg', 'bouton', BTN.x, BTN.y, BTN.w, BTN.h) + I('btnImg2', 'bouton_enfonce', BTN2.x, BTN2.y, BTN2.w, BTN2.h, ' opacity="0"') + '</g>' +
-  '<g id="phone" class="hs" data-k="phone" opacity="0"><rect x="580" y="436" width="170" height="104" fill="transparent"/><g id="phoneInner">' +
-  I('telImg', 'tel_pose', 590, 445, 140, 88.2) + I('telImg2', 'tel_decroche', 582, 452, 160, 78.6, ' opacity="0"') + '</g>' +
-  '<circle id="ecouteLed" cx="640" cy="505" r="4.5" fill="#ff3b30" class="pulse" opacity="0"/></g>' +
-  '<g class="hs" data-k="mug"><rect x="948" y="458" width="90" height="82" fill="transparent"/>' + I('', 'tasse', 958, 470, 66, 58.2) + '</g>' +
+  I('btnImg', 'bouton', BTN.x, BTN.y, BTN.w, BTN.h) + I('btnImg2', 'bouton_enfonce', BTN.x, BTN.y, BTN.w, BTN.h, ' opacity="0"') + '</g>' +
+  '<g id="phone" class="hs" data-k="phone" opacity="0"><rect x="500" y="440" width="172" height="104" fill="transparent"/><g id="phoneInner">' +
+  I('telImg', 'tel_pose', 506.2, 445.5, 161.5, 99.6) + I('telImg2', 'tel_decroche', 506.2, 445.5, 161.5, 99.6, ' opacity="0"') + '</g>' +
+  '<circle id="ecouteLed" cx="640" cy="520" r="4.5" fill="#ff3b30" class="pulse" opacity="0"/></g>' +
+  '<g class="hs" data-k="mug"><rect x="998" y="452" width="90" height="82" fill="transparent"/>' + I('', 'tasse', 1010, 468, 65.3, 58) + '</g>' +
   '</g>' +
   // ombre des coins, lumière et alarme
   '<rect id="vig" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="url(#vigG)" style="pointer-events:none"/>' +
@@ -113,6 +131,7 @@
   '</svg>';
 
   var svg = null, onHot = null, track = false, glitchT = null, host = null, sujet = 'A', pose = 'debout';
+  function silNom(p) { return 'sil_' + (SIL_PAR_VERITE ? sujet + '_' : '') + p; }
   function $(id) { return document.getElementById(id); }
   function attr(id, k, v) { var e = $(id); if (e) e.setAttribute(k, v); }
   function src(id, name) { var e = $(id); if (e && e.getAttribute('href') !== IMG + name + '.webp') e.setAttribute('href', IMG + name + '.webp'); }
@@ -130,12 +149,12 @@
     root.addEventListener('resize', layout);
     layout();
   }
-  // La caméra suit le pointeur (petit angle : c'est un dessin de face). Elle regarde la pièce (dessin retourné).
-  var camBase = 'scale(-1 1)';
+  // La caméra suit le pointeur (petit angle : c'est un dessin de face). Le dessin regarde déjà la pièce.
+  var camBase = '';
   function aim(x, y) {
     if (!track) return;
     var m = $('camPivot').getScreenCTM(); if (!m) return;
-    var a = Math.atan2(y - m.f, x - m.e) * 180 / Math.PI; a = Math.max(-14, Math.min(14, (a - 30) / 3));
+    var a = Math.atan2(y - m.f, m.e - x) * 180 / Math.PI; a = Math.max(-14, Math.min(14, (a - 30) / 3));
     attr('camRot', 'transform', camBase + ' rotate(' + (-a).toFixed(1) + ')');
   }
 
@@ -148,17 +167,18 @@
     if (a >= W0 / H0) { H = H0; W = H0 * a; dx = (W - W0) / 2; sp = Math.min(dx, 260) * 0.5; }
     else { W = W0; H = W0 / a; dy = (H - H0) / 2; }
     var floorY = SOL + dy;
-    ['gCenter', 'gCenter2'].forEach(function (id) { shift(id, dx, dy); });
-    ['gDoor', 'gNote', 'gCam', 'gGrille'].forEach(function (id) { shift(id, dx - sp, dy); });
-    ['gWin', 'gSig', 'gBox', 'gTrappe'].forEach(function (id) { shift(id, dx + sp, dy); });
+    ['gCenter', 'gCenter2', 'gTrappe'].forEach(function (id) { shift(id, dx, dy); });
+    ['gDoor', 'gNote'].forEach(function (id) { shift(id, dx - sp, dy); });
+    ['gWin', 'gSig', 'gBox', 'gCam', 'gGrille'].forEach(function (id) { shift(id, dx + sp, dy); });
     svg.setAttribute('viewBox', '0 0 ' + W.toFixed(1) + ' ' + H.toFixed(1));
     ['tint', 'dark', 'flash', 'vig'].forEach(function (id) { attr(id, 'width', W); attr(id, 'height', H); });
     // Mur, plinthe, sol, et les deux coins de la pièce en perspective.
     var c = 64, g = '<rect x="0" y="0" width="' + W + '" height="' + floorY + '" fill="url(#wallP)"/>' +
       '<rect x="0" y="0" width="' + W + '" height="' + floorY + '" fill="#0d1212" opacity=".5"/>' +
-      '<g stroke="#000" stroke-opacity=".35" stroke-width="3">';
-    [560 + dx - sp, 1110 + dx + sp].forEach(function (x) { g += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="' + floorY + '"/>'; });
-    g += '</g><rect x="0" y="' + floorY + '" width="' + W + '" height="' + (H - floorY) + '" fill="url(#floorP)"/>' +
+      // soubassement vert-gris, comme sur le modèle
+      '<rect x="0" y="' + (375 + dy) + '" width="' + W + '" height="' + (floorY - 375 - dy) + '" fill="#1f312c" opacity=".55"/>' +
+      '<rect x="0" y="' + (373 + dy) + '" width="' + W + '" height="3" fill="#0a0f0e" opacity=".5"/>';
+    g += '<rect x="0" y="' + floorY + '" width="' + W + '" height="' + (H - floorY) + '" fill="url(#floorP)"/>' +
       '<rect x="0" y="' + floorY + '" width="' + W + '" height="' + (H - floorY) + '" fill="#050707" opacity=".55"/>' +
       '<rect x="0" y="' + (floorY - 34) + '" width="' + W + '" height="36" fill="url(#plinthP)"/>' +
       '<rect x="0" y="' + (floorY - 34) + '" width="' + W + '" height="36" fill="#000" opacity=".4"/>' +
@@ -172,11 +192,11 @@
   function silhouette(p) {
     pose = p || pose;
     var nom = pose === 'tel' && sujet !== 'A' ? 'debout' : pose;
-    src('silImg', 'sil_' + sujet + '_' + nom);
-    // L'enfant (vérité C) est plus petit : sa tête apparaît plus bas derrière le verre.
-    var k = (sujet === 'C' ? 0.8 : 1) * KG, S = 124 * k, pied = GL.y + (0.4 + 0.975 * 124) * KG;
-    attr('silImg', 'width', (119 * k).toFixed(1)); attr('silImg', 'height', S.toFixed(1));
-    attr('silImg', 'x', (GL.x + GL.w / 2 - 119 * k / 2).toFixed(1)); attr('silImg', 'y', (pied - 0.975 * S).toFixed(1));
+    // Toutes les poses partagent le même canevas : pas de recalage. Avec les séries par vérité, l'enfant (C) sera réduit.
+    src('silImg', silNom(nom));
+    var k = SIL_PAR_VERITE && sujet === 'C' ? 0.8 : 1, S = SIL.s * k;
+    attr('silImg', 'width', S); attr('silImg', 'height', S);
+    attr('silImg', 'x', (SIL.x + SIL.s * (1 - k) / 2).toFixed(1)); attr('silImg', 'y', (SIL.y + SIL.s * 0.95 * (1 - k)).toFixed(1));
   }
   function poseVie(vie) { return vie >= 3 ? 'debout' : vie === 2 ? 'courbe' : 'accroupi'; }
   var vieCourante = 3;
@@ -197,7 +217,7 @@
     // caméra
     var blind = info.cameraAveugle, cut = has('cameraCoupee'), tournee = has('cameraTournee');
     track = s.cycle >= 3 && !blind && !info.urgence;
-    camBase = tournee ? '' : 'scale(-1 1)';
+    camBase = tournee ? 'scale(-1 1)' : '';
     attr('camRot', 'transform', camBase);
     attr('camMask', 'opacity', blind && !cut && !tournee ? 1 : 0);
     attr('camImg', 'opacity', cut ? 0.75 : 1);
@@ -209,8 +229,8 @@
     attr('telImg', 'opacity', info.decroche ? 0 : 1); attr('telImg2', 'opacity', info.decroche ? 1 : 0);
     attr('note', 'opacity', s.cycle >= 4 && !s.done.H1 ? 1 : 0);
     var tir = s.flags.tiroirOuvert ? (s.flags.tournevisDispo && !s.flags.tournevisPris && !has('tournevis') ? 'tiroir2_tournevis' : 'tiroir2_vide') : 'tiroir2_ferme';
-    src('drawerImg', tir); attr('drawerImg', 'height', { tiroir2_ferme: 60, tiroir2_tournevis: 101, tiroir2_vide: 93.8 }[tir]);
-    attr('compImg', 'opacity', s.flags.compartiment ? 0 : 1); attr('compFuse', 'opacity', s.flags.compartiment === 'ouvert' ? 1 : 0);
+    src('drawerImg', tir);
+    src('compImg', !s.flags.compartiment ? 'compart_ferme' : s.flags.compartiment === 'ouvert' ? 'compart_fusible' : 'compart_vide');
     src('grilleImg', has('conduit') ? 'grille_ouverte' : 'grille');
     var known = has('trappe') || (has('code') && has('code41')) || s.flags.fusibleInstalle || s.done.P4;
     attr('trappe', 'opacity', known ? 1 : 0);
@@ -220,6 +240,9 @@
     attr('ledCam', 'fill', cut && s.done.P3 === 'A' ? '#e3262b' : '#3ee08f');
     attr('ledBtn', 'fill', has('boutonDesactive') ? '#e3262b' : '#3ee08f');
     attr('ledAux', 'fill', s.flags.aux === 'defaut' ? '#e3262b' : '#3ee08f');
+    src('levCam', cut && s.done.P3 === 'A' ? 'levier_bas' : 'levier_haut');
+    src('levBtn', has('boutonDesactive') ? 'levier_bas' : 'levier_haut');
+    src('levAux', s.flags.aux === 'defaut' ? 'levier_bas' : 'levier_haut');
     // bouton
     attr('btnGlow', 'opacity', info.ordre ? 0.8 : 0); attr('btnGlow', 'class', info.ordre ? 'pulse' : '');
     door(info.porteOuverte);
@@ -303,9 +326,9 @@
   // B3 : la « preuve », une vidéo granuleuse sur le moniteur (différente selon la vérité).
   function video(ms) {
     var v = $('video'); if (!v) return;
-    var x = SC.x, y = SC.y, w = SC.w, h = SC.h, sil = 'sil_' + sujet + '_debout';
-    var fond = sujet === 'B' ? I('', 'rev_B', x - 10, y - 8, w + 20, h + 16) : I('', 'chambre18', x - 10, y - 8, w + 20, h + 16) +
-      (sujet === 'A' ? I('', sil, x + w * 0.2, y + 6 * KS, 100 * KS, 104 * KS) + I('', 'sil_A_poing', x + w * 0.55, y + 4 * KS, 100 * KS, 104 * KS, ' opacity=".8"') : I('vidSil', 'sil_C_debout', x - 60 * KS, y + 22 * KS, 84 * KS, 88 * KS));
+    var x = SC.x, y = SC.y, w = SC.w, h = SC.h, t = h * 1.25;
+    var fond = sujet === 'B' ? I('', 'rev_B', x - 10, y - 8, w + 20, h + 16, ' preserveAspectRatio="xMidYMid slice"') : I('', 'chambre18', x - 10, y - 8, w + 20, h + 16, ' preserveAspectRatio="xMidYMid slice"') +
+      (sujet === 'A' ? I('', silNom('debout'), x + w * 0.22, y - h * 0.05, t, t) + I('', silNom('poing'), x + w * 0.45, y - h * 0.08, t, t, ' opacity=".8"') : I('vidSil', silNom('debout'), x - t * 0.6, y + h * 0.05, t, t));
     v.innerHTML = '<g style="filter:grayscale(1) contrast(1.2) brightness(.8)">' + fond + '</g><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="#0a2a22" opacity=".35"/>' +
       '<text id="vidT" x="' + (x + w - 8) + '" y="' + (y + 20) + '" text-anchor="end" font-family="VT323, monospace" font-size="17" fill="#bff5e4">14:02</text>' +
       '<circle cx="' + (x + 13) + '" cy="' + (y + 14) + '" r="4.5" fill="#ff3b30" class="pulse"/>';
@@ -373,7 +396,7 @@
     silFrappe: function () { poseTemp('poing', 1800); var n = 0, iv = setInterval(function () { attr('silMove', 'transform', n % 2 ? '' : 'translate(-4 2)'); if (++n > 5) { clearInterval(iv); attr('silMove', 'transform', ''); } }, 140); },
     silTourne: function () { poseTemp('tel', 2600); if (sujet !== 'A') { attr('silMove', 'transform', 'translate(40 0)'); later2(2200, function () { attr('silMove', 'transform', ''); }); } },
     silBuee: function () { attr('buee', 'opacity', 0.75); later2(3800, function () { attr('buee', 'opacity', 0); }); },
-    compartiment: function () { attr('compImg', 'opacity', 0); attr('compFuse', 'opacity', 1); },
+    compartiment: function () { src('compImg', 'compart_fusible'); },
     silSursaut: function () { harmLeger(); },
     silFige: function () { attr('hand', 'opacity', 0); attr('silMove', 'transform', ''); silhouette('debout'); },
     video: function () { video(5200); }
