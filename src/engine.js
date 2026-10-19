@@ -8,7 +8,7 @@
   var S = (typeof module === 'object' && module.exports) ? require('./story.js') : root.BRStory;
 
   // Trente secondes pour un ordre urgent (ou un appel qui sonne), après la présentation du texte.
-  var DUREES = { ordre: 30, appel: 30 };
+  var DUREES = { ordre: 30, appel: 30, coupure: 10 }; // coupure : secondes sans caméra avant le retour du réseau
   var DERNIER = 20;
   // Table unique des moments imposés (docs/DIRECTIVES_REV2.txt §3). Le 11 (T4) dépend de la ligne.
   var IMPOSES = { 2: 'B1', 4: 'B2', 7: 'B3', 10: 'B4', 13: 'B5', 16: 'M16', 18: 'B6' };
@@ -70,7 +70,7 @@
   }
   function libre(s, c) { return c < DERNIER && !forcedId(s, c) && s.flags.awayCycle !== c; }
   function kind(x) { return !x ? null : x.ordre ? 'ordre' : x.appel ? 'appel' : 'impose'; }
-  function duree(s) { var x = BY_ID[forcedId(s)]; var k = kind(x); return k === 'ordre' ? DUREES.ordre : k === 'appel' ? DUREES.appel : null; }
+  function duree(s) { var x = BY_ID[forcedId(s)]; var k = kind(x); return k === 'ordre' ? DUREES.ordre : k === 'appel' ? DUREES.appel : !x && coupure(s) ? DUREES.coupure : null; }
 
   // ---------- contexte donné aux effets de story.js ----------
   function ctx(s, ev, x) {
@@ -85,7 +85,7 @@
       ecran: function (txt) { ev.push({ t: 'ecran', txt: txt }); },
       tel: function (txt) { ev.push({ t: 'tel', txt: txt }); },
       voix: function (txt) { ev.push({ t: 'voix', txt: txt }); },
-      narr: function (txt) { ev.push({ t: 'narr', txt: txt }); },
+      narr: function (txt, pop) { ev.push(pop ? { t: 'narr', txt: txt, pop: true } : { t: 'narr', txt: txt }); }, // pop : texte important (gardien, indice) affiché en popup
       son: function (n) { ev.push({ t: 'son', n: n }); },
       anim: function (n) { ev.push({ t: 'anim', n: n }); },
       image: function (n) { ev.push({ t: 'image', n: n }); },
@@ -105,7 +105,7 @@
         s.items.push(k); if (first) s.found.push(k); ev.push({ t: 'objet', k: k, gain: true });
         if (s.flags.cacheVide && S.CONFISCABLES.indexOf(k) >= 0 && !s.flags['autorise_' + k]) { s.flags.cacheVide = false; s.flags.cache = k; g.narr('Tu glisses l\'objet sous la plaque desserrée : ' + S.OBJETS[k].toLowerCase() + '.'); }
         var r = S.REPLIQUES_OBJETS[k];
-        if (r && first && !cameraAveugle(s)) r.sys.forEach(function (l) { g.ecran(l); });
+        if (r && first && !cameraAveugle(s) && !s.flags['autorise_' + k]) r.sys.forEach(function (l) { g.ecran(l); });
       },
       lose: function (k) { var i = s.items.indexOf(k); if (i >= 0) { s.items.splice(i, 1); ev.push({ t: 'objet', k: k, gain: false }); } },
       // Confiance : un gain par motif, une seule fois.
@@ -191,7 +191,7 @@
     s.flags.intervention = Math.min(19, s.flags.entree ? s.cycle : s.cycle + 1);
     ev.push({ t: 'son', n: 'alarm' });
     ev.push({ t: 'ecran', txt: 'SUJET 17.|INTERVENTION|EN COURS.' });
-    ev.push({ t: 'narr', txt: 'Des pas lourds approchent dans le couloir. Il te reste peut-être une chance d\'agir.' });
+    ev.push({ t: 'narr', txt: 'Des pas lourds approchent dans le couloir. Il te reste peut-être une chance d\'agir.', pop: true });
   }
 
   function available(s, x) {
@@ -285,11 +285,14 @@
       } else throw new Error('Sortie impossible : ' + action.via);
     } else if (action.type === 'temps') {
       // Fin du chrono : un ordre non exécuté est un REFUS (jamais de pression automatique) ; un appel se tait.
-      if (!forced || !fk || fk === 'impose') throw new Error('Pas de chrono en cours.');
+      if (!forced && coupure(s)) { ev.push({ t: 'ecran', txt: 'RÉSEAU|RÉTABLI.' }); }
+      else if (!forced || !fk || fk === 'impose') throw new Error('Pas de chrono en cours.');
+      else {
       var gf = ctx(s, ev, forced);
       if (fid === 'B2' && s.flags.b2 > 0) { s.done.B2 = 'partiel'; gf.narr('Tu t\'arrêtes là.'); S.B2_ARRET(gf); }
       else if (fk === 'ordre') { gf.narr('Tu n\'as pas appuyé.'); s.done[fid] = 'B'; forced.B.fx(gf); }
       else { s.done[fid] = 'auto'; gf.narr('Le téléphone finit par se taire.'); }
+      }
     } else if (action.type === 'attendre') {
       if (fk) throw new Error('On ne peut pas attendre maintenant.');
       ev.push({ t: 'choix', id: null, label: 'Attendre' });
@@ -324,7 +327,7 @@
     if (c >= DERNIER) { verdict(s, ev); return; }
     s.flags.b2 = 0;
     if (s.flags.porte && c > s.flags.porte.until) { s.flags.porte = null; ev.push({ t: 'porte', open: false }); g.narr('Ta porte se referme.'); }
-    if (s.flags.vesteJusqua != null && c === s.flags.vesteJusqua + 1 && !has(s, 'cameraCoupee') && !has(s, 'cameraTournee')) { g.narr('La porte s\'entrouvre. Un gardien retire ta veste de la caméra, sans un mot, et ressort.'); s.flags.vesteJusqua = null; }
+    if (s.flags.vesteJusqua != null && c === s.flags.vesteJusqua + 1 && !has(s, 'cameraCoupee') && !has(s, 'cameraTournee')) { g.narr('La porte s\'entrouvre. Un gardien retire ta veste de la caméra, sans un mot, et ressort.', true); s.flags.vesteJusqua = null; }
     confisquer(s, g);
     // Diagnostics techniques (le soupçon ne compte qu'une fois par défaut).
     if (s.flags.diagCam === c) g.incident('defautCamera', 1, 'PANNE CAMÉRA|DIAGNOSTIQUÉE.');
@@ -355,7 +358,7 @@
     var pris = l.filter(function (k) { return has(s, k) && s.flags.cache !== k; });
     if (!pris.length) return;
     pris.forEach(function (k) { g.lose(k); });
-    g.narr('CLONK. La porte s\'ouvre. Un gardien entre, prend ' + pris.map(function (k) { return S.OBJETS[k].toLowerCase(); }).join(' et ') + ', et repart sans un mot.');
+    g.narr('CLONK. La porte s\'ouvre. Un gardien entre, prend ' + pris.map(function (k) { return S.OBJETS[k].toLowerCase(); }).join(' et ') + ', et repart sans un mot.', true);
     g.ecran('OBJET NON AUTORISÉ|RÉCUPÉRÉ.');
   }
 
@@ -372,7 +375,7 @@
     if (!dit && g.hasard() < 0.35) g.ecran(g.pick(P.ambiance));
     if (!dispo18(s)) return;
     // Indices gratuits : deux au plus par partie.
-    if (s.cycle >= 5 && (s.flags.indices || 0) < 2 && g.hasard() < 0.14 && (s.truth !== 'A' || s.flags.ligne === 'ouverte')) { s.flags.indices = (s.flags.indices || 0) + 1; g.narr(g.pick(P.indices[s.truth])); return; }
+    if (s.cycle >= 5 && (s.flags.indices || 0) < 2 && g.hasard() < 0.14 && (s.truth !== 'A' || s.flags.ligne === 'ouverte')) { s.flags.indices = (s.flags.indices || 0) + 1; g.narr(g.pick(P.indices[s.truth]), true); return; }
     var ligne = s.flags.ligne === 'ouverte', d = S.DOUTES[s.flags.doutes];
     if (ligne && d && d.quand(g) && g.hasard() < 0.25) { s.flags.doutes++; d.ev.forEach(function (e) { e[0] === 'voix' ? g.voix(e[1]) : g.ecran(e[1]); }); return; }
     if (g.hasard() < 0.35) {

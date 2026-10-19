@@ -19,7 +19,7 @@ function actions(t, r) {
   Object.keys(t.objets).forEach(function (o) { t.objets[o].forEach(function (x) { ['A', 'B', 'C'].forEach(function (c) { if (x[c] && x[c].ok && (!t.forced || x.id === t.forced.id || x.gratuit || r() < 0.2)) l.push({ type: 'situation', id: x.id, choix: c }); }); }); });
   if (t.forced && t.forced.impose && !t.forced.objet) ['A', 'B', 'C'].forEach(function (c) { if (t.forced[c] && t.forced[c].ok) l.push({ type: 'situation', id: t.forced.id, choix: c }); });
   if (t.peutAppuyer && (t.forcedKind === 'ordre' || r() < 0.15)) l.push({ type: 'appuyer' });
-  if (t.forcedKind === 'ordre' || t.forcedKind === 'appel') l.push({ type: 'temps' });
+  if (t.forcedKind === 'ordre' || t.forcedKind === 'appel' || (t.duree && !t.forcedKind)) l.push({ type: 'temps' });
   if (t.peutAttendre && (r() < 0.3 || !l.length)) l.push({ type: 'attendre' });
   t.sorties.forEach(function (x) { if (r() < 0.3) l.push({ type: 'sortir', via: x.via }); });
   return l;

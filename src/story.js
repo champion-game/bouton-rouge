@@ -570,7 +570,7 @@
   // Ce qui se passe au début de certains moments. Les ordres ont leur propre annonce.
   function inspection(g) {
     g.ecran(g.pick(PHRASES.inspection));
-    g.narr('Des pas. La porte s\'ouvre. Un gardien entre, sans un mot. Il inspecte le tiroir, le bureau, la grille et le boîtier.');
+    g.narr('Des pas. La porte s\'ouvre. Un gardien entre, sans un mot. Il inspecte le tiroir, le bureau, la grille et le boîtier.', true);
     if (g.s.soupcon < 2) { g.narr('Il regarde la vitre de la 18, puis toi. Il repart.'); return; }
     // Il remet en ordre ce qu'il voit, sans toucher aux circuits.
     if (g.flag('vesteJusqua') != null && g.cycle <= g.flag('vesteJusqua')) { g.flag('vesteJusqua', null); g.narr('Il retire ta veste de la caméra.'); }
@@ -635,7 +635,7 @@
     ['anim', 'vitreAllumee'], ['anim', 'silArrive'], ['anim', 'silMain'],
     ['narr', 'Derrière la vitre, une lumière s\'allume. Quelque chose bouge derrière le verre dépoli. Une silhouette s\'approche et pose lentement sa paume contre la vitre.'],
     ['ecran', 'SUJET ADJACENT|DÉTECTÉ.'], ['ecran', 'AUCUNE COMMUNICATION N\'EST NÉCESSAIRE.'],
-    ['anim', 'silFrappe'], ['voix', 'toc.'],
+    ['anim', 'silFrappe'],
     ['ecran', 'L\'ÉVALUATION COMMENCE MAINTENANT.'],
     ['ecran', 'EN ATTENTE'], ['ecran', 'Familiarisez-vous avec votre poste.']
   ];

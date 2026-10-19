@@ -53,9 +53,9 @@
 
   // ---------- messages courts sur la pièce ----------
   var toastT = null;
-  function toast(text, cls) {
+  function toast(text, cls, ms) {
     var el = $('toast'); el.textContent = text; el.className = 'toast on' + (cls ? ' ' + cls : '');
-    clearTimeout(toastT); toastT = setTimeout(function () { el.className = 'toast'; }, 2400);
+    clearTimeout(toastT); toastT = setTimeout(function () { el.className = 'toast'; }, ms || 2400);
   }
 
   // Attente qu'on peut raccourcir en touchant la pièce.
@@ -166,7 +166,7 @@
         case 'choix': addHist('› ' + e.label, 'me'); break;
         case 'ecran':
           // Le popup passe avant la suite du moniteur : tout reste dans l'ordre.
-          if (lines.length) { R.render(s, roomInfo()); renderBag(); var l0 = lines; lines = []; if (!(await infoPop(l0, my, auto))) return false; }
+          if (lines.length) { R.render(s, roomInfo()); renderBag(); var l0 = lines; lines = []; if (!(await montrer(l0, my, auto))) return false; }
           var n = R.ecran(e.txt, { glitch: 250 }); lastEcran = e.txt; A.sfx('glitch'); addHist(ecranTxt(e.txt), 'ecr'); await wait(tempsEcran(n), my); break;
         case 'tel': case 'narr': case 'voix': lines.push(e); addHist(e.txt, e.t === 'narr' ? '' : 'tel'); break;
         case 'image': lines.push(e); break;
@@ -192,7 +192,18 @@
       }
     }
     // Le popup ne répète pas le moniteur : seulement le téléphone, la voix de la 18 et ce qu'on voit ou fait.
-    if (lines.length && my === run) { R.render(s, roomInfo()); renderBag(); return infoPop(lines, my, auto); }
+    if (lines.length && my === run) { R.render(s, roomInfo()); renderBag(); return montrer(lines, my, auto); }
+    return my === run;
+  }
+  // Popup seulement pour une discussion (téléphone, voix de la 18), un papier ou un moment fort (gardien, indice).
+  // Une simple description de ce qu'on voit ou entend passe en bandeau, sans bloquer.
+  async function montrer(lines, my, auto) {
+    if (lines.some(function (e) { return e.t !== 'narr' || e.pop; })) return infoPop(lines, my, auto);
+    for (var i = 0; i < lines.length; i++) {
+      if (my !== run) return false;
+      var n = lines[i].txt.length; toast(lines[i].txt, '', 1600 + n * 45);
+      await wait(Math.min(3200, 700 + n * 30), my);
+    }
     return my === run;
   }
 
@@ -318,7 +329,10 @@
       var M = E.PHRASES.minuteur, top = sec <= 10 ? M[10] : sec <= 15 ? M[15] : t.forced.ecran;
       R.ecran(top + '|' + sec, { color: sec <= 3 ? '#ff5a4a' : '#ff8a7a', instant: true });
     }
-    if (low && sec !== lastSec && sec > 0) A.sfx('tick');
+    // Coupure de courant : le moniteur, sur la batterie de secours, compte jusqu'au retour du réseau.
+    var coup = !busy && !forcedKind() && t && t.duree && s.cycle === 5;
+    if (coup && sec !== lastSec && lastSec !== -1) R.ecran('RÉTABLISSEMENT|RÉSEAU DANS|' + sec + ' S', { color: '#ffb060', instant: true });
+    if ((low || (coup && sec <= 3)) && sec !== lastSec && sec > 0) A.sfx('tick');
     lastSec = sec;
   }
   setInterval(function () {
