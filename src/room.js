@@ -151,9 +151,8 @@
   '<g style="pointer-events:none"><g mask="url(#reflM)"><use href="#desk" transform="translate(0 1632) scale(1 -1)"/></g>' +
   '<g class="lit"><ellipse cx="836" cy="884" rx="300" ry="70" fill="url(#sheenG)"/><ellipse cx="836" cy="890" rx="70" ry="120" fill="url(#sheenG)"/></g></g>' +
   '<g id="desk">' +
-  // dessous du bureau : panneau de fond sombre, châssis de l'artiste (pack V2) et caisson droit, derrière les dessins
-  '<g style="pointer-events:none"><rect x="472" y="572" width="736" height="196" fill="#151918"/>' + I('', 'bureau_chassis', 459, 560, 756, 258, ' preserveAspectRatio="none"') +
-  '<rect x="1004" y="572" width="206" height="244" fill="#2f3534" stroke="#151918" stroke-width="2"/></g>' +
+  // dessous du bureau d'Amine (fond, côtés, caisson, socle ; sans son plateau), derrière les tiroirs, le compartiment, le pied et le plateau
+  I('', 'bureau_fond', 442.4, 566.0, 785.6, 255.0, ' preserveAspectRatio="none" style="pointer-events:none"') +
   '<g class="hs" data-k="bureau">' + I('socleImg', 'bureau_socle', 737.5, 562.5, 188.5, 254.6) + '</g>' +
   '<g id="compart" class="hs" data-k="compart">' + I('compImg', 'compart_ferme', 991.5, 575, 225.6, 207.5) + '</g>' +
   '<g id="drawer" class="hs" data-k="drawer">' + I('drawerImg', 'tiroir2_ferme', 464.5, 562.1, 251.6, 169.4) + '</g>' +

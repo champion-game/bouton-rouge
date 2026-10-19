@@ -32,8 +32,8 @@ HTML/CSS/JS sans framework ni build (`index.html` suffit). Pièce en SVG vue de 
 
 ## État actuel
 
-- Version **5.8** : 20 moments (12 libres, 8 imposés), 6 ordres, appels, archives, 18 fins + Curiosité. Pack graphique v1 placé d'après le modèle d'Amine.
-- Silhouette de la 18 selon la vérité : victime = homme, complice = femme, illusion = enfant (`SIL_PAR_VERITE` dans `room.js`). Pack pièce V2 : seuls bouton (plus net), téléphone (recalé) et trappe préparée ont changé ; châssis de bureau + panneau de fond sous le plateau.
+- Version **5.9** : 20 moments (12 libres, 8 imposés), 6 ordres, appels, archives, 18 fins + Curiosité. Pack graphique v1 placé d'après le modèle d'Amine.
+- Silhouette de la 18 selon la vérité : victime = homme, complice = femme, illusion = enfant (`SIL_PAR_VERITE` dans `room.js`). Pack pièce V2 : seuls bouton (plus net), téléphone (recalé) et trappe préparée ont changé ; dessous du bureau = image d'Amine `bureau_fond.webp` (sans plateau), derrière tiroir, pied, compartiment et plateau.
 - Rendu 5.5 : mur de fond `mur_fond.webp` reconstruit d'après le modèle (`tools/fond-mur.py`), profondeur (sol en perspective `sol()`, murs latéraux, ombres portées `ombre()`, liserés de lampe `lisere()`), carte d'ombre `ombre.webp` tirée de `keyart.webp` (`tools/carte-lumiere.py 0.2 38 0.56`), lampe lumineuse, vitre embrumée, grain `grain.webp`, sol mouillé (reflet du bureau et de la porte), tuyaux, reflets vitre et écran (classe `lit`, éteints avec la lampe).
 - Ensuite : tests avec 5 joueurs, direction artistique et son niveau Steam, page Steam, traduction anglaise.
 
