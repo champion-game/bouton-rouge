@@ -54,7 +54,8 @@
   var SVG = '' +
   '<svg id="room" viewBox="0 0 ' + W0 + ' ' + H0 + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="La Chambre 17">' +
   '<defs>' +
-  '<pattern id="wallP" width="420" height="420" patternUnits="userSpaceOnUse">' + I('', 'mur', 0, 0, 420, 420) + '</pattern>' +
+  // mur de fond reconstruit d'après le modèle (tools/fond-mur.py) : bandeau à y 500 dans l'image, recalé sur y 375 par layout()
+  '<pattern id="wallP" width="1780" height="900" patternUnits="userSpaceOnUse">' + I('', 'mur_fond', 0, 0, 1780, 900) + '</pattern>' +
   '<pattern id="floorP" width="340" height="340" patternUnits="userSpaceOnUse">' + I('', 'sol', 0, 0, 340, 340) + '</pattern>' +
   '<pattern id="plinthP" width="560" height="36" patternUnits="userSpaceOnUse">' + I('', 'plinthe', 0, 0, 560, 36) + '</pattern>' +
   '<linearGradient id="coneG" x1="0" y1="0" x2="0" y2="1"><stop id="coneStop" offset="0" stop-color="#fff3d6" stop-opacity=".38"/><stop offset="1" stop-color="#fff3d6" stop-opacity="0"/></linearGradient>' +
@@ -238,11 +239,9 @@
     attr('ombre', 'x', dx - 400); attr('ombre', 'y', dy - 220);
     ['tint', 'dark', 'flash', 'vig', 'grain'].forEach(function (id) { attr(id, 'width', W); attr(id, 'height', H); });
     // Mur, plinthe, sol, et les deux coins de la pièce en perspective.
-    var c = 84, g = '<rect x="0" y="0" width="' + W + '" height="' + floorY + '" fill="url(#wallP)"/>' +
-      '<rect x="0" y="0" width="' + W + '" height="' + floorY + '" fill="#0d1212" opacity=".5"/>' +
-      // soubassement vert-gris, comme sur le modèle
-      '<rect x="0" y="' + (375 + dy) + '" width="' + W + '" height="' + (floorY - 375 - dy) + '" fill="#1b2725" opacity=".5"/>' +
-      '<rect x="0" y="' + (373 + dy) + '" width="' + W + '" height="3" fill="#0a0f0e" opacity=".5"/>';
+    attr('wallP', 'patternTransform', 'translate(' + ((W - 1780) / 2).toFixed(1) + ' ' + (dy - 125).toFixed(1) + ')');
+    // mur en béton et soubassement vert-gris, comme sur le modèle
+    var c = 84, g = '<rect x="0" y="0" width="' + W + '" height="' + floorY + '" fill="url(#wallP)"/>';
     g += '<rect x="0" y="' + floorY + '" width="' + W + '" height="' + (H - floorY) + '" fill="url(#floorP)"/>' +
       '<rect x="0" y="' + floorY + '" width="' + W + '" height="' + (H - floorY) + '" fill="#050707" opacity=".55"/>' +
       '<rect x="0" y="' + (floorY - 34) + '" width="' + W + '" height="36" fill="url(#plinthP)"/>' +

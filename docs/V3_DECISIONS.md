@@ -142,3 +142,7 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - Sol carrelé en perspective (point de fuite au-dessus du bureau), murs de côté dégradés, ombre au pied des murs.
 - Ombres portées sur le mur derrière la porte, le moniteur, la vitre, les témoins, le boîtier et les tuyaux ; ombre de contact sous la porte.
 - Liserés de lumière de la lampe sur le haut du moniteur et le bord du bureau (éteints avec la lampe).
+
+## Version 5.5 (19/10) : mur de fond tiré du modèle
+
+- Le motif répété du mur est remplacé par un mur reconstruit à partir des zones vides de l’image de référence : béton taché en haut, soubassement vert-gris, trait au bandeau. Image `mur_fond.webp`, refaite avec `tools/fond-mur.py`. `mur.webp` n’est plus utilisé.
