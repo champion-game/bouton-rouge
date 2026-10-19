@@ -6,7 +6,7 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 - `docs/V3_CANONIQUE.md` : **la référence de conception actuelle (V3)**, écrite par Amine. Lis-la avant toute modification de règles.
 - `docs/V3_DECISIONS.md` : ce qui a été tranché en codant la V3 (cycles et chronos jamais visibles, ordre ignoré = refus, solutions aux failles).
 - `docs/ARBORESCENCE_V2.md` : l'ancienne conception v2, gardée pour l'historique.
-- `docs/DIRECTIVES_REV2.txt` : directives de modification d'Amine (révision 2, 19/10), à appliquer par lots après accord.
+- `docs/DIRECTIVES_REV2.txt` : directives de modification d'Amine (révision 2, 19/10), appliquées en version 5.0.
 - `docs/SCRIPT_NARRATIF.md` : **la référence des textes** (dialogues, phrases du Système et de la 18, fins), écrite par Amine. Les textes du jeu (`src/story.js`) en viennent.
 
 ## Contexte du créateur
@@ -26,11 +26,11 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 
 ## État actuel
 
-- `index.html` est la **V3** jouable (version 4.3) : 20 cycles cachés, 5 fils, 23 situations + 11 actions (appels sortants, fusible, plan, objets à prendre, pages du journal de 16), 18 fins + Curiosité. Code dans `src/`, dessins de l'artiste dans `assets/img/` (WebP découpés depuis ses planches).
+- `index.html` est la version jouable **5.0** (directives révision 2 appliquées) : 20 moments cachés (12 libres, 8 imposés), 6 ordres, appels, archives, 18 fins + Curiosité. Code dans `src/`, dessins de l'artiste dans `assets/img/`.
 - La silhouette de la 18 change selon la vérité cachée : homme (A), femme (B), enfant (C).
 - La pièce reprend l'image de référence d'Amine (vue de face, base 1672 × 941). `docs/RESUME_JEU.txt` résume le jeu et tous les scénarios.
 - `prototype-v1.html` garde le prototype v1 (histoire linéaire, 4 fins) pour comparaison.
-- Tests : `node tools/test-engine.js` (30 000 parties au hasard par défaut).
+- Tests : `node tools/test-engine.js` (2 000 parties au hasard, un parcours par fin, tests d'acceptation des directives).
 - Les décisions d'intégration de la V3 sont dans `docs/V3_DECISIONS.md`.
 
 ## Structure visée pour la v2

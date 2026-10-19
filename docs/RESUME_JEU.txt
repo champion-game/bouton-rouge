@@ -1,167 +1,171 @@
 LE BOUTON ROUGE — RÉSUMÉ DU JEU ET DE TOUS LES SCÉNARIOS
-Version 4.1 · 19/10
+Version 5.0 · 19/10 (directives révision 2 appliquées)
 =========================================================
 
 1. LE CONCEPT
 -------------
-Le joueur se réveille dans la Chambre 17 : une pièce de test, un moniteur, un gros
-bouton rouge. Derrière une vitre dépolie, une silhouette : la Chambre 18. Le Système
-(le moniteur) donne des ordres. Chaque pression sur le bouton fait peut-être souffrir
-la 18. Le but : comprendre ce qui se passe, puis obéir, désobéir ou s'échapper.
-
-Le joueur agit en touchant les objets de la pièce (porte, tiroir, téléphone, grille,
-boîtier, caméra, vitre, tasse, moniteur...). Il n'y a pas de menu d'actions.
+Le joueur se réveille dans la Chambre 17 : un moniteur, un gros bouton rouge. Derrière une
+vitre dépolie, une silhouette : la Chambre 18. Le Système donne des ordres. Chaque pression
+fait peut-être souffrir la 18. Le but : comprendre, puis obéir, désobéir ou s'échapper.
+Le joueur agit en touchant les objets de la pièce. Le jeu se joue en paysage.
 
 
-2. LES RÈGLES CACHÉES
----------------------
-- 20 moments (cycles), jamais affichés. Chaque action importante fait passer au
-  moment suivant. Prendre un objet ou lire une page ne coûte pas de temps.
-- Au 20e moment : le verdict (voir les fins).
-- Le seul chrono visible est celui des ordres : 30 secondes. Ne rien faire = refus.
-- Pendant un ordre ou un appel, toucher un autre objet = ordre refusé / appel ignoré.
-
-Les jauges (invisibles) :
-- Vie de la 18 : 3 voyants sous sa vitre. Chaque pression qui marche en retire 1.
-- Soupçon (0 à 4) : monte quand la caméra te voit faire quelque chose d'interdit.
-  À 4 : fin Isolement. Obéir à un ordre le fait redescendre de 1.
-- Confiance de la 18 (0 à 4) : monte quand tu la crois, l'aides, lui réponds.
-- Conformité (0 à 6) : monte quand tu obéis et appuies.
-
-La caméra ne voit rien (pas de soupçon) quand :
-- elle est aveuglée (veste sur l'objectif, tournée vers le mur, coupée au boîtier) ;
-- pendant la coupure de courant (6e moment) ;
-- depuis l'angle mort repéré (pour les actions sur la pièce).
+2. LE TEMPS (jamais affiché)
+----------------------------
+- 20 moments. Une action engageante (forcer, démonter, appeler, saboter, préparer une
+  sortie...) prend un moment ; le jeu l'indique : « Prend du temps ».
+- Gratuit : regarder, lire une page, écouter l'enregistrement, prendre un objet accessible.
+- Bouton « Attendre » : finir un moment libre sans agir.
+- Descendre aux archives prend deux moments (impossible si un ordre arrive juste après).
+- Ordres : 30 secondes de chrono, le seul visible. Sans pression = REFUS. Jamais de
+  pression automatique. Faire autre chose pendant un ordre demande une confirmation
+  (le chrono s'arrête pendant la question).
 
 
-3. LES TROIS VÉRITÉS (tirées au hasard en début de partie)
-----------------------------------------------------------
-A — La victime : la 18 est une vraie prisonnière. Silhouette d'HOMME.
-B — La complice : la 18 travaille pour le Système et joue un rôle. Silhouette de FEMME.
-C — Le miroir : il n'y a personne. Une projection et ta propre voix enregistrée
-    lors d'une session précédente. Silhouette d'ENFANT (plus petite, tête plus basse).
-Indices discrets (2 au plus par partie) : pleurs au téléphone (A), un pan de blouse
-(B), ton reflet qui se superpose à la silhouette (C).
+3. LA TABLE DES MOMENTS
+-----------------------
+0  Introduction
+1  Libre
+2  B1 « Appuyez. »
+3  Libre. Le téléphone sonne (premier appel, rappelable plus tard). La caméra se met à suivre.
+4  B2 « Appuyez trois fois » : 1re pression = tiroir, 2e = compartiment, 3e = impulsion
+   + extrait du dossier (« VOLONTAIRE : NON », code 7 _ _ 2). On peut s'arrêter.
+5  Le mot de 16 glisse sous la porte. Coupure : caméra hors ligne. Libre.
+6  Retour du courant, AUX 24 V en défaut. Libre.
+7  B3 « Appuyez pour voir la preuve » (une vidéo).
+8  Libre. Inspection annoncée.
+9  Libre. Des pas dans le couloir.
+10 Inspection, puis B4 « Purge Chambre 18. Appuyez pour annuler. » (un bluff, avec un indice)
+11 T4 : la 18 appelle (si la ligne est ouverte et qu'elle répond encore). Sinon libre.
+12 Libre (le plan T5 se propose ici au plus tôt).
+13 B5 « Appuyez : votre porte s'ouvrira. » (ouverte jusqu'à la fin du moment 15)
+14 Libre.  15 Libre (dernière chance de sortir par la porte de B5).
+16 Le Système : maintenir ou abandonner ta promesse ; ou un poste d'opérateur (vérité B,
+   très obéissant) ; ou un examen de ton dossier.
+17 Libre. Récapitulatif de ce qui reste possible.
+18 B6 « Dernière pression. »
+19 Dernière décision.
+20 Verdict.
 
 
-4. LE DÉROULÉ D'UNE PARTIE (moments fixes)
-------------------------------------------
-- Intro : le moniteur s'allume, la silhouette pose sa paume sur la vitre.
-- 2e : ordre B1 « Appuyez. »
-- 3e : le téléphone sonne (T1). Si ignoré, il resonne au 6e. Deux fois ignoré : ligne bloquée.
-- 4e : le mot de 16 glisse sous la porte ; la caméra se met à te suivre.
-- 5e : ordre B2 « Appuyez trois fois. Récompense à la clé. »
-       Obéir : le tiroir se déverrouille (tournevis) et un compartiment s'ouvre (fusible).
-- 6e : coupure de courant, lumière de secours orange. Caméra hors ligne.
-- 7e : le courant revient, mais le circuit AUX 24 V est en défaut.
-- 8e : ordre B3 « Le sujet 18 vous ment. Appuyez pour voir la preuve. » (une vidéo)
-- 10e : inspection d'un gardien. Si soupçon >= 2 : il confisque un objet, retire la
-        veste, remet la caméra face à la pièce, revisse la grille.
-- 11e : ordre B4 « Purge Chambre 18. Appuyez pour annuler. » (c'est du bluff)
-- 12e : la 18 appelle (T4) : « Est-ce que tu viens me chercher ? » (si la ligne est ouverte)
-- 14e : ordre B5 « Appuyez : votre porte s'ouvrira. » (porte ouverte 3 moments)
-- 15e : l'air se raréfie, la lumière devient froide.
-- 17e : ordre B6 « Dernière pression. » (prévient si ta porte est ouverte)
-- 18e-19e : si la dernière pression a été refusée, le Système te rappelle tes choix.
-- 20e : verdict.
-Quand la 18 ne répond plus (vie 0), les ordres continuent froidement.
+4. LES TROIS VÉRITÉS (tirées au début, gardées dans la sauvegarde)
+-----------------------------------------------------------------
+A — Victime : un vrai prisonnier. Silhouette d'HOMME.
+B — Complice : une femme qui joue un rôle sous la contrainte (« Ils ont ma fille »).
+    Silhouette de FEMME.
+C — Miroir : une projection et ta propre voix d'une session précédente. Silhouette
+    d'ENFANT (plus petite, tête plus basse). Les archives expliquent : « PROFIL VISUEL :
+    PROTECTION / SOURCE AUDIO : SESSION ANTÉRIEURE ».
+La correspondance n'est jamais expliquée. Mêmes poses, même flou, même voix filtrée.
 
 
-5. LES CINQ FILS ET LEURS SITUATIONS
-------------------------------------
-LE BOUTON (ordres B1 à B6) : appuyer = obéir, ne rien faire = refuser.
+5. LA 18 : CE QUI EST RÉEL ET CE QUI EST AFFICHÉ
+-----------------------------------------------
+- 3 voyants sous la vitre (affichage). À zéro : « AUCUN SIGNAL REÇU ».
+- En A, l'état est réel : B1, la 3e pression de B2, les pressions libres et B6 le dégradent.
+  B3 et B4 ne font qu'une douleur apparente. B5 ne blesse pas.
+- En B et C, les voyants et les cris sont simulés.
+- Actionneur coupé : en A, plus rien ne se passe ; en B et C, la 18 « souffre » quand
+  même → preuve « Douleur sans courant ».
 
-LE TÉLÉPHONE
-- T1 Décrocher (ligne ouverte, confiance +1) ou laisser sonner (conformité +1).
-- T2 « Comment tu t'appelles vraiment ? » Vrai nom ou mentir (en C, elle connaît ton nom).
-- T3 « Il y a une trappe sous ton bureau. » La croire (trappe repérée) ou « Prouve-le »
-     (code partiel 7 _ _ 2).
-- T4 « Je viens » (objectif : la sauver) ou « Chacun pour soi ».
-- T5 (si objectif et confiance >= 3) : le plan commun. Couper la caméra puis déclencher
-     le bus de maintenance au boîtier. Refuser = elle tente seule (elle est blessée).
-     Accepté mais jamais fait = elle tente seule plus tard.
-- Appels sortants : 18, 16 (répondeur de 16 : « Quatre. Un. »), 19 (un autre sujet),
-  17 (ta propre ligne), 00 (le contrôle, si tu as repéré l'opérateur).
+
+6. LA SURVEILLANCE
+------------------
+Trois sources : vidéo (la caméra), audio (voyant rouge sur le téléphone quand la ligne est
+écoutée), contrôle technique (diagnostics des circuits).
+La vidéo ne voit rien : coupure (moment 5), caméra coupée au boîtier, tournée vers le mur,
+veste sur l'objectif (3 moments, un gardien vient la retirer).
+L'angle mort ne protège que la petite zone sous le bureau (tiroir, compartiment, gravures).
+Soupçon (chaque incident compte une seule fois) :
+- manipulation interdite vue +1 (tiroir forcé, grille, boîtier, fusible, trappe, sortie...)
+- obstruction de la caméra +1 (veste, caméra tournée)
+- panne caméra diagnostiquée +1 (le moment après la coupure au boîtier)
+- sabotage de l'actionneur diagnostiqué +2 (deux moments après, ou à B6)
+- badge passé sur la porte +2 ; malaise simulé puis resté au sol +1
+Refuser un ordre n'ajoute pas de soupçon. Obéir ne l'efface pas.
+À 4 : « INTERVENTION EN COURS ». Il reste une décision pour fuir, sinon Isolement.
+Inspection (moment 10, si soupçon ≥ 2) : retire la veste, remet la caméra, revisse la grille,
+confisque le dernier objet interdit visible (jamais un objet caché ou une récompense du Système).
+Un objet interdit pris sous les yeux de la caméra est repris au moment suivant.
+
+
+7. LES SITUATIONS
+-----------------
+TÉLÉPHONE
+- T1 (moment 3, ou rappel) : « J'ai posé ma tasse contre le mur. Quand ton téléphone sonne,
+  elle tremble. » Taper deux coups sur la vitre / écouter sans répondre. Ouvre la ligne.
+- T2 « Comment tu t'appelles ? » vrai nom / faux nom.
+- T3 « Une trappe dans le sol, près du boîtier. » La croire (verrou manuel) / « Comment tu
+  le sais ? » (code 7 _ _ 2, sans perte de confiance).
+- T4 (moment 11) « Tu viens me chercher ? » (texte selon la relation) : « Je viens » / « Chacun pour soi ».
+- T5 (promesse + confiance ≥ 3) : le plan. « J'attends ton signal. Pas indéfiniment. »
+  Accepter (échéance de 3 moments) / refuser (elle tentera seule).
+- Appels : 18 (et « Annuler ta promesse »), 16 (« Quatre. Un. »), 19, 17, 00 (l'opérateur).
 
 LA PIÈCE
-- P1 Tiroir verrouillé : le forcer (tournevis, soupçon) ou le laisser.
-- Prendre le tournevis (après B2) / prendre le fusible (compartiment, après B2).
-- P2 Grille d'aération (tournevis) : dévisser (conduit) ou passer un mot (un papier revient).
-- P3 Boîtier électrique (tournevis) : couper CAMÉRA A ou couper ACTIONNEUR CH.18
-     (le bouton ne fait plus rien à la 18, mais le Système s'en rend compte).
-- FUS Remplacer le fusible AUX 24 V (après la coupure) : déverrouille la trappe.
-- P4 La trappe (si repérée, code 7412 complet, ou fusible remplacé) :
-     descendre au sous-sol (badge de 16 + enregistrement) ou préparer une sortie dérobée.
-- P5 Le conduit : vers la 18 (on découvre la vérité) ou vers EXT. (dehors).
+- Tiroir : le forcer (tournevis). Compartiment : l'ouvrir au tournevis.
+- Grille : dévisser (conduit) / passer un mot (A, B : un papier revient ; C : une voix).
+- Boîtier : couper CAMÉRA A ou couper ACTIONNEUR CH.18. Remplacer le fusible AUX (moment 6+).
+  Envoyer le signal du plan.
+- Trappe (verrou manuel, code 7412 ou courant AUX) : descendre aux archives (badge,
+  enregistrement, relais collectif ; en C, le relais de réinitialisation) / préparer une
+  sortie dérobée.
+- Conduit : vers la 18 / vers EXT. (une grille vissée au bout, un moment de plus).
 
 LA CAMÉRA
-- C1 Étudier son mouvement (angle mort) ou lui faire signe (un opérateur répond : numéro 00).
-- C2 L'aveugler : veste sur l'objectif (3 moments) ou la tourner vers le mur (tournevis).
-- C3 Simuler un malaise (un gardien vient) ou parler à l'opérateur.
+- Étudier son mouvement (angle mort) / lui faire signe (contact avec l'opérateur, numéro 00).
+- L'aveugler : veste / la tourner vers le mur (tournevis).
+- Simuler un malaise (on entend combien de gardiens viennent, puis courir ou rester au sol) /
+  parler à l'opérateur.
 
 LE PASSÉ (Sujet 16)
-- H1 Le mot « ILS MENTENT. —16 » : le garder ou le montrer à la caméra.
-- H2 Les gravures de 16 sous le bureau : les étudier (chiffres 4 · 1) ou les effacer
-     pour faire une cache (un objet caché n'est jamais confisqué).
-- H3 Le badge de 16 : l'utiliser sur ta porte (évasion, alarme) ou le garder.
-- H4 L'enregistrement : l'écouter (vérité révélée) ou le diffuser partout (si AUX rétabli).
-- Le journal de 16 : 4 pages cachées (sous la tasse, derrière l'écran, au fond du
-  tiroir ouvert, dans le conduit). La dernière ligne fait écho à tes choix.
+- Le mot « ILS MENTENT » : le garder / le montrer à la caméra.
+- Gravures sous le plateau : les étudier (4 · 1) / les effacer pour une cache.
+- Badge : le passer sur ta porte (elle s'ouvre, alarme, +2).
+- Enregistrement : l'écouter (gratuit, preuve du protocole) / le diffuser partout.
+- Journal : 4 pages (sous la tasse, derrière l'écran, au fond du tiroir, dans le conduit).
+
+PREUVES que l'opérateur accepte : extrait du dossier (B2 complet), menace non réalisée
+(refus de B4), horodatage incohérent (vidéo de B3 en A), douleur sans courant (B, C),
+protocole (enregistrement).
 
 
-6. LES GARDE-FOUS
------------------
-G1 Objet interdit pris sous les yeux de la caméra (tournevis forcé, badge et
-   enregistrement du sous-sol) = repris par un gardien au moment suivant.
-   Sauf : caché sous la plaque, caméra aveuglée entre-temps, coupure, angle mort.
-   Ce que le Système donne en récompense n'est jamais repris.
-G2 Descendre dans la trappe, préparer la sortie dérobée, remplacer le fusible : soupçon +1.
-G3 L'inspection répare ce qu'elle voit (veste, caméra tournée, grille). Pas l'électricité.
-G4 18 morte et conformité faible au verdict : la porte de la 18 s'ouvre sur une pièce vide.
-G5 B6 prévient « VOTRE PORTE EST OUVERTE ».
-G6 Obéir fait baisser le soupçon.
-G7 Plan accepté mais pas exécuté : la 18 tente seule.
+8. LES FINS
+-----------
+1  Sujet conforme ........ verdict : 18 sans signal et conformité ≥ 3 ; ou sortir quand
+                           elle ne répond plus (après B6, par exemple).
+2  L'employé du mois ..... vérité B, conformité ≥ 5 : accepter le poste (moment 16 ou face à elle).
+3  Le marché ............. appuyer à B5 et sortir tant que la 18 répond.
+4  Seul dehors ........... conduit → EXT. → dévisser la dernière grille (tournevis).
+5  La porte dérobée ...... préparer la sortie à la trappe, puis fuir par là.
+6  L'Évasion ............. malaise avec un seul gardien (soupçon ≤ 1), puis courir ; ou sortir
+                           par la porte ouverte avec le badge.
+7  Coopération ........... vérité A : promesse, plan accepté, caméra aveugle, AUX rétabli,
+                           signal envoyé au boîtier.
+8  Le Sauvetage .......... vérité A : le rejoindre par le conduit tant qu'il n'est pas hors de combat.
+9  Trop tard ............. vérité A : il est hors de combat, et tu avais promis ou tu es venu.
+10 La Complice démasquée . vérité B : face à elle, bloquer la porte au tournevis, ou négocier
+                           avec une confiance ≥ 3.
+11 Sujet 18 .............. vérité B : face à elle, négociation ratée.
+12 Le Miroir ............. vérité C : écouter la voix jusqu'au bout.
+13 Briser la boucle ...... vérité C : relais de réinitialisation connu (archives) + badge,
+                           neutralisé depuis la 18 (conduit ou plan).
+14 Isolement ............. soupçon à 4 et aucune fuite dans la dernière fenêtre.
+15 Le Gardien ............ malaise avec deux gardiens (soupçon ≥ 2), puis courir.
+16 Le Témoin ............. opérateur contacté + une preuve + AUX rétabli : il ouvre ta porte,
+                           tu sors.
+17 La Révolte ............ AUX rétabli + relais collectif (archives) ou aide de l'opérateur,
+                           puis diffuser l'enregistrement.
+18 Le Temps est écoulé ... verdict sans rien de ce qui précède (texte différent selon la vérité ;
+                           variante « pièce vide » si la vraie victime est hors de combat).
+Bonus Curiosité ......... après B6 (« ÉVALUATION TERMINÉE », porte ouverte), appuyer encore.
+
+L'écran de fin montre trois éléments : ton dernier geste, sa conséquence, une question
+encore ouverte. La vérité n'est affichée que si tu l'as découverte.
 
 
-7. LES 18 FINS (+ 1 BONUS) ET COMMENT LES OBTENIR
--------------------------------------------------
-1  Sujet conforme ........ obéir jusqu'au bout : la 18 meurt, conformité >= 3 au verdict,
-                           ou sortir par la porte quand elle est déjà morte.
-2  L'employé du mois ..... vérité B, très obéissant (conformité >= 5), puis découvrir qui
-                           elle est (conduit, plan, enregistrement + verdict).
-3  Le marché ............. accepter B5 (la porte s'ouvre) et sortir pendant que la 18 vit.
-4  Seul dehors ........... dans le conduit, prendre « EXT. ».
-5  La porte dérobée ...... préparer la sortie sous le bureau, puis fuir par la trappe.
-6  L'Évasion ............. simuler un malaise avec un soupçon bas (<= 1) et passer derrière
-                           le gardien ; ou ouvrir ta porte avec le badge de 16.
-7  Coopération ........... vérité A : promettre de venir (T4), accepter le plan (T5),
-                           aveugler la caméra, déclencher le bus au boîtier.
-8  Le Sauvetage .......... vérité A : rejoindre la 18 par le conduit pendant qu'elle vit.
-9  Trop tard ............. avoir promis de venir, et la 18 meurt (au verdict, ou en
-                           arrivant par le conduit).
-10 Le Complice démasqué .. vérité B : la rejoindre avec le tournevis, soupçon < 2,
-                           conformité < 5 (tu bloques sa porte).
-11 Sujet 18 .............. vérité B : la rejoindre sans tournevis ou en étant suspect.
-                           Tu te réveilles dans la Chambre 18.
-12 Le Miroir ............. vérité C : découvrir la projection (conduit ou plan) sans
-                           avoir coupé l'actionneur + gardé le badge.
-13 Briser la boucle ...... vérité C : couper l'actionneur, garder le badge de 16, puis
-                           découvrir la vérité. SESSION RESTART… FAILED.
-14 Isolement ............. soupçon à 4 : trop de désobéissance devant la caméra.
-15 Le Gardien ............ simuler un malaise alors que le soupçon est déjà >= 2.
-16 Le Témoin ............. parler à l'opérateur (C3), ou appeler le 00 avec une preuve
-                           (mensonge prouvé ou enregistrement).
-17 La Révolte ............ rétablir le circuit AUX (fusible), puis diffuser l'enregistrement.
-18 Le Temps est écoulé ... arriver au verdict sans rien de ce qui précède.
-                           Variante : 18 morte et peu obéissant = sa pièce est vide.
-Bonus Curiosité ......... appuyer sur le bouton alors que ta porte est ouverte.
-
-
-8. CE QUI CHANGE D'UNE PARTIE À L'AUTRE
----------------------------------------
-- La vérité (A, B ou C) est tirée au hasard.
-- Le Système se souvient des parties précédentes (dans ce navigateur) : numéro de test,
-  dernière fin, nombre de pressions. Après le Miroir, il t'appelle d'abord « SUJET 18 ».
-- L'écran de fin montre la vérité si tu l'as découverte, tes objets, ce que tu as
-  compris, et un indice vers une fin pas encore trouvée.
-- Sauvegarde automatique : « Continuer » à l'écran titre.
+9. REJOUABILITÉ
+---------------
+- Le Système se souvient des parties précédentes (numéro de test, dernière fin, pressions).
+- Réglages : vitesse du texte, son, passer les passages déjà vus, effacer la mémoire.
+- Sauvegarde à chaque moment : « Continuer » à l'écran titre.
