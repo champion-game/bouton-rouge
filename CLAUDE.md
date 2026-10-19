@@ -55,6 +55,15 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 ## Prochaines étapes (par ordre de priorité)
 
 0. **À coder ensemble, en une fois** : les garde-fous G1 à G7 de `docs/ETUDE_SCENARIOS.md`, validés par Amine le 19/10 (objet interdit vu = confisqué, actions vues = soupçon, l'inspection répare, verdict cohérent, B6 annoncé, soupçon qui redescend en obéissant, plan abandonné).
+0. **Ajouts validés le 19/10, gardés en mémoire (pas encore codés)** :
+   - Reprendre la partie (sauvegarde à chaque moment, « Continuer » à l'accueil).
+   - Indices discrets sur la vérité cachée (reflet dans la vitre en C, bout de blouse en B, pleurs au téléphone en A).
+   - Le journal de 16 : des pages cachées qui racontent sa session et font écho aux choix du joueur.
+   - Un murmure synthétisé pour la voix de la 18 pendant que son texte se tape.
+   - D'autres vrais objets à voir, comme la lettre : papier de la grille, gravures, vidéo de B3 sur le moniteur.
+   - Un réglage de vitesse du texte.
+   - Un écran titre : Continuer, Nouvelle partie, Fins découvertes, Réglages.
+   - Les tests avec des joueurs (mode test, rapport de partie) attendent : on améliore d'abord le contenu.
 
 1. ~~Coder la v2 avec un chrono réel et les 18 fins.~~ Fait, décisions validées, fins animées. Reste : polir les textes.
 2. Faire tester à 5 personnes qui ne connaissent pas le jeu. Question clé : relancent-elles une partie d'elles-mêmes après leur première fin ?
