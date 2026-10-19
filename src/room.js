@@ -15,8 +15,8 @@
   var VT = { x: 1115, y: 70, w: 360, h: 315, k: 315 / 738 };                  // vitre (dessin 620 × 738, élargi par tranches)
   var GL = { x: 1138.5, y: 97.7, w: 308.8, h: 260.4 };                         // verre de la vitre de la 18
   var SIL = { x: GL.x + GL.w / 2 - 168, y: GL.y + 60, s: 336 };                // canevas commun des silhouettes (800 × 800)
-  // Silhouettes : une seule série pour l'instant. Passer à true quand les séries homme / femme / enfant (sil_A_, sil_B_, sil_C_) seront livrées.
-  var SIL_PAR_VERITE = false;
+  // Silhouettes par vérité (pack personnages 20/10) : A victime = homme, B complice = femme, C illusion = enfant (sil_A_, sil_B_, sil_C_).
+  var SIL_PAR_VERITE = true;
   var SC = { x: 579.1, y: 111.1, w: 490.8, h: 178.1, cx: 824.5, cy: 200.2 };  // écran du moniteur
   var KS = SC.h / 117.8;                                                         // échelle du texte du moniteur
   var VIES = [1214.2, 1264.9, 1311.3], VIES_Y = 440.8;
@@ -164,7 +164,7 @@
   I('btnImg', 'bouton', BTN.x, BTN.y, BTN.w, BTN.h) + I('btnImg2', 'bouton_enfonce', BTN.x, BTN.y, BTN.w, BTN.h, ' opacity="0"') + '</g>' +
   '<ellipse cx="837" cy="470" rx="70" ry="30" fill="url(#glowG)" opacity=".3" style="pointer-events:none"/>' +
   '<g id="phone" class="hs" data-k="phone" opacity="0"><rect x="500" y="440" width="172" height="104" fill="transparent"/><g id="phoneInner">' +
-  I('telImg', 'tel_pose', 506.2, 445.5, 161.5, 99.6) + I('telImg2', 'tel_decroche', 506.2, 445.5, 161.5, 99.6, ' opacity="0"') + '</g>' +
+  I('telImg', 'tel_pose', 479.3, 445.5, 188.4, 99.6) + I('telImg2', 'tel_decroche', 479.3, 445.5, 188.4, 99.6, ' opacity="0"') + '</g>' +
   '<circle id="ecouteLed" cx="640" cy="520" r="4.5" fill="#ff3b30" class="pulse" opacity="0"/></g>' +
   '<g class="hs" data-k="mug"><rect x="998" y="452" width="90" height="82" fill="transparent"/>' + I('', 'tasse', 1010, 468, 65.3, 58) + '</g>' +
   '</g></g>' +
@@ -258,12 +258,8 @@
   // ---------- état → dessin ----------
   function silhouette(p) {
     pose = p || pose;
-    var nom = pose === 'tel' && sujet !== 'A' ? 'debout' : pose;
-    // Toutes les poses partagent le même canevas : pas de recalage. Avec les séries par vérité, l'enfant (C) sera réduit.
-    src('silImg', silNom(nom));
-    var k = SIL_PAR_VERITE && sujet === 'C' ? 0.8 : 1, S = SIL.s * k;
-    attr('silImg', 'width', S); attr('silImg', 'height', S);
-    attr('silImg', 'x', (SIL.x + SIL.s * (1 - k) / 2).toFixed(1)); attr('silImg', 'y', (SIL.y + SIL.s * 0.95 * (1 - k)).toFixed(1));
+    // Toutes les poses et les trois séries partagent le même canevas (l'enfant y est déjà dessiné plus petit) : pas de recalage.
+    src('silImg', silNom(pose));
   }
   function poseVie(vie) { return vie >= 3 ? 'debout' : vie === 2 ? 'courbe' : 'accroupi'; }
   var vieCourante = 3;
