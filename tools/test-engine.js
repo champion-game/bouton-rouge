@@ -39,7 +39,7 @@ for (var i = 0; i < N; i++) {
   try {
     E.intro(s);
     while (!s.fin) {
-      if (++steps > 60) throw new Error('boucle infinie');
+      if (++steps > 90) throw new Error('boucle infinie');
       var t = E.turn(s);
       var a = pick(actions(t), r);
       var res = E.choose(s, a);
@@ -67,8 +67,8 @@ function parcours(truth, steps) {
   return st.fin;
 }
 var routes = [
-  ['boucle', 'C', ['P1 A', 'press', 'T1 A', 'C1 A', 'press', 'P3 B', 'FUS', 'press', 'P4 A', 'press', 'T4 A', 'H3 B', 'B5 B', 'P2 A', 'P5 A']],
-  ['cooperation', 'A', ['P1 B', 'press', 'T1 A', 'C1 A', 'press', 'P3 A', 'P2 B', 'temps', 'T2 B', 'T3 A', 'B4 B', 'T4 A', 'T5 A', 'temps', 'PLAN']]
+  ['boucle', 'C', ['P1 A', 'press', 'T1 A', 'C1 A', 'press', 'PRENDRE_FUSIBLE', 'P3 B', 'FUS', 'press', 'P4 A', 'press', 'T4 A', 'H3 B', 'B5 B', 'P2 A', 'P5 A']],
+  ['cooperation', 'A', ['P1 B', 'press', 'T1 A', 'C1 A', 'press', 'PRENDRE_TOURNEVIS', 'P3 A', 'P2 B', 'temps', 'T2 B', 'T3 A', 'B4 B', 'T4 A', 'T5 A', 'temps', 'PLAN']]
 ];
 var routesOk = true;
 routes.forEach(function (r) { var f; try { f = parcours(r[1], r[2]); } catch (e) { f = 'erreur : ' + e.message; } console.log((f === r[0] ? '  ok ' : '  !! ') + 'parcours ' + r[0] + ' → ' + f); if (f !== r[0]) routesOk = false; });

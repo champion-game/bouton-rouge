@@ -17,6 +17,13 @@
   var hist = [], introSil = false, triple = 0;
 
   function ecranTxt(t) { return t.replace(/-\|/g, '-').replace(/\|/g, ' '); }
+  // Une lettre affichée comme un vrai papier (recto, et verso si on l'a gardée).
+  function lettreHtml(k, verso) {
+    var L = E.LETTRES[k];
+    var h = '<div class="lettre"><p>' + L.recto.map(esc).join('<br>') + '</p><p class="sig">' + esc(L.signature) + '</p></div>';
+    if (verso && L.verso) h += '<div class="lettre verso"><span>AU DOS</span><p>' + L.verso.map(esc).join('<br>') + '</p></div>';
+    return h;
+  }
   function esc(v) { return String(v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
   // ---------- historique (une ligne, touchée = tout) ----------
@@ -43,7 +50,33 @@
     clearTimeout(toastT); toastT = setTimeout(function () { el.className = 'toast'; }, 2400);
   }
 
-  function wait(ms, my) { return new Promise(function (res) { setTimeout(function () { res(my === run); }, ms); }); }
+  // Attente qu'on peut raccourcir en touchant la pièce.
+  var skipWait = null;
+  function wait(ms, my) {
+    return new Promise(function (res) {
+      var to = setTimeout(done, ms);
+      function done() { clearTimeout(to); if (skipWait === done) skipWait = null; res(my === run); }
+      skipWait = done;
+    });
+  }
+  function passer() { R.ecranFinir(); if (skipWait) skipWait(); }
+  // Temps pour taper puis lire une phrase du moniteur.
+  function tempsEcran(n) { return Math.min(7000, n * R.VITESSE + 1300 + n * 35); }
+
+  // ---------- texte tapé dans les popups ----------
+  var typer = null;
+  function taper(els, textes, fin) {
+    var li = 0, ci = 0, iv = null;
+    function finir() { clearInterval(iv); typer = null; els.forEach(function (el, i) { el.textContent = textes[i]; }); if (fin) fin(); }
+    els.forEach(function (el) { el.textContent = ''; });
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return finir();
+    typer = { finir: finir };
+    iv = setInterval(function () {
+      if (li >= els.length) return finir();
+      ci += 2; els[li].textContent = textes[li].slice(0, ci);
+      if (ci >= textes[li].length) { li++; ci = 0; }
+    }, 22);
+  }
 
   // ---------- popup au centre ----------
   function closePop() { $('pop').hidden = true; $('card').innerHTML = ''; var d = popDone; popDone = null; if (d) d(); }
@@ -51,8 +84,10 @@
   // Popup d'information : les textes d'une action, puis « Continuer ».
   function infoPop(lines, my) {
     return new Promise(function (res) {
-      var h = '<div class="lines">' + lines.map(function (e) { return '<p class="' + ({ tel: 'tel', voix: 'voix', ecran: 'sys' }[e.t] || '') + '">' + esc(e.t === 'ecran' ? ecranTxt(e.txt) : e.txt) + '</p>'; }).join('') + '</div><div class="ab"><button class="ch go" data-go="1">Continuer</button></div>';
+      var textes = lines.map(function (e) { return e.t === 'ecran' ? ecranTxt(e.txt) : e.txt; });
+      var h = '<div class="lines">' + lines.map(function (e) { return '<p class="' + ({ tel: 'tel', voix: 'voix', ecran: 'sys' }[e.t] || '') + '"></p>'; }).join('') + '</div><div class="ab"><button class="ch go" data-go="1">Continuer</button></div>';
       openPop(h, function () { res(my === run); });
+      taper(Array.prototype.slice.call($('card').querySelectorAll('.lines p')), textes);
     });
   }
   function choiceBtn(x, c) {
@@ -68,7 +103,7 @@
     if (texte) h += '<p>' + esc(texte) + '</p>';
     list.forEach(function (x, i) {
       if (i || texte || titre) h += (i || texte ? '<div class="sep"></div>' : '') + '<div class="who"><span>' + esc(x.qui) + '</span></div>';
-      h += '<p>' + esc(x.texte) + '</p><div class="ab' + (x.B ? '' : ' one') + '">' + choiceBtn(x, 'A') + choiceBtn(x, 'B') + '</div>';
+      h += (x.id === 'H1' ? lettreHtml('mot16', false) : '<p>' + esc(x.texte) + '</p>') + '<div class="ab' + (x.B ? '' : ' one') + '">' + choiceBtn(x, 'A') + choiceBtn(x, 'B') + '</div>';
     });
     openPop(h, function () { sel = null; });
   }
@@ -77,6 +112,7 @@
     if (!b) { if (e.target.id === 'pop' && $('card').querySelector('[data-go], [data-close]')) closePop(); return; }
     if (b.disabled) return;
     A.init();
+    if (b.dataset.go && typer) return typer.finir(); // premier toucher : tout afficher
     if (b.dataset.go || b.dataset.close) return closePop();
     if (b.dataset.sit) { var a = { type: 'situation', id: b.dataset.sit, choix: b.dataset.c }; popDone = null; $('pop').hidden = true; act(a); }
   });
@@ -89,7 +125,7 @@
       var e = events[i];
       switch (e.t) {
         case 'choix': addHist('› ' + e.label, 'me'); break;
-        case 'ecran': R.ecran(e.txt, { glitch: 250 }); lastEcran = e.txt; A.sfx('glitch'); lines.push(e); addHist(ecranTxt(e.txt), 'ecr'); await wait(750, my); break;
+        case 'ecran': var n = R.ecran(e.txt, { glitch: 250 }); lastEcran = e.txt; A.sfx('glitch'); lines.push(e); addHist(ecranTxt(e.txt), 'ecr'); await wait(tempsEcran(n), my); break;
         case 'tel': case 'narr': case 'voix': lines.push(e); addHist(e.txt, e.t === 'narr' ? '' : 'tel'); if (e.t === 'voix') A.sfx('knock'); break;
         case 'press': R.press(); A.sfx('clac'); await wait(250, my); break;
         case 'cri': R.harm(e.vie); A.sfx('cry'); await wait(700, my); break;
@@ -163,13 +199,15 @@
     var k = b.dataset.k, o = POCHE_OBJET[k], list = !busy && t && !t.forced && o ? t.objets[o] : null;
     flashItems = flashItems.filter(function (x) { return x !== k; }); renderBag();
     if (list && list.length) { sel = o; objetPop(nomPoche(k), '', list, true); }
+    else if (E.LETTRES[k]) { openPop('<div class="who"><span>' + esc(nomPoche(k)) + '</span><button class="x" data-close="1" aria-label="Fermer">×</button></div>' + lettreHtml(k, true), null); }
     else objetPop(nomPoche(k), E.decrire(s, k), null, true);
   });
 
   // ---------- toucher un objet de la pièce ----------
-  var TITRES = { phone: 'LE TÉLÉPHONE', drawer: 'LE TIROIR', grille: 'LA GRILLE', box: 'LE BOÎTIER', trappe: 'LA TRAPPE', camera: 'LA CAMÉRA', note: 'LE MOT', bureau: 'SOUS LE BUREAU', window: 'LA CHAMBRE 18', monitor: 'LE MONITEUR', light: 'LA LAMPE', mug: 'LA TASSE', door: 'LA PORTE' };
+  var TITRES = { compart: 'LE COMPARTIMENT', phone: 'LE TÉLÉPHONE', drawer: 'LE TIROIR', grille: 'LA GRILLE', box: 'LE BOÎTIER', trappe: 'LA TRAPPE', camera: 'LA CAMÉRA', note: 'LE MOT', bureau: 'SOUS LE BUREAU', window: 'LA CHAMBRE 18', monitor: 'LE MONITEUR', light: 'LA LAMPE', mug: 'LA TASSE', door: 'LA PORTE' };
   function hot(k) {
     A.init();
+    if (s && busy && !s.fin) { passer(); return; }
     if (!s || s.fin || paused || busy || !t || !$('pop').hidden) return;
     var kind = forcedKind();
     var exit = t.sorties.filter(function (x) { return (x.via === 'porte' && k === 'door') || (x.via === 'trappe' && k === 'trappe' && !t.objets.trappe); })[0];
@@ -212,9 +250,9 @@
     $('timer').hidden = !ordre;
     $('timerFill').style.transform = 'scaleX(' + (timeTotal ? Math.max(0, timeLeft / timeTotal) : 0) + ')';
     $('timer').classList.toggle('low', low);
-    if (ordre && sec !== lastSec) {
+    if (ordre && sec !== lastSec && lastSec !== -1) {
       var M = E.PHRASES.minuteur, top = sec <= 10 ? M[10] : sec <= 15 ? M[15] : t.forced.ecran;
-      R.ecran(top + '|' + sec, { color: sec <= 3 ? '#ff5a4a' : '#ff8a7a' });
+      R.ecran(top + '|' + sec, { color: sec <= 3 ? '#ff5a4a' : '#ff8a7a', instant: true });
     }
     if (low && sec !== lastSec && sec > 0) A.sfx('tick');
     lastSec = sec;
@@ -284,8 +322,9 @@
     timeLeft = timeTotal = 0; refresh();
     R.ecran('');
     // Démarrage : écran noir, le moniteur s'allume, puis la lumière avec le bruit sec d'un relais.
+    // Écran noir, un souffle de ventilation, puis le relais (anim « lumiere »).
     R.blackout(true);
-    if (!(await wait(600, my))) return;
+    if (!(await wait(1800, my))) return;
     if (!(await play(E.intro(s), my))) return;
     introSil = false;
     startCycle(my);

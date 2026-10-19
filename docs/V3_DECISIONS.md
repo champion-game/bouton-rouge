@@ -41,3 +41,11 @@ Chaque point se change à un seul endroit de `src/story.js` ou `src/engine.js`.
 ## Fins rares au hasard
 
 Coopération et Briser la boucle sortent rarement dans les parties au hasard, car elles demandent un vrai plan. `tools/test-engine.js` vérifie à chaque fois qu'un parcours voulu y mène.
+
+## Ajustements du 19/10 (après test d'Amine)
+
+- **Les objets restent à leur place** : après B2, le tiroir se déverrouille et un compartiment s'ouvre sur le côté du socle, mais c'est au joueur d'aller prendre le tournevis et le fusible. Prendre un objet ne coûte pas de cycle.
+- **Le texte du moniteur est tapé lettre par lettre** et reste affiché assez longtemps pour être lu. Les textes des popups sont tapés aussi. Toucher la pièce ou « Continuer » accélère.
+- **Le popup** reste réservé aux informations importantes (appels, découvertes, conséquences).
+- **La lettre de 16** s'affiche comme une vraie feuille manuscrite (recto, et verso une fois gardée).
+

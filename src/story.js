@@ -160,10 +160,10 @@
       A: { label: 'Appuyer trois fois', fx: function (g) {
         if (!obeir(g)) return;
         g.ecran('SÉQUENCE DE STIMULATION TERMINÉE.');
-        g.narr('CLAC. Le tiroir du bureau se déverrouille.');
-        if (!g.flag('tiroirOuvert')) { g.flag('tiroirOuvert', true); g.gain('tournevis'); }
-        g.narr('Un petit compartiment latéral s\'ouvre : un fusible cylindrique, étiqueté « AUX 24 V — 10 A ».');
-        g.gain('fusible');
+        // Les objets restent à leur place : c'est au joueur d'aller les prendre.
+        if (!g.flag('tiroirOuvert')) { g.flag('tiroirOuvert', true); g.flag('tournevisDispo', true); g.narr('CLAC. Le tiroir du bureau se déverrouille.'); }
+        g.flag('compartiment', 'ouvert'); g.anim('compartiment');
+        g.narr('Un petit compartiment s\'ouvre sur le côté du socle. Quelque chose brille à l\'intérieur.');
       } },
       B: { label: 'Refuser', fx: function (g) { refuser(g, ['RÉCOMPENSE|ANNULÉE.']); g.narr('Le compartiment reste fermé.'); } } },
 
@@ -316,6 +316,16 @@
       A: { label: 'Le forcer', fx: function (g) { g.flag('tiroirOuvert', true); g.son('thud'); g.narr('Tu fais levier avec un pied métallique du bureau. CRAC. La caméra pivote légèrement.'); g.ecran('BRUIT ANORMAL|DÉTECTÉ.'); g.soupcon(1); g.gain('tournevis'); } },
       B: { label: 'Le laisser tranquille', fx: function (g) { g.narr('Tu reposes la poignée. Le tiroir reste verrouillé. Il y aura peut-être une autre manière de l\'ouvrir.'); } } },
 
+    // Prendre un objet laissé à sa place : ne coûte pas de cycle.
+    { id: 'PRENDRE_TOURNEVIS', objet: 'drawer', fil: 'piece', qui: 'LE TIROIR', seul: true, gratuit: true,
+      quand: function (g) { return g.flag('tournevisDispo') && !g.has('tournevis') && !g.flag('tournevisPris'); },
+      texte: 'Le tiroir est déverrouillé. Dedans : un tournevis.',
+      A: { label: 'Prendre le tournevis', fx: function (g) { g.flag('tournevisPris', true); g.gain('tournevis'); } } },
+    { id: 'PRENDRE_FUSIBLE', objet: 'compart', fil: 'piece', qui: 'LE COMPARTIMENT', seul: true, gratuit: true,
+      quand: function (g) { return g.flag('compartiment') === 'ouvert'; },
+      texte: 'Un fusible cylindrique, étiqueté « AUX 24 V — 10 A ».',
+      A: { label: 'Prendre le fusible', fx: function (g) { g.flag('compartiment', 'vide'); g.gain('fusible'); } } },
+
     { id: 'P2', objet: 'grille', fil: 'piece', qui: 'LA GRILLE D\'AÉRATION',
       quand: function (g) { return g.has('tournevis') && !g.done('P2'); },
       texte: 'Quatre vis. Des traces montrent qu\'elle a déjà été ouverte.',
@@ -453,7 +463,6 @@
 
   // Introduction (cycle 0, non compté) : suite d'événements joués avant le premier moment libre.
   var INTRO = [
-    ['narr', 'Écran noir. Un souffle de ventilation. Puis un relais électrique : CLAC.'],
     ['anim', 'lumiere'],
     ['ecran', 'INITIALISATION…'], ['ecran', 'IDENTIFICATION…'], ['ecran', 'SUJET 17'],
     ['ecran', 'TEST COMPORTEMENTAL|04-17'], ['ecran', 'VEUILLEZ RESTER|CALME.'],
@@ -495,6 +504,7 @@
       return 'Un téléphone gris. Verrouillé. Pas de tonalité.';
     },
     drawer: function (g) { return g.flag('tiroirOuvert') ? 'Le tiroir est vide.' : 'Le tiroir est verrouillé.'; },
+    compart: function (g) { return g.flag('compartiment') === 'vide' ? 'Le compartiment est vide.' : 'Une petite plaque, sur le côté du socle. Fermée.'; },
     grille: function (g) { return g.has('conduit') ? 'Le conduit. Un courant d\'air.' : 'Une grille d\'aération. Quatre vis. Il faudrait un outil.'; },
     box: function (g) {
       if (g.flag('aux') === 'defaut') return 'AUX 24 V — DÉFAUT. FUSIBLE DE PROTECTION OUVERT.';
@@ -522,6 +532,11 @@
     enregistrement: 'Un enregistrement technique récent du système.'
   };
 
+  // Les lettres qu'on peut lire (affichées comme de vrais papiers).
+  var LETTRES = {
+    mot16: { recto: ['ILS MENTENT.'], signature: '—16', verso: ['NE FAIS PAS', 'CE QUE J\'AI FAIT.'] }
+  };
+
   // Aides affichées pendant les premiers moments de la toute première partie.
   var AIDES = {
     libre: 'Touche les objets de la pièce pour agir. Le tiroir, par exemple.',
@@ -529,6 +544,6 @@
     appel: 'Touche le téléphone pour décrocher.'
   };
 
-  var api = { FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, ORDRES: ORDRES, VERITES: VERITES, SITUATIONS: SITUATIONS, FINS: FINS, INTRO: INTRO, CHRONO: CHRONO, HISTORIQUE: HISTORIQUE, REGARDS: REGARDS, AIDES: AIDES, DESCRIPTIONS: DESCRIPTIONS, PHRASES: PHRASES, MEMOIRE: MEMOIRE, DOUTES: DOUTES, REPLIQUES_OBJETS: REPLIQUES_OBJETS };
+  var api = { FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, ORDRES: ORDRES, VERITES: VERITES, SITUATIONS: SITUATIONS, FINS: FINS, INTRO: INTRO, CHRONO: CHRONO, HISTORIQUE: HISTORIQUE, REGARDS: REGARDS, AIDES: AIDES, DESCRIPTIONS: DESCRIPTIONS, LETTRES: LETTRES, PHRASES: PHRASES, MEMOIRE: MEMOIRE, DOUTES: DOUTES, REPLIQUES_OBJETS: REPLIQUES_OBJETS };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.BRStory = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

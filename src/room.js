@@ -103,6 +103,11 @@
   '<g id="phone" class="hs" data-k="phone" opacity="0" transform="translate(-36 0)"><rect x="196" y="388" width="64" height="50" fill="transparent"/><g id="phoneInner">' +
   '<rect x="208" y="414" width="40" height="18" rx="4" fill="#1d1d1d"/><rect x="204" y="402" width="48" height="12" rx="6" fill="#2c2c2c"/><circle cx="228" cy="423" r="4" fill="#3a3a3a"/>' +
   '</g></g>' +
+  // compartiment latéral du socle (s'ouvre après B2, contient le fusible)
+  '<g id="compart" class="hs" data-k="compart"><rect x="384" y="436" width="54" height="32" fill="transparent"/>' +
+  '<rect x="392" y="441" width="38" height="22" fill="#070909"/>' +
+  '<g id="compFuse" opacity="0"><rect x="399" y="448" width="24" height="9" rx="2" fill="#d6d1c4"/><rect x="405" y="449" width="12" height="7" fill="#f2c14e" opacity=".85"/></g>' +
+  '<g id="compDoor"><rect x="392" y="441" width="38" height="22" fill="#2a3332" stroke="#46524f"/><circle cx="424" cy="452" r="2" fill="#8b9592"/></g></g>' +
   '<g class="hs" data-k="mug" transform="translate(34 0)"><rect x="358" y="398" width="40" height="36" fill="transparent"/><rect x="364" y="406" width="18" height="24" rx="3" fill="#d6d1c4"/><path d="M382 412 q8 0 8 7 q0 7 -8 7" fill="none" stroke="#d6d1c4" stroke-width="3"/></g>' +
   '</g><g id="gCam">' +
   '<g id="camPivot" transform="translate(78 64)" class="hs" data-k="camera">' +
@@ -219,6 +224,8 @@
     attr('phone', 'opacity', s.cycle >= 3 ? 1 : 0);
     attr('note', 'opacity', s.cycle >= 4 && !s.done.H1 ? 1 : 0);
     attr('drawerFront', 'transform', s.flags.tiroirOuvert ? 'translate(0 16)' : '');
+    attr('compDoor', 'opacity', s.flags.compartiment ? 0 : 1);
+    attr('compFuse', 'opacity', s.flags.compartiment === 'ouvert' ? 1 : 0);
     attr('grilleSlats', 'opacity', has('conduit') ? 0 : 1);
     var known = has('trappe') || (has('code') && has('code41')) || s.flags.fusibleInstalle || s.done.P4;
     attr('trappe', 'opacity', known ? 1 : 0);
@@ -259,22 +266,46 @@
     words.forEach(function (w) { if ((cur + ' ' + w).trim().length > 17) { if (cur) lines.push(cur); cur = w; } else cur = (cur + ' ' + w).trim(); });
     if (cur) lines.push(cur); return lines;
   }
+  // Texte du moniteur, tapé lettre par lettre (sauf opt.instant). Renvoie le nombre de lettres.
+  var typeT = null, typeFin = null, VITESSE = 32;
   function ecran(text, opt) {
-    opt = opt || {}; var g = $('scr'); if (!g) return;
+    opt = opt || {}; var g = $('scr'); if (!g) return 0;
+    clearInterval(typeT); typeFin = null;
     g.innerHTML = '';
-    if (!text) return;
+    if (!text) return 0;
+    var els = [], full = [];
     if (opt.big) {
-      add(g, 300, 196, 92, text, opt.color || '#ff5a4a');
-      if (opt.label) add(g, 300, 98, 20, opt.label, opt.color || '#ff5a4a');
+      els.push(add(g, 300, 196, 92, text, opt.color || '#ff5a4a')); full.push(text);
+      if (opt.label) { els.push(add(g, 300, 98, 20, opt.label, opt.color || '#ff5a4a')); full.push(opt.label); }
     } else {
       var lines = wrap(text), fs = lines.length > 4 ? 20 : lines.length > 3 ? 23 : 29, lh = fs * 1.02, y0 = 142 - (lines.length - 1) * lh / 2 + fs * 0.32;
-      lines.forEach(function (s, i) { add(g, 300, y0 + i * lh, fs, s, opt.color); });
+      lines.forEach(function (l, i) { els.push(add(g, 300, y0 + i * lh, fs, l, opt.color)); full.push(l); });
     }
     if (opt.glitch) glitch(opt.glitch === true ? 600 : opt.glitch);
+    var total = full.join('').length;
+    if (opt.instant || reduce) return total;
+    // Les lignes restent centrées : on mesure leur largeur finale, puis on les tape depuis la gauche.
+    els.forEach(function (el, i) {
+      var w = 0; try { w = el.getComputedTextLength(); } catch (e) {}
+      if (w) { el.setAttribute('text-anchor', 'start'); el.setAttribute('x', (300 - w / 2).toFixed(1)); }
+      el.textContent = '';
+    });
+    var li = 0, ci = 0;
+    function fini() { clearInterval(typeT); typeFin = null; els.forEach(function (el, i) { el.textContent = full[i]; }); }
+    typeFin = fini;
+    typeT = setInterval(function () {
+      if (li >= els.length) return fini();
+      ci++;
+      els[li].textContent = full[li].slice(0, ci) + (ci < full[li].length ? '▌' : '');
+      if (ci >= full[li].length) { li++; ci = 0; }
+    }, VITESSE);
+    return total;
   }
+  function ecranFinir() { if (typeFin) typeFin(); }
   function add(g, x, y, fs, txt, col) {
     var t = document.createElementNS(NS, 'text'); t.setAttribute('x', x); t.setAttribute('y', y); t.setAttribute('font-size', fs);
     if (col) t.setAttribute('fill', col); t.textContent = txt; g.appendChild(t);
+    return t;
   }
   function glitch(ms) {
     clearInterval(glitchT); if (reduce) return;
@@ -343,6 +374,7 @@
     silFrappe: function () { attr('hand', 'opacity', 1); var n = 0, iv = setInterval(function () { attr('silMove', 'transform', n % 2 ? '' : 'translate(-3 0)'); if (++n > 5) { clearInterval(iv); attr('silMove', 'transform', ''); } }, 140); later2(1600, function () { attr('hand', 'opacity', 0); }); },
     silTourne: function () { attr('silMove', 'transform', 'translate(22 0)'); later2(1800, function () { attr('silMove', 'transform', ''); }); },
     silBuee: function () { attr('buee', 'opacity', 0.55); later2(3500, function () { attr('buee', 'opacity', 0); }); },
+    compartiment: function () { attr('compDoor', 'opacity', 0); attr('compFuse', 'opacity', 1); },
     silFige: function () { attr('hand', 'opacity', 0); attr('silMove', 'transform', ''); }
   };
   function anim(n) { if (ANIMS[n]) ANIMS[n](); }
@@ -372,5 +404,5 @@
   };
   function icone(k, code) { return '<svg viewBox="0 0 40 40" aria-hidden="true">' + (ICONES[k] || '').replace('@CODE@', code || '7__2') + '</svg>'; }
 
-  root.BRRoom = { layout: layout, icone: icone, mount: mount, render: render, fin: fin, anim: anim, harmLeger: harmLeger, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout };
+  root.BRRoom = { VITESSE: VITESSE, ecranFinir: ecranFinir, layout: layout, icone: icone, mount: mount, render: render, fin: fin, anim: anim, harmLeger: harmLeger, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

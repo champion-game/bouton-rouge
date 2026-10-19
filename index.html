@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Le Bouton Rouge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Text:wght@700;800&family=VT323&family=Archivo:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Text:wght@700;800&family=VT323&family=Archivo:wght@400;600;700&family=Reenie+Beanie&display=swap">
 <style>
 /* Layout : la pièce en vue fixe de face ; à droite (ordinateur) ou dessous (téléphone), le chrono, le journal et les choix. */
 :root{
@@ -96,6 +96,12 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 .ch small{display:block;font-weight:400;color:var(--muted);font-size:.75rem}
 .ch.go{text-align:center;grid-column:1/-1}
 .ab.one{grid-template-columns:1fr}
+/* Une vraie lettre : papier plié, écriture à la main */
+.lettre{position:relative;background:linear-gradient(180deg,#ece6d4 0,#e4dcc6 49.5%,#d8cfb6 50%,#e6dfca 51%,#ebe5d3 100%);color:#2b2620;border-radius:2px;padding:18px 20px 14px;transform:rotate(-1.5deg);box-shadow:0 6px 18px rgba(0,0,0,.5);font-family:"Reenie Beanie","Segoe Print","Comic Sans MS",cursive;font-size:2.2rem;line-height:1.05;text-align:center;margin:4px 6px}
+.lettre p{margin:0;font-size:inherit}
+.lettre .sig{text-align:right;font-size:1.7rem;margin-top:6px;color:#7a1d16}
+.lettre.verso{transform:rotate(1deg);font-size:1.7rem;margin-top:10px}
+.lettre.verso span{display:block;font-family:var(--f-body);font-size:.62rem;letter-spacing:.14em;color:#8a826f;text-align:left;margin-bottom:4px}
 .card .sep{border-top:1px solid var(--line)}
 
 .ov{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;overflow:auto;padding-block:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -142,15 +148,15 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
     <p>Une pièce. Un bouton. Touche ce qui t'entoure.</p>
     <p>Le son est recommandé.</p>
     <button class="enter" id="enterBtn">Entrer dans la pièce</button>
-    <p class="ver">Version 3.0 · 19/10</p>
+    <p class="ver">Version 3.1 · 19/10</p>
   </div>
 </div>
 <div class="ov" id="endOv" hidden><div class="end" id="endBox"></div></div>
 
-<script src="src/story.js?v=3.0"></script>
-<script src="src/engine.js?v=3.0"></script>
-<script src="src/audio.js?v=3.0"></script>
-<script src="src/room.js?v=3.0"></script>
-<script src="src/game.js?v=3.0"></script>
+<script src="src/story.js?v=3.1"></script>
+<script src="src/engine.js?v=3.1"></script>
+<script src="src/audio.js?v=3.1"></script>
+<script src="src/room.js?v=3.1"></script>
+<script src="src/game.js?v=3.1"></script>
 </body>
 </html>

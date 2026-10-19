@@ -20,7 +20,7 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 
 - HTML, CSS et JavaScript sans framework ni étape de build. Ouvrir `index.html` suffit pour jouer.
 - La pièce est dessinée en SVG, vue fixe de face. Les sons sont synthétisés avec Web Audio.
-- Polices : Big Shoulders Stencil Text (titres), VT323 (texte du moniteur), Archivo (interface), via Google Fonts.
+- Polices : Big Shoulders Stencil Text (titres), VT323 (texte du moniteur), Archivo (interface), Reenie Beanie (lettres écrites à la main), via Google Fonts.
 - Interface entièrement en français.
 
 ## État actuel

@@ -223,6 +223,8 @@
       ev.push({ t: 'choix', id: x.id, choix: c, label: x[c].label });
       s.done[x.id] = c;
       x[c].fx(g);
+      // Prendre un objet ne fait pas avancer le temps.
+      if (x.gratuit) { s.stats.actions--; checkEnds(s, ev); return { state: s, events: ev }; }
       // Micro-réaction du Système après une exploration vue par la caméra.
       if (!s.fin && !forced && x.fil !== 'telephone' && !cameraAveugle(s) && s.cycle >= 4 && g.hasard() < 0.25) g.ecran(g.pick(S.PHRASES.apresExploration));
     } else if (action.type === 'appuyer') {
@@ -389,7 +391,7 @@
   function decrire(s, k) { return resolve(S.DESCRIPTIONS[k], ctx(s, [], null)) || ''; }
 
   var api = {
-    newGame: newGame, intro: intro, turn: turn, choose: choose, regarder: regarder, decrire: decrire, AIDES: S.AIDES, DESCRIPTIONS: S.DESCRIPTIONS, PHRASES: S.PHRASES,
+    LETTRES: S.LETTRES, newGame: newGame, intro: intro, turn: turn, choose: choose, regarder: regarder, decrire: decrire, AIDES: S.AIDES, DESCRIPTIONS: S.DESCRIPTIONS, PHRASES: S.PHRASES,
     forcedId: forcedId, cameraAveugle: cameraAveugle, porteOuverte: porteOuverte, has: has,
     DUREES: DUREES, DERNIER_CYCLE: DERNIER_CYCLE,
     FILS: S.FILS, OBJETS: S.OBJETS, FINS: S.FINS, VERITES: S.VERITES,
