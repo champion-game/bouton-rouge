@@ -1,5 +1,5 @@
 LE BOUTON ROUGE — RÉSUMÉ DU JEU ET DE TOUS LES SCÉNARIOS
-Version 5.0 · 19/10 (directives révision 2 appliquées)
+Version 6.1 · 20/10
 =========================================================
 
 1. LE CONCEPT
@@ -37,9 +37,10 @@ Le joueur agit en touchant les objets de la pièce. Le jeu se joue en paysage.
 9  Libre. Des pas dans le couloir.
 10 Inspection, puis B4 « Purge Chambre 18. Appuyez pour annuler. » (un bluff, avec un indice)
 11 T4 : la 18 appelle (si la ligne est ouverte et qu'elle répond encore). Sinon libre.
-12 Libre (le plan T5 se propose ici au plus tôt).
+12 Libre. Quelqu'un tousse dans la 19 (le plan T5 se propose ici au plus tôt).
 13 B5 « Appuyez : votre porte s'ouvrira. » (ouverte jusqu'à la fin du moment 15)
-14 Libre.  15 Libre (dernière chance de sortir par la porte de B5).
+14 Libre. « TEMPS RESTANT : NON COMMUNIQUÉ », trois coups de la 18 (selon la vérité).
+15 Libre (dernière chance de sortir par la porte de B5).
 16 Le Système : maintenir ou abandonner ta promesse ; ou un poste d'opérateur (vérité B,
    très obéissant) ; ou un examen de ton dossier.
 17 Libre. Récapitulatif de ce qui reste possible.
@@ -100,7 +101,7 @@ TÉLÉPHONE
 - T4 (moment 11) « Tu viens me chercher ? » (texte selon la relation) : « Je viens » / « Chacun pour soi ».
 - T5 (promesse + confiance ≥ 3) : le plan. « J'attends ton signal. Pas indéfiniment. »
   Accepter (échéance de 3 moments) / refuser (elle tentera seule).
-- Appels : 18 (et « Annuler ta promesse »), 16 (« Quatre. Un. »), 19, 17, 00 (l'opérateur).
+- Appels : 18 (le premier appel libre donne un indice à recouper, propre à la vérité ; et « Annuler ta promesse »), 16 (« Quatre. Un. »), 19, 17, 00 (l'opérateur).
 
 LA PIÈCE
 - Tiroir : le forcer (tournevis). Compartiment : l'ouvrir au tournevis.
@@ -160,7 +161,8 @@ protocole (enregistrement).
                            variante « pièce vide » si la vraie victime est hors de combat).
 Bonus Curiosité ......... après B6 (« ÉVALUATION TERMINÉE », porte ouverte), appuyer encore.
 
-L'écran de fin montre trois éléments : ton dernier geste, sa conséquence, une question
+Chaque fin se raconte d'abord en 4 planches (image + texte), voir docs/ILLUSTRATIONS_FINS.md.
+L'écran de fin montre ensuite trois éléments : ton dernier geste, sa conséquence, une question
 encore ouverte. La vérité n'est affichée que si tu l'as découverte.
 
 

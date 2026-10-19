@@ -15,9 +15,9 @@ HTML/CSS/JS sans framework ni build (`index.html` suffit). Pièce en SVG vue de 
 ## Carte du code (lire seulement la section utile)
 
 - `src/engine.js` (règles pures, tourne dans Node) : état dérivé l.51, contexte des effets l.75, actions l.234.
-- `src/story.js` (données et textes) : banques de phrases l.34, aides l.88, table des moments l.569, fins l.669, textes au toucher des objets l.711.
+- `src/story.js` (données et textes) : banques de phrases l.35, table des moments l.597, fins l.690, mini-histoires de fin l.723, textes au toucher des objets l.867.
 - `src/room.js` (pièce SVG) : positions et constantes en tête (écran `SC`, vitre `GL`, silhouettes `SIL`, boîtier `BX`), puis le SVG, `layout()` (adaptation à l'écran), `render()` (état → dessin), écran du moniteur, fins animées `FIN_FX`, animations `ANIMS`, icônes d'inventaire.
-- `src/game.js` (interface) : historique l.36, popups l.93, événements du moteur l.159, moments l.199, inventaire l.244, toucher un objet l.266, chrono l.311, fin l.338, partie l.381, écran titre l.427.
+- `src/game.js` (interface) : historique l.36, popups l.93, événements du moteur l.159, moments l.210, inventaire l.256, toucher un objet l.278, chrono l.323, fin et mini-histoire l.353, partie l.420, écran titre l.466.
 - `src/audio.js` : sons ; ambiance l.59.
 - `assets/img/` : dessins de l'artiste en WebP (pack graphique v1).
 - Test : `node tools/test-engine.js` (2 000 parties au hasard + un parcours par fin).
@@ -32,9 +32,10 @@ HTML/CSS/JS sans framework ni build (`index.html` suffit). Pièce en SVG vue de 
 
 ## État actuel
 
-- Version **5.9** : 20 moments (12 libres, 8 imposés), 6 ordres, appels, archives, 18 fins + Curiosité. Pack graphique v1 placé d'après le modèle d'Amine.
+- Version **6.1** : 20 moments (12 libres, 8 imposés), 6 ordres, appels, archives, 18 fins + Curiosité. Pack graphique v1 placé d'après le modèle d'Amine.
 - Silhouette de la 18 selon la vérité : victime = homme, complice = femme, illusion = enfant (`SIL_PAR_VERITE` dans `room.js`). Pack pièce V2 : seuls bouton (plus net), téléphone (recalé) et trappe préparée ont changé ; dessous du bureau = image d'Amine `bureau_fond.webp` (sans plateau), derrière tiroir, pied, compartiment et plateau.
 - Rendu 5.5 : mur de fond `mur_fond.webp` reconstruit d'après le modèle (`tools/fond-mur.py`), profondeur (sol en perspective `sol()`, murs latéraux, ombres portées `ombre()`, liserés de lampe `lisere()`), carte d'ombre `ombre.webp` tirée de `keyart.webp` (`tools/carte-lumiere.py 0.2 38 0.56`), lampe lumineuse, vitre embrumée, grain `grain.webp`, sol mouillé (reflet du bureau et de la porte), tuyaux, reflets vitre et écran (classe `lit`, éteints avec la lampe).
+- Fins 6.1 : chaque fin = mini-histoire de 4 planches (`HISTOIRES` dans `story.js`), illustrations attendues dans `assets/img/fins/` (liste `docs/ILLUSTRATIONS_FINS.md`), image provisoire tant qu'elles manquent.
 - Ensuite : tests avec 5 joueurs, direction artistique et son niveau Steam, page Steam, traduction anglaise.
 
 ## Règles de travail

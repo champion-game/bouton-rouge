@@ -400,9 +400,11 @@
 
   // Bilan de fin : trois éléments au plus (un acte décisif, sa conséquence, une question encore ouverte).
   function bilan(s) { return S.BILAN(ctx(s, [], null)); }
+  // Mini-histoire de fin : quatre planches (image + texte).
+  function histoire(s) { return S.HISTOIRE(ctx(s, [], null)); }
 
   var api = {
-    newGame: newGame, intro: function (s) { var ev = []; S.INTRO_EVENTS(ctx(s, ev, null)); return ev; }, turn: turn, choose: choose, regarder: regarder, decrire: decrire, bilan: bilan,
+    newGame: newGame, intro: function (s) { var ev = []; S.INTRO_EVENTS(ctx(s, ev, null)); return ev; }, turn: turn, choose: choose, regarder: regarder, decrire: decrire, bilan: bilan, histoire: histoire,
     forcedId: forcedId, cameraAveugle: cameraAveugle, porteOuverte: porteOuverte, ecoute: ecoute, has: has, horsDeCombat: horsDeCombat,
     DUREES: DUREES, DERNIER_CYCLE: DERNIER,
     LETTRES: S.LETTRES, JOURNAL: S.JOURNAL, AIDES: S.AIDES, DESCRIPTIONS: S.DESCRIPTIONS, PHRASES: S.PHRASES,

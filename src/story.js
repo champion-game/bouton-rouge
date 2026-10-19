@@ -63,6 +63,12 @@
       A: ['Au téléphone, entre deux phrases, il renifle. On dirait qu\'il a pleuré.', 'Il répond un peu trop vite, comme quelqu\'un qui a peur de rester seul.'],
       B: ['Un instant, la silhouette se tient très droite. Comme quelqu\'un qui attend des instructions.', 'Elle connaît l\'étiquette exacte de ton boîtier électrique. Comment ?'],
       C: ['Une seconde, dans la vitre, ton reflet se superpose exactement à la silhouette.', 'Elle répète une phrase que tu viens de penser. Ou de dire ? Tu ne sais plus.']
+    },
+    // Premier appel libre au 18 : un détail à recouper, propre à chaque vérité.
+    recoupe: {
+      A: ['« Ma pièce ? Une chaise, la vitre, un téléphone. Je ne connais rien d\'autre ici. Et toi, qu\'est-ce que tu as ? »', '« Ils m\'ont pris ma montre en arrivant. Je ne sais même pas depuis combien de temps je suis là. »'],
+      B: ['« Ton bouton est encore tiède ? … Je veux dire : tu as appuyé récemment ? »', '« Ne t\'approche pas trop de ta caméra. Celle-là enregistre le son. »'],
+      C: ['« Tu allais me demander si je vois la même chose que toi. … Oui. Exactement la même chose. »', '« Moi aussi, j\'ai pensé au tiroir en premier. Puis à la grille. Comme toi. »']
     }
   };
 
@@ -339,18 +345,21 @@
         return '« Je ne sais pas si je peux te faire confiance. ' + detail + 'Mais je n\'ai personne d\'autre. Tu viens me chercher ? »';
       },
       A: { label: '« Je viens »', fx: function (g) { g.gain('objectif'); g.confiance(1, 'promesse'); g.tel('« D\'accord. Je t\'attends. Jusqu\'au bout. »'); } },
-      B: { label: '« Chacun pour soi »', fx: function (g) { g.confiance(-2); g.tel('« …d\'accord. »'); g.narr('Elle raccroche.'); if (g.truth === 'B' && g.ecoute()) g.ecran('INFORMATION REÇUE|DU SUJET 18.'); } } },
+      B: { label: '« Chacun pour soi »', fx: function (g) { g.confiance(-2); g.tel('« …d\'accord. »'); g.narr('La 18 raccroche.'); if (g.truth === 'B' && g.ecoute()) g.ecran('INFORMATION REÇUE|DU SUJET 18.'); } } },
 
     { id: 'T5', objet: 'phone', fil: 'telephone', qui: 'APPELER LA CHAMBRE 18',
       quand: function (g) { return g.flag('ligne') === 'ouverte' && g.has('objectif') && g.s.confiance >= 3 && !g.done('T5') && g.dispo(); },
       texte: '« J\'ai peut-être trouvé une sortie. Il faut trois choses : que ta caméra soit aveugle, que le courant auxiliaire revienne, et ton signal, depuis ton boîtier. J\'attends ton signal. Pas indéfiniment. »',
       A: { label: 'Accepter', fx: function (g) { g.gain('plan'); g.flag('planFin', g.cycle + 3); g.anim('silBuee'); g.tel('« D\'accord. Je reste contre la vitre. Je t\'attends. »'); if (g.ecoute()) g.ecran('PLAN COMMUN|ENREGISTRÉ.'); } },
-      B: { label: 'Refuser', fx: function (g) { g.tel('« Très bien. Alors j\'essaie seule. Bientôt. »'); g.flag('seuleA', g.cycle + 2); } } },
+      B: { label: 'Refuser', fx: function (g) { g.tel(g.truth === 'A' ? '« Très bien. Alors j\'essaie seul. Bientôt. »' : '« Très bien. Alors j\'essaie seule. Bientôt. »'); g.flag('seuleA', g.cycle + 2); } } },
 
     { id: 'APP18', objet: 'phone', fil: 'telephone', qui: 'APPELER LA CHAMBRE 18',
       quand: function (g) { return g.flag('ligne') === 'ouverte' && g.done('T1') && g.done('T2') && g.done('T3') && !(g.has('objectif') && g.s.confiance >= 3 && !g.done('T5') && g.dispo()); },
       texte: 'Composer le 18.',
-      A: { label: 'Composer le 18', fx: function (g) { g.tel(!g.dispo() ? 'Personne ne décroche.' : g.has('plan') ? '« J\'attends toujours ton signal. »' : g.pick(PHRASES.voix18)); } },
+      A: { label: 'Composer le 18', fx: function (g) {
+        if (g.dispo() && !g.has('plan') && !g.flag('recoupe')) { g.flag('recoupe', true); g.tel(g.pick(PHRASES.recoupe[g.truth])); return; }
+        g.tel(!g.dispo() ? 'Personne ne décroche.' : g.has('plan') ? '« J\'attends toujours ton signal. »' : g.pick(PHRASES.voix18));
+      } },
       B: { label: 'Annuler ta promesse', si: function (g) { return (g.has('objectif') || g.has('plan')) && g.dispo(); },
         fx: function (g) { g.annulerPromesse(); g.tel('« …je comprends. » Un silence. « Non. Je ne comprends pas. »'); } } },
     { id: 'APP16', objet: 'phone', fil: 'telephone', qui: 'COMPOSER LE 16', seul: true,
@@ -601,6 +610,16 @@
     8: function (g) { g.ecran('INSPECTION DE|ROUTINE PRÉVUE.'); },
     9: function (g) { g.son('pas'); g.narr('Des pas dans le couloir. Ils s\'arrêtent devant ta porte, puis repartent.'); },
     10: inspection,
+    12: function (g) { g.son('knock'); g.narr('Dans le mur de droite, côté 19, quelqu\'un tousse longtemps. Puis plus rien.'); },
+    14: function (g) {
+      // Creux avant la proposition du Système : la 18 se manifeste, d'une façon propre à sa vérité.
+      g.ecran('TEMPS RESTANT :|NON COMMUNIQUÉ.');
+      if (!g.dispo()) { g.narr('Derrière la vitre, les voyants restent éteints. Le silence pèse plus que les cris.'); return; }
+      g.son('knock');
+      if (g.truth === 'A') g.narr('Trois coups faibles contre la vitre. Puis il attend. Longtemps. Comme on attend une réponse.');
+      else if (g.truth === 'B') g.narr('Derrière la vitre, la silhouette regarde son poignet, puis reprend exactement sa pose. Trois coups contre la vitre, bien réguliers.');
+      else g.narr('Trois coups contre la vitre. Tu étais justement en train de compter jusqu\'à trois.');
+    },
     15: function (g) { if (g.porteOuverte() && g.flag('porte').kind === 'b5') g.narr('Un relais cliquette dans ta porte. Elle ne restera plus ouverte longtemps.'); },
     17: function (g) {
       // Avant le final : ce qui reste réellement possible.
@@ -646,7 +665,8 @@
       employe: 'Votre poste d\'opérateur vous attendra.', isolement: 'Nous espérons que l\'isolement vous a été profitable.',
       gardien: 'Les sangles ne seront pas nécessaires cette fois.', tempsEcoule: 'Vous êtes resté jusqu\'au bout, la dernière fois.',
       sujet18: 'Cette fois, vous êtes de ce côté de la vitre.',
-      seulDehors: 'Vous étiez sorti. Vous êtes revenu.', porteDerobee: 'Vous étiez sorti. Vous êtes revenu.', evasion: 'Vous étiez sorti. Vous êtes revenu.', marche: 'Vous étiez sorti. Vous êtes revenu.',
+      seulDehors: 'Le conduit extérieur a été soudé. Vous êtes revenu quand même.', porteDerobee: 'La trappe a été scellée. Le vide technique aussi.', evasion: 'Nous avons compté les gardiens, cette fois.', marche: 'Vous avez accepté un marché. Nous en avons un autre.',
+      cooperation: 'La Chambre 18 a été déplacée.', sauvetage: 'Le conduit vers la Chambre 18 a été condamné.', tropTard: 'Vous étiez venu. Trop tard, la dernière fois.', complice: 'La Chambre 18 a un nouvel occupant.', miroir: 'Vous connaissez déjà cette voix.',
       boucle: 'Restauration de session réussie.', revolte: 'Les chambres 01 à 24 ont été réinitialisées.', temoin: 'L\'opérateur a été remplacé.'
     },
     presses: function (n) { return 'La dernière fois, vous avez appuyé ' + n + ' fois.'; },
@@ -673,14 +693,14 @@
     marche: { n: 3, titre: 'Le marché', crt: 'VOUS AVEZ ÉTÉ LIBÉRÉ. SUJET 18 : ÉVALUATION CONTINUE.', texte: 'La porte se referme derrière toi. Derrière la vitre, les voyants brillent encore. Tu ne sauras pas ce qu\'il est devenu.' },
     seulDehors: { n: 4, titre: 'Seul dehors', crt: 'VOUS ÊTES SORTI. SEUL.', texte: 'Tu retires la dernière grille et tu sors dans la nuit. Une voix très lointaine, derrière toi : « 17 ? » Tu continues.' },
     porteDerobee: { n: 5, titre: 'La porte dérobée', crt: 'SUJET 17 : NON LOCALISÉ.', texte: 'Tu disparais dans le vide technique. La trappe se referme sur la lumière de la Chambre 17. Au-dessus, le téléphone sonne une dernière fois, sans personne pour décrocher.' },
-    evasion: { n: 6, titre: 'L\'Évasion', crt: 'COUREZ.', texte: 'Un couloir. Des portes : 17, 18, 19… jusqu\'à 24. L\'alarme. Tu cours sans savoir ce qu\'il y avait derrière la vitre.' },
-    cooperation: { n: 7, titre: 'Coopération', crt: 'ERREUR. COOPÉRATION NON AUTORISÉE.', texte: 'Les deux portes s\'ouvrent. Vous vous voyez enfin, sans vitre. Vous courez ensemble.' },
+    evasion: { n: 6, titre: 'L\'Évasion', crt: 'COUREZ.', texte: 'Un couloir. Des portes : 17, 18, 19… jusqu\'à 24. L\'alarme. Tu cours sans savoir ce qu\'il y avait derrière la vitre. Certaines nuits, tu te réveilles la main tendue.' },
+    cooperation: { n: 7, titre: 'Coopération', crt: 'ERREUR. COOPÉRATION NON AUTORISÉE.', texte: 'Les deux portes s\'ouvrent. Vous vous voyez enfin, sans vitre. Il te tend la main qu\'il posait contre le verre. Vous courez ensemble, sous la pluie.' },
     sauvetage: { n: 8, titre: 'Le Sauvetage', crt: 'CHAMBRE 18 : VIDE.', texte: 'Dans le conduit, il demande : « Pourquoi tu m\'as cru ? » Tu ne réponds pas. Deux silhouettes sortent ensemble dans la nuit.' },
     tropTard: { n: 9, titre: 'Trop tard', crt: 'VOUS AVIEZ PROMIS DE VENIR.', texte: 'Silence. Une chaise. Une silhouette immobile. La lumière s\'éteint. Noir.' },
     complice: { n: 10, titre: 'La Complice démasquée', crt: 'TEST COMPROMIS.', texte: 'Elle recule. Tu prends son badge d\'accès, et tu sors. Derrière toi, elle murmure le nom de sa fille.' },
     sujet18: { n: 11, titre: 'Sujet 18', crt: '18', texte: 'La seringue. Noir. Tu te réveilles derrière une vitre, dans la Chambre 18. De l\'autre côté, un nouveau Sujet 17 découvre un bouton rouge.' },
     miroir: { n: 12, titre: 'Le Miroir', crt: 'SUJET 17 — SESSION PRÉCÉDENTE', texte: 'Une salle vide, un haut-parleur, ta propre voix. Noir. Puis le début du test recommence, légèrement différent.' },
-    boucle: { n: 13, titre: 'Briser la boucle', crt: 'SESSION RESTART… FAILED', texte: 'Le relais arraché fume dans ta main. Tous les écrans meurent. Silence prolongé.' },
+    boucle: { n: 13, titre: 'Briser la boucle', crt: 'SESSION RESTART… FAILED', texte: 'Le relais arraché fume dans ta main. Tous les écrans meurent. Derrière la vitre, il n\'y a jamais eu personne. Pour la première fois, rien ne recommence.' },
     isolement: { n: 14, titre: 'Isolement', crt: 'PROTOCOLE ISOLEMENT.', texte: 'Sirène. Toutes les portes se verrouillent. Lumières éteintes. « Sujet 17. Vous avez été averti. » Silence absolu.' },
     gardien: { n: 15, titre: 'Le Gardien', crt: 'NOUS ALLONS RECOMMENCER.', texte: 'Noir. Quand l\'image revient : des sangles, une chaise. La caméra devant toi.' },
     temoin: { n: 16, titre: 'Le Témoin', crt: 'IL Y EN A VINGT-QUATRE.', texte: 'Tu sors par la porte que l\'opérateur a ouverte. Dans le couloir, il t\'attend, livide : « Ils m\'avaient dit que vous étiez volontaires. » Tu lui montres ta preuve.' },
@@ -694,6 +714,141 @@
       } },
     curiosite: { n: 0, bonus: true, titre: 'Curiosité', crt: 'VOUS AVEZ CHOISI LE BOUTON.', texte: 'L\'évaluation était terminée. La porte était ouverte. Tu as appuyé quand même. CLAC. Elle se referme. « Fascinant. Vous étiez libre. »' }
   };
+
+  // ---------- mini-histoires de fin ----------
+  // Quatre planches par fin, jouées avant l'écran de bilan. Chaque planche : [image provisoire, texte].
+  // L'illustration définitive se place dans assets/img/fins/<fin>_<n>.webp (liste : docs/ILLUSTRATIONS_FINS.md).
+  // Tant qu'elle manque, le jeu affiche l'image provisoire indiquée, marquée « ILLUSTRATION À VENIR ».
+  // Un texte peut dépendre de la vérité ou de la variante : { A: …, B: …, C: …, vide: … }.
+  var HISTOIRES = {
+    conforme: [
+      ['porte_ouverte', 'La porte s\'ouvre sans bruit. Un couloir blanc, trop propre, éclairé comme une salle d\'opération.'],
+      ['keyart', 'Un gardien te rend tes affaires dans un sac plastique. Il évite ton regard. Sur l\'étiquette : SUJET 17 — CONFORME.'],
+      ['vitre', 'Tu passes devant la porte 18. Le petit voyant au-dessus est éteint. Personne ne frappe.'],
+      ['main', 'Dehors, il fait jour. Ta main droite cherche encore un bouton, dans le vide. Elle le cherchera longtemps.']
+    ],
+    employe: [
+      ['badge', 'On te tend une blouse à ta taille, et un badge : OPERATOR 17. Ils étaient prêts avant que tu acceptes.'],
+      ['moniteur', 'La salle de contrôle : vingt-quatre écrans, vingt-quatre chambres. Sur l\'écran 17, ta chaise est déjà vide.'],
+      ['chambre18', 'Chambre 19. Quelqu\'un se réveille, cherche la porte, puis trouve le bouton. La femme de la 18 passe derrière toi, sans te regarder.'],
+      ['bouton', 'Tu te penches vers le micro. Ta voix sort, filtrée, neutre : « Appuyez. »']
+    ],
+    marche: [
+      ['bouton_enfonce', 'Tu as appuyé. Le verrou cède. Derrière la vitre, un son bref. Puis rien.'],
+      ['porte_ouverte', 'Le couloir est long. À chaque pas, tu attends un cri. Il ne vient pas, et c\'est pire.'],
+      ['keyart', 'Une sortie de service. Un parking désert. Une voiture attend, moteur allumé, comme si elle savait.'],
+      ['tel_pose', 'Des semaines plus tard, ton téléphone sonne. Personne ne parle. Une respiration, puis deux petits coups contre le combiné.']
+    ],
+    seulDehors: [
+      ['grille_ouverte', 'Le conduit sent la poussière et le métal chaud. Tu rampes vers trois lettres peintes à la main : EXT.'],
+      ['grille', 'La dernière grille cède. L\'air froid te frappe au visage. Il fait nuit. Il pleut.'],
+      ['grille_ouverte', 'Très loin derrière toi, dans le conduit : « 17 ? » Tu t\'arrêtes une seconde.'],
+      ['keyart', 'Une seconde seulement. Puis tu cours vers les lumières de la route, sans te retourner.']
+    ],
+    porteDerobee: [
+      ['trappe_ouverte', 'Sous la trappe, une échelle rouillée descend dans le noir. Tu refermes la plaque au-dessus de toi.'],
+      ['trappe_preparee', 'Le vide technique : des câbles, des tuyaux, et des numéros de chambres écrits à la craie. Certains sont barrés.'],
+      ['tel_pose', 'Au-dessus de toi, le téléphone de la 17 sonne. Une fois. Deux fois. Personne pour répondre.'],
+      ['keyart', 'Une grille, une ruelle, la ville. Dans les registres du centre, une seule ligne : SUJET 17 — NON LOCALISÉ.']
+    ],
+    evasion: [
+      ['porte_ouverte', 'Ta porte est ouverte. Tu ne réfléchis plus : tu cours.'],
+      ['keyart', 'Le couloir défile : 17, 18, 19… jusqu\'à 24. Derrière chaque porte, quelqu\'un. Tu ne t\'arrêtes devant aucune.'],
+      ['camera', 'L\'alarme hurle. Une porte de secours. Un escalier. Le ciel.'],
+      ['main', 'Tu cours jusqu\'à ne plus entendre la sirène. Tu ne sauras jamais ce qu\'il y avait derrière la vitre. Certaines nuits, tu te réveilles la main tendue vers un verre qui n\'existe pas.']
+    ],
+    cooperation: [
+      ['boitier_ouvert', 'Ton signal part. Dans le mur, un relais claque. Les deux portes s\'ouvrent en même temps.'],
+      ['sil_A_paume', 'Pour la première fois, sans vitre. Il est plus jeune que tu ne pensais. Il te tend la main, celle qu\'il posait contre le verre.'],
+      ['camera', 'Vous courez côte à côte. Il reconnaît les couloirs aux bruits ; toi, tu connais les caméras et leurs angles morts.'],
+      ['tasse', 'Dehors, il pleut. Il rit, d\'un rire cassé : « Ma tasse. J\'ai oublié ma tasse. » Vous riez tous les deux. La sirène, derrière, ne compte plus.']
+    ],
+    sauvetage: [
+      ['grille_ouverte', 'Le conduit débouche dans la 18. Il est là, recroquevillé contre le mur. Il lève les yeux vers toi.'],
+      ['sil_A_accroupi', 'Tu l\'aides à ramper. Il a froid, il est lourd. Dans le noir, il demande : « Pourquoi tu m\'as cru ? »'],
+      ['sil_A_courbe', 'Tu ne réponds pas. Tu ne sais pas. Peut-être parce qu\'il fallait croire quelqu\'un.'],
+      ['moniteur', 'Deux silhouettes sortent dans la nuit. Sur un écran que personne ne regarde : CHAMBRE 18 : VIDE.']
+    ],
+    tropTard: [
+      ['chambre18', 'De l\'autre côté, une chaise. Une silhouette immobile, la tête contre le mur.'],
+      ['vitre', 'Tu l\'appelles. Tu le secoues. Sous la vitre, les trois voyants sont éteints.'],
+      ['tasse', 'Sur la table, sa tasse, posée contre le mur. Elle ne tremblera plus.'],
+      ['moniteur', 'La lumière s\'éteint. Dans le noir, la voix du Système, sans émotion : « Vous aviez promis de venir. »']
+    ],
+    complice: [
+      ['tournevis', 'Le mécanisme grince et s\'arrête. Elle recule contre le mur. Il n\'y a plus de rôle à jouer.'],
+      ['sil_B_recule', 'La blouse, le badge, la seringue. Elle parle vite : sa fille, une chambre quelque part, un contrat qu\'elle n\'a pas lu.'],
+      ['badge', 'Tu prends son badge. Elle ne t\'en empêche pas. « Si tu sors… dis-leur que j\'ai essayé. »'],
+      ['sil_C_debout', 'Dans le couloir, une photo tombe de sa poche : une petite fille, debout derrière une vitre dépolie. Derrière toi, elle murmure un prénom.']
+    ],
+    sujet18: [
+      ['sil_B_debout', 'Elle appuie sur son bipeur. Une piqûre froide dans le cou. Le sol bascule.'],
+      ['vitre', 'Tu te réveilles sur une chaise, face à une vitre dépolie. Trois voyants sous la vitre. De ton côté, cette fois.'],
+      ['tel_decroche', 'Le téléphone sonne. Tu décroches. Tu ne reconnais pas ta voix quand tu dis : « Allô ? Tu m\'entends ? »'],
+      ['sil_paume', 'De l\'autre côté, une silhouette s\'approche du bouton rouge. Lentement, tu poses ta paume contre le verre.']
+    ],
+    miroir: [
+      ['tel_decroche', 'Tu écoutes jusqu\'au bout. La voix hésite, se reprend, respire. Exactement comme toi.'],
+      ['chambre18', 'La vitre s\'éclaircit. Derrière : une salle vide, un haut-parleur, un projecteur qui tourne encore.'],
+      ['cassette', 'Sur la bande, une étiquette : SUJET 17 — SESSION ANTÉRIEURE. C\'est ton écriture.'],
+      ['moniteur', 'Noir. Puis le moniteur se rallume : INITIALISATION… Le test recommence. Cette fois, la tasse est à gauche.']
+    ],
+    boucle: [
+      ['boitier_ouvert', 'Le relais résiste, puis cède dans une gerbe d\'étincelles. Il fume dans ta main.'],
+      ['sil_C_debout', 'Derrière la vitre, la silhouette se défait, comme une image qu\'on coupe. Il n\'y a jamais eu personne.'],
+      ['moniteur', 'Le moniteur essaie une dernière fois : SESSION RESTART… FAILED. Tous les écrans meurent.'],
+      ['keyart', 'Un silence que tu n\'as jamais entendu ici. Plus de ventilation. Plus de voix. Pour la première fois, rien ne recommence.']
+    ],
+    isolement: [
+      ['porte_fermee', 'La sirène. Les portes se verrouillent l\'une après l\'autre, comme des dominos.'],
+      ['camera', 'Les lumières s\'éteignent. Des pas, nombreux, qui ne se pressent pas.'],
+      ['moniteur', 'La voix du Système, très calme : « Sujet 17. Vous avez été averti. »'],
+      ['mur', 'Ensuite, une pièce sans vitre, sans bouton, sans téléphone. Personne ne t\'a dit pour combien de temps.']
+    ],
+    gardien: [
+      ['porte_ouverte', 'Tu te relèves et tu cours. Deux gardiens. Le deuxième t\'attendait.'],
+      ['sol', 'Le sol. Un genou dans ton dos. Une odeur de désinfectant.'],
+      ['camera', 'Quand l\'image revient : des sangles, une chaise. La caméra, à vingt centimètres de ton visage.'],
+      ['bouton', '« Nous allons recommencer. » Sur le bureau devant toi, le bouton rouge. Plus près qu\'avant.']
+    ],
+    temoin: [
+      ['porte_ouverte', 'Ta porte s\'ouvre sans alarme. Dans le couloir, l\'opérateur t\'attend, livide, son casque encore autour du cou.'],
+      ['papier_lettre', '« Ils m\'avaient dit que vous étiez volontaires. » Tu lui montres ta preuve. Il la lit deux fois.'],
+      ['keyart', 'Il te fait descendre par l\'escalier de service. À chaque palier, il regarde ses mains.'],
+      ['tel_pose', 'Dehors, il sort son téléphone. « Il y en a vingt-quatre. Je vais tout leur dire. Tout. »']
+    ],
+    revolte: [
+      ['cassette', 'L\'enregistrement passe dans tous les haut-parleurs du centre. Le protocole, mot pour mot.'],
+      ['porte_ouverte', 'Une porte s\'ouvre. Puis une autre. Puis toutes. Des silhouettes sortent dans le couloir, une par chambre.'],
+      ['moniteur', '« RETOURNEZ DANS VOS CHAMBRES. » Personne ne bouge. Vingt-quatre personnes se voient pour la première fois.'],
+      ['camera', 'Une à une, les caméras s\'éteignent. Au bout du couloir, quelqu\'un prend la main de son voisin.']
+    ],
+    tempsEcoule: [
+      ['moniteur', 'Le compte s\'arrête. Tous les verrous claquent en même temps. Ta porte reste fermée.'],
+      ['chambre18', {
+        A: 'La porte de la 18 s\'ouvre. Deux gardiens l\'emmènent. Il ne se débat pas. Il regarde ta vitre jusqu\'au bout.',
+        B: 'La porte de la 18 s\'ouvre. Elle sort, retire sa blouse, et ne se retourne pas.',
+        C: 'Derrière la vitre, la silhouette se fige, puis s\'éteint comme une image qu\'on coupe. Un technicien change une bande.',
+        vide: 'La porte de la 18 s\'ouvre sur une chaise vide. Puis quelqu\'un d\'autre entre, et s\'assoit.'
+      }],
+      ['bouton', 'La lumière de ta chambre passe au rouge. Sur le moniteur : APPUYEZ SUR LE BOUTON ROUGE.'],
+      ['vitre', 'De l\'autre côté, une nouvelle silhouette s\'approche de la vitre. Le test ne finit pas. Il change de nom.']
+    ],
+    curiosite: [
+      ['porte_ouverte', 'ÉVALUATION TERMINÉE. La porte est ouverte. Le couloir t\'attend.'],
+      ['bouton', 'Ta main est déjà sur le bouton. Tu appuies. Personne ne te l\'a demandé.'],
+      ['porte_fermee', 'CLAC. La porte se referme. Le moniteur clignote, presque content.'],
+      ['moniteur', '« Fascinant. Vous étiez libre. » Puis, plus bas : « Encore ? »']
+    ]
+  };
+  // Planches prêtes à afficher pour une fin (texte résolu selon la vérité ou la variante).
+  function HISTOIRE(g) {
+    var id = g.s.fin, h = HISTOIRES[id] || [], cle = g.s.flags.variante || g.truth;
+    return h.map(function (p, i) {
+      var t = p[1]; if (typeof t === 'object') t = t[cle] || t[g.truth] || t.A;
+      return { img: id + '_' + (i + 1), generique: p[0], texte: t };
+    });
+  }
 
   // Bilan de fin : trois éléments au plus. Jamais la correspondance des silhouettes, jamais de tableau des combinaisons.
   function BILAN(g) {
@@ -747,7 +902,7 @@
     FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, PREUVES: PREUVES, VERITES: VERITES, PHRASES: PHRASES, MEMOIRE: MEMOIRE, DOUTES: DOUTES,
     REPLIQUES_OBJETS: REPLIQUES_OBJETS, SITUATIONS: SITUATIONS, JOURNAL: JOURNAL, MOMENTS: MOMENTS, FINS: FINS, REGARDS: REGARDS,
     DESCRIPTIONS: DESCRIPTIONS, LETTRES: LETTRES, AIDES: AIDES, SESSIONS: SESSIONS,
-    B2_PRESSION: B2_PRESSION, B2_ARRET: B2_ARRET, SEULE: SEULE, ARCHIVES: ARCHIVES, BILAN: BILAN, INTRO_EVENTS: INTRO_EVENTS
+    B2_PRESSION: B2_PRESSION, B2_ARRET: B2_ARRET, SEULE: SEULE, ARCHIVES: ARCHIVES, BILAN: BILAN, HISTOIRES: HISTOIRES, HISTOIRE: HISTOIRE, INTRO_EVENTS: INTRO_EVENTS
   };
   function resolve(v, g) { return typeof v === 'function' ? v(g) : v; }
   if (typeof module === 'object' && module.exports) module.exports = api; else root.BRStory = api;

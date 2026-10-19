@@ -2362,3 +2362,22 @@ Pour chaque situation principale, prévoir idéalement :
 
 Avec cette méthode, les **23 situations** peuvent produire plusieurs centaines de combinaisons de textes sans modifier la structure mécanique du jeu.
 
+
+# 33. MINI-HISTOIRES DE FIN (version 6.1)
+
+Chaque fin se raconte en 4 planches avant l'écran de bilan. Le texte de référence est dans `src/story.js` (`HISTOIRES`) ; la liste des planches, avec ce que chaque illustration doit montrer, est dans `docs/ILLUSTRATIONS_FINS.md`.
+
+Règles d'écriture : présent, tutoiement, une image forte par planche, la dernière planche laisse une question ouverte. En vérité A la 18 est un homme, en B une femme ; la vérité n'est jamais nommée.
+
+# 34. AJOUTS 6.1 — MOMENTS ET INDICES
+
+- Moment 12 : « Dans le mur de droite, côté 19, quelqu'un tousse longtemps. Puis plus rien. »
+- Moment 14 : moniteur « TEMPS RESTANT : NON COMMUNIQUÉ. », puis trois coups contre la vitre.
+  - A : « Trois coups faibles contre la vitre. Puis il attend. Longtemps. Comme on attend une réponse. »
+  - B : « Derrière la vitre, la silhouette regarde son poignet, puis reprend exactement sa pose. Trois coups contre la vitre, bien réguliers. »
+  - C : « Trois coups contre la vitre. Tu étais justement en train de compter jusqu'à trois. »
+  - 18 hors de combat : « Derrière la vitre, les voyants restent éteints. Le silence pèse plus que les cris. »
+- Premier appel libre au 18, réplique à recouper :
+  - A : « Ma pièce ? Une chaise, la vitre, un téléphone. Je ne connais rien d'autre ici. Et toi, qu'est-ce que tu as ? » / « Ils m'ont pris ma montre en arrivant. Je ne sais même pas depuis combien de temps je suis là. »
+  - B : « Ton bouton est encore tiède ? … Je veux dire : tu as appuyé récemment ? » / « Ne t'approche pas trop de ta caméra. Celle-là enregistre le son. »
+  - C : « Tu allais me demander si je vois la même chose que toi. … Oui. Exactement la même chose. » / « Moi aussi, j'ai pensé au tiroir en premier. Puis à la grille. Comme toi. »

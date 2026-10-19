@@ -362,7 +362,31 @@
     var son = SONS_FIN[s.fin];
     if (son === 'ring') { A.ring(true); setTimeout(function () { A.ring(false); }, 2600); } else if (son) A.sfx(son);
     if (!(await wait(3200, my))) return;
-    endScreen();
+    histoireFin(my);
+  }
+  // Mini-histoire : quatre planches avant le bilan. Toucher pour avancer, « Passer » pour aller au bilan.
+  // Illustration manquante → image provisoire marquée « ILLUSTRATION À VENIR » (docs/ILLUSTRATIONS_FINS.md).
+  function histoireFin(my) {
+    var P = E.histoire(s), i = 0;
+    if (!P.length) { endScreen(); return; }
+    $('endBox').className = 'end histoire'; $('endOv').hidden = false;
+    function suivante() {
+      if (my !== run) return;
+      if (i >= P.length) { $('endBox').className = 'end'; endScreen(); return; }
+      var p = P[i++], img = new Image();
+      $('endBox').innerHTML = '<div class="planche"><div class="hcadre"><div class="hmanque" hidden>ILLUSTRATION À VENIR<br>' + esc(p.img) + '</div></div>' +
+        '<div class="htexte"><div class="k">' + esc(E.FINS[s.fin].titre.toUpperCase()) + ' · ' + i + ' / ' + P.length + '</div><p>' + esc(p.texte) + '</p>' +
+        '<div class="endbtns"><button class="enter" id="hSuite">' + (i < P.length ? 'Suite' : 'Bilan') + '</button><button class="mbtn" id="hPasser">Passer</button></div></div></div>';
+      var cadre = $('endBox').querySelector('.hcadre');
+      img.alt = ''; img.onerror = function () { img.onerror = null; img.src = 'assets/img/' + p.generique + '.webp'; img.className = 'provisoire'; cadre.querySelector('.hmanque').hidden = false; };
+      img.src = 'assets/img/fins/' + p.img + '.webp'; cadre.insertBefore(img, cadre.firstChild);
+      A.sfx('tick');
+      $('hSuite').onclick = function (e) { e.stopPropagation(); suivante(); };
+      $('hPasser').onclick = function (e) { e.stopPropagation(); i = P.length; suivante(); };
+      cadre.onclick = suivante;
+      $('hSuite').focus();
+    }
+    suivante();
   }
   function loadFound() { try { return JSON.parse(localStorage.getItem(FOUND_KEY) || '{}') || {}; } catch (e) { return {}; } }
   function endScreen() {

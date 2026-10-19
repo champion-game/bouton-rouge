@@ -152,3 +152,12 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - Popup seulement pour une discussion (téléphone, voix de la 18), un papier, un gardien ou un indice (`narr(txt, true)`). Les autres descriptions passent en bandeau et dans l’historique.
 - Un objet donné par le Système (`autorise_…`) ne déclenche plus sa réplique « Veuillez reposer… ».
 - Coupure (moment 5) : 10 s (`DUREES.coupure`), décomptées sur le moniteur « RÉTABLISSEMENT RÉSEAU DANS N S ». Exception voulue à « seul chrono visible : les ordres ».
+
+## Version 6.1 (20/10) : passe sur le scénario, mini-histoires de fin
+
+- **Genre de la 18 en vérité A** : homme partout (« j'essaie seul », « La 18 raccroche »).
+- **Mémoire des sessions** : une phrase propre à chaque fin de sortie et aux fins 7 à 12 (fini « Vous étiez sorti. Vous êtes revenu. » partagé par 4 fins).
+- **Creux comblés** : moment 12, quelqu'un tousse dans la 19 ; moment 14, « TEMPS RESTANT : NON COMMUNIQUÉ » et trois coups de la 18, différents selon la vérité (A attend une réponse, B est trop réglée, C suit ton propre compte). Aucun effet sur les jauges.
+- **Indice à recouper** : le premier appel libre au 18 (`APP18`) donne une réplique propre à la vérité (`PHRASES.recoupe`). A ne connaît que sa pièce, B en sait trop sur toi, C devance tes pensées.
+- **Mini-histoires** : chaque fin (et Curiosité) se raconte en 4 planches image + texte avant le bilan (`HISTOIRES` dans `story.js`, affichage `histoireFin()` dans `game.js`). Toucher l'image ou « Suite » pour avancer, « Passer » pour aller au bilan. Illustrations attendues dans `assets/img/fins/<fin>_<n>.webp` ; en attendant, image provisoire du pack, grisée et marquée « ILLUSTRATION À VENIR ». Liste : `docs/ILLUSTRATIONS_FINS.md`.
+- Textes de fin enrichis : Coopération, Briser la boucle, L'Évasion.
