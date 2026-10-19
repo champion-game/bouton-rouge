@@ -12,7 +12,7 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 
 - Amine développe seul, sans expérience de programmation de jeu : c'est toi qui écris le code.
 - Il communique en français et veut des réponses courtes et directes.
-- Il teste souvent sur son téléphone : le jeu doit rester jouable en portrait à environ 390 px de large, et bien tenir sur un écran d'ordinateur (1280 × 800).
+- Il teste souvent sur son téléphone : le jeu se joue **en paysage** (décision du 19/10 ; en portrait, un écran demande de tourner le téléphone). Il doit tenir sur un téléphone en paysage (environ 844 × 390) et sur un écran d'ordinateur (1280 × 800).
 - Challenge ses idées quand elles nuisent au jeu, et propose des options réalisables.
 - Il a déjà fait un jeu avec Claude Code : Dernier Abri (dépôt `champion-game/dernier-abri`), dont on reprend les bonnes pratiques.
 
@@ -25,8 +25,9 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 
 ## État actuel
 
-- `index.html` est la **V3** jouable (version 4.0) : 20 cycles cachés, 5 fils, 23 situations + 11 actions (appels sortants, fusible, plan, objets à prendre, pages du journal de 16), 18 fins + Curiosité. Code dans `src/`, dessins de l'artiste dans `assets/img/` (WebP découpés depuis ses planches).
+- `index.html` est la **V3** jouable (version 4.2) : 20 cycles cachés, 5 fils, 23 situations + 11 actions (appels sortants, fusible, plan, objets à prendre, pages du journal de 16), 18 fins + Curiosité. Code dans `src/`, dessins de l'artiste dans `assets/img/` (WebP découpés depuis ses planches).
 - La silhouette de la 18 change selon la vérité cachée : homme (A), femme (B), enfant (C).
+- La pièce reprend l'image de référence d'Amine (vue de face, base 1672 × 941). `docs/RESUME_JEU.txt` résume le jeu et tous les scénarios.
 - `prototype-v1.html` garde le prototype v1 (histoire linéaire, 4 fins) pour comparaison.
 - Tests : `node tools/test-engine.js` (30 000 parties au hasard par défaut).
 - Les décisions d'intégration de la V3 sont dans `docs/V3_DECISIONS.md`.
@@ -45,7 +46,7 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 - **Propose avant de coder** : pour toute demande de changement, présente d'abord 2 ou 3 options courtes (avec ta recommandation) et attends l'accord d'Amine. Seules exceptions : corriger un bug évident, ou s'il dit explicitement « vas-y ».
 - Garde la séparation moteur / rendu : une règle de jeu va dans `engine.js` ou `story.js`, jamais dans `game.js`.
 - Mets à jour `docs/V3_DECISIONS.md` quand une décision de conception change.
-- Après chaque changement visible, teste le jeu en largeur téléphone et sur écran d'ordinateur, et vérifie qu'il n'y a aucune erreur dans la console.
+- Après chaque changement visible, teste le jeu sur téléphone en paysage et sur écran d'ordinateur, et vérifie qu'il n'y a aucune erreur dans la console.
 - Fais des commits petits, avec un message clair en français.
 - **Version** : à chaque push qui change le jeu, augmente le numéro dans `index.html` (texte « Version X.Y » de l'écran d'accueil et `?v=X.Y` des scripts), pour qu'Amine voie qu'il a la bonne version et que les scripts se rechargent.
 - Lien pour jouer : https://champion-game.github.io/bouton-rouge/ (GitHub Pages, mis à jour tout seul après chaque push sur `main`). Ne publie plus d'artefact Claude.

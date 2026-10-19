@@ -91,3 +91,10 @@ Coopération et Briser la boucle sortent rarement dans les parties au hasard, ca
 
 - **Pendant la coupure (cycle 6), la caméra est hors ligne** : elle compte comme aveuglée. Le Système ne commente plus un objet pris dans le noir (« TOURNEVIS OBTENU » apparaissait au retour de la lumière), forcer le tiroir ne déclenche plus « BRUIT ANORMAL », et on ne peut pas montrer le mot à une caméra éteinte.
 - **Les messages restent dans l'ordre** : le popup (téléphone, voix, ce qu'on voit) s'affiche avant la suite du moniteur, au lieu d'arriver après.
+
+## Version 4.2 (19/10) : la pièce d'après l'image de référence d'Amine
+
+- **Disposition calquée sur l'image de référence** : caméra dans le coin en haut à gauche, grande porte à gauche avec le mot dessous, grille entre la porte et le moniteur, lampe au-dessus du moniteur, bureau au centre (téléphone, bouton, tasse), tiroir dans le bandeau du bureau, compartiment en bas du socle, grande vitre à droite avec les témoins et le boîtier dessous, trappe au sol à droite. Coins de la pièce en perspective, ombre et lumière du bureau au sol.
+- **Nouveau bureau** dessiné par l'artiste (plateau, socle avec la fente du tiroir et le compartiment, tiroirs fermé / ouvert / avec tournevis). Le compartiment ouvert montre le fusible dessiné.
+- **Le jeu se joue en paysage** (décision d'Amine) : en portrait sur téléphone ou tablette, un écran demande de tourner l'appareil. Sur téléphone, le jeu passe en plein écran et se bloque en paysage quand le navigateur le permet. Les barres et les popups sont plus fins en paysage.
+- La vidéo de B3 se regarde en entier avant le popup.

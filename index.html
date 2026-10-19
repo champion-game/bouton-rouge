@@ -25,9 +25,9 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 
 .app{height:100vh;height:100dvh;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-.top{position:absolute;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px max(10px,env(safe-area-inset-right,0px)) 0 max(10px,env(safe-area-inset-left,0px));pointer-events:none}
+.top{position:absolute;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:5;display:flex;justify-content:flex-end;align-items:center;gap:8px;padding:6px max(10px,env(safe-area-inset-right,0px)) 0 max(10px,env(safe-area-inset-left,0px));pointer-events:none}
 .top > *{pointer-events:auto}
-.brand{font-family:var(--f-stencil);font-weight:800;font-size:1rem;letter-spacing:.08em;color:var(--red);white-space:nowrap;opacity:.85}
+.brand{display:none;font-family:var(--f-stencil);font-weight:800;font-size:1rem;letter-spacing:.08em;color:var(--red);white-space:nowrap;opacity:.85}
 .brand span{color:var(--muted);font-weight:700}
 @media (max-width:520px){.brand span{display:none}.brand{font-size:.9rem}}
 .tb{display:flex;gap:5px}
@@ -150,6 +150,28 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 .fins span.on{border-color:var(--green);color:var(--green)}
 .fins span.cur{background:var(--green);color:#071311}
 @media (prefers-reduced-motion:reduce){.ring,.pulse{animation:none}}
+/* Le jeu se joue en paysage : en portrait sur téléphone ou tablette, on demande de tourner l'écran. */
+.rotate{display:none;position:fixed;inset:0;z-index:100;background:#050707;color:var(--text);flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px}
+.rotate svg{width:84px;height:84px;animation:tourne 2.4s ease-in-out infinite}
+.rotate p{margin:0;max-width:26ch;font-size:1.05rem}
+.rotate b{font-family:var(--f-stencil);font-weight:800;letter-spacing:.08em;color:var(--red);font-size:1.4rem}
+@keyframes tourne{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
+@media (orientation:portrait) and (max-width:1024px){.rotate{display:flex}}
+/* Téléphone en paysage : barres plus fines pour laisser la place à la pièce. */
+@media (max-height:500px){
+  .hud{padding:3px max(8px,env(safe-area-inset-right,0px)) 3px max(8px,env(safe-area-inset-left,0px))}
+  .slot{max-height:36px;padding:2px}
+  .hud .bag{max-width:300px}
+  .hist{min-height:30px;padding:4px 10px}
+  .btn{min-height:28px;padding:3px 8px}
+  .top{padding-top:4px}
+  .pop{padding:8px}
+  .card{max-height:calc(100dvh - 16px);padding:10px 12px;gap:8px;max-width:520px}
+  .card .lettre{font-size:1.3rem;padding:12px 16px 10px;margin:2px}
+  .card .lettre .sig{font-size:1.2rem;margin-top:2px}
+  .rev{max-height:44vh;width:auto;max-width:100%;margin:0 auto}
+  .ch{min-height:40px;padding:8px 10px}
+}
 </style>
 </head>
 <body>
@@ -167,6 +189,7 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
     </div>
   </div>
 </div>
+<div class="rotate" id="rotate"><svg viewBox="0 0 48 48" fill="none" stroke="#dfe7e4" stroke-width="2.5"><rect x="15" y="6" width="18" height="36" rx="3"/><line x1="21" y1="37" x2="27" y2="37"/></svg><b>LE BOUTON ROUGE</b><p>Tourne ton téléphone en mode paysage pour jouer.</p></div>
 <div class="pop" id="pop" hidden><div class="card" id="card" role="dialog" aria-modal="true"></div></div>
 
 <div class="ov title" id="intro">
@@ -180,7 +203,7 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
       <button class="mbtn" id="setBtn">Réglages</button>
     </div>
     <p>Une pièce. Un bouton. Touche ce qui t'entoure. Le son est recommandé.</p>
-    <p class="ver">Version 4.1 · 19/10</p>
+    <p class="ver">Version 4.2 · 19/10</p>
   </div>
   <div class="intro panel" id="finsPanel" hidden>
     <h2>Fins découvertes</h2>
@@ -198,10 +221,10 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 </div>
 <div class="ov" id="endOv" hidden><div class="end" id="endBox"></div></div>
 
-<script src="src/story.js?v=4.1"></script>
-<script src="src/engine.js?v=4.1"></script>
-<script src="src/audio.js?v=4.1"></script>
-<script src="src/room.js?v=4.1"></script>
-<script src="src/game.js?v=4.1"></script>
+<script src="src/story.js?v=4.2"></script>
+<script src="src/engine.js?v=4.2"></script>
+<script src="src/audio.js?v=4.2"></script>
+<script src="src/room.js?v=4.2"></script>
+<script src="src/game.js?v=4.2"></script>
 </body>
 </html>

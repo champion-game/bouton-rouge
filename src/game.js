@@ -170,7 +170,7 @@
           if (e.n === 'silArrive') introSil = false;
           R.anim(e.n);
           if (e.n === 'silFrappe') A.sfx('knock'); else if (e.n === 'lumiere') A.sfx('lock'); else if (e.n === 'camTourne') A.sfx('blink');
-          await wait(e.n === 'lumiere' ? 900 : 500, my); break;
+          await wait(e.n === 'lumiere' ? 900 : e.n === 'video' ? 5200 : 500, my); break;
       }
     }
     // Le popup ne répète pas le moniteur : seulement le téléphone, la voix de la 18 et ce qu'on voit ou fait.
@@ -404,7 +404,16 @@
     panneau(null); $('intro').hidden = false;
   }
   function panneau(id) { ['menuMain', 'finsPanel', 'setPanel'].forEach(function (p) { $(p).hidden = p !== (id || 'menuMain'); }); }
-  function entrer(f) { A.init(); A.startAmbience(); $('intro').hidden = true; f(); }
+  function entrer(f) {
+    A.init(); A.startAmbience(); $('intro').hidden = true;
+    // Sur téléphone : plein écran et paysage, quand le navigateur le permet.
+    try {
+      if (window.matchMedia('(pointer: coarse)').matches && document.documentElement.requestFullscreen && !document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(function () { if (screen.orientation && screen.orientation.lock) return screen.orientation.lock('landscape'); }).catch(function () {});
+      }
+    } catch (e) {}
+    f();
+  }
   $('contBtn').onclick = function () { entrer(reprendre); };
   $('newBtn').onclick = function () { entrer(start); };
   $('finsBtn').onclick = function () {
