@@ -20,7 +20,7 @@ function rnd(seed) { var a = seed >>> 0; return function () { a = (a + 0x6D2B79F
 // pour que les parties au hasard aillent assez loin).
 function actions(t) {
   var list = [];
-  function sit(x) { ['A', 'B'].forEach(function (c) { if (x[c].ok) list.push({ w: 1, a: { type: 'situation', id: x.id, choix: c } }); }); }
+  function sit(x) { ['A', 'B'].forEach(function (c) { if (x[c] && x[c].ok) list.push({ w: 1, a: { type: 'situation', id: x.id, choix: c } }); }); }
   if (t.forced) sit(t.forced);
   else t.fils.forEach(function (f) { f.situations.forEach(sit); });
   if (t.peutAppuyer && !t.forced) list.push({ w: 0.15, a: { type: 'appuyer' } });
@@ -56,7 +56,24 @@ for (var i = 0; i < N; i++) {
   }
 }
 
-var ok = errors === 0;
+// Parcours voulus vers les fins les plus rares au hasard : ils doivent rester possibles.
+function parcours(truth, steps) {
+  var st = E.newGame({ seed: 1, truth: truth }); E.intro(st);
+  for (var i = 0; i < steps.length && !st.fin; i++) {
+    var p = steps[i].split(' ');
+    var a = p[0] === 'press' ? { type: 'appuyer' } : p[0] === 'temps' ? { type: 'temps' } : { type: 'situation', id: p[0], choix: p[1] || 'A' };
+    st = E.choose(st, a).state;
+  }
+  return st.fin;
+}
+var routes = [
+  ['boucle', 'C', ['P1 A', 'press', 'T1 A', 'C1 A', 'press', 'P3 B', 'FUS', 'press', 'P4 A', 'press', 'T4 A', 'H3 B', 'B5 B', 'P2 A', 'P5 A']],
+  ['cooperation', 'A', ['P1 B', 'press', 'T1 A', 'C1 A', 'press', 'P3 A', 'P2 B', 'temps', 'T2 B', 'T3 A', 'B4 B', 'T4 A', 'T5 A', 'temps', 'PLAN']]
+];
+var routesOk = true;
+routes.forEach(function (r) { var f; try { f = parcours(r[1], r[2]); } catch (e) { f = 'erreur : ' + e.message; } console.log((f === r[0] ? '  ok ' : '  !! ') + 'parcours ' + r[0] + ' → ' + f); if (f !== r[0]) routesOk = false; });
+
+var ok = errors === 0 && routesOk;
 console.log(N + ' parties, ' + errors + ' erreur(s), cycle maximum atteint : ' + maxCycle);
 console.log('\nFins :');
 Object.keys(fins).sort(function (a, b) { return E.FINS[a].n - E.FINS[b].n; }).forEach(function (k) {

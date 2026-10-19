@@ -29,7 +29,7 @@
       seed: seed, truth: truth, cycle: 1,
       vie: 3, confiance: 0, soupcon: 0, conformite: 0,
       rng: (seed ^ 0x9E3779B9) >>> 0, // pour tirer les variantes de texte (même graine = même partie)
-      items: [], found: [], done: {}, flags: { ligne: 'fermee', t1Ignore: 0, memoire: {}, soupconDit: 0 }, fin: null,
+      items: [], found: [], done: {}, flags: { ligne: 'fermee', t1Ignore: 0, memoire: {}, soupconDit: 0, aux: 'ok', doutes: 0 }, fin: null,
       stats: { presses: 0, auto: 0, suivis: 0, refus: 0, blessures: 0, actions: 0 }
     };
     return s;
@@ -37,10 +37,8 @@
 
   // Événements du début de partie (cycle 1).
   function intro(s) {
-    var ev = [], g = ctx(s, ev, null), P = S.PHRASES;
-    P.intro.forEach(function (l) { g.ecran(l); });
-    g.ecran(g.pick(P.introVariantes));
-    chronoTexts(s, ev, 1);
+    var ev = [];
+    S.INTRO.forEach(function (e) { ev.push(e[0] === 'anim' ? { t: 'anim', n: e[1] } : { t: e[0], txt: e[1] }); });
     return ev;
   }
   function tirer(s) { // mulberry32, l'état est gardé dans la partie
@@ -51,7 +49,7 @@
 
   // ---------- état dérivé ----------
   function has(s, k) { return s.items.indexOf(k) >= 0; }
-  function cameraAveugle(s) { return has(s, 'cameraCoupee') || (s.flags.maskedUntil != null && s.cycle <= s.flags.maskedUntil); }
+  function cameraAveugle(s) { return has(s, 'cameraCoupee') || has(s, 'cameraTournee') || (s.flags.maskedUntil != null && s.cycle <= s.flags.maskedUntil); }
   function porteOuverte(s) { return !!(s.flags.porte && s.cycle <= s.flags.porte.until); }
 
   function forcedId(s, c) {
@@ -83,12 +81,23 @@
         if (has(s, k)) return;
         var first = s.found.indexOf(k) < 0;
         s.items.push(k); s.found.push(k); ev.push({ t: 'objet', k: k, gain: true });
+        if (s.flags.cacheVide && S.CONFISCABLES.indexOf(k) >= 0) { s.flags.cacheVide = false; s.flags.cache = k; g.narr('Tu glisses l\'objet sous la plaque desserrée : ' + S.OBJETS[k].toLowerCase() + '.'); }
         var r = S.REPLIQUES_OBJETS[k];
         if (r && first) { if (r.voix) g.voix(r.voix); if (!cameraAveugle(s)) r.sys.forEach(function (l) { g.ecran(l); }); }
       },
       hasard: function () { return tirer(s); },
       pick: function (list) { return list[Math.floor(tirer(s) * list.length)]; },
       voix: function (txt) { ev.push({ t: 'voix', txt: txt }); },
+      anim: function (n) { ev.push({ t: 'anim', n: n }); },
+      aveugle: function () { return cameraAveugle(s); },
+      // H2 B : cache sous la plaque. Elle protège le dernier objet confiscable, ou le prochain obtenu.
+      cacher: function () {
+        for (var i = s.found.length - 1; i >= 0; i--) {
+          var k = s.found[i];
+          if (S.CONFISCABLES.indexOf(k) >= 0 && has(s, k)) { s.flags.cache = k; g.narr('Tu y caches : ' + S.OBJETS[k].toLowerCase() + '. L\'inspection ne le trouvera pas.'); return; }
+        }
+        s.flags.cacheVide = true; g.narr('La cache est vide pour l\'instant. Le prochain objet que tu trouveras y ira.');
+      },
       lose: function (k) { var i = s.items.indexOf(k); if (i >= 0) { s.items.splice(i, 1); ev.push({ t: 'objet', k: k, gain: false }); } },
       flag: function (k, v) { if (arguments.length > 1) s.flags[k] = v; return s.flags[k]; },
       done: function (id) { return s.done[id]; },
@@ -135,10 +144,10 @@
       refuse: function () { s.stats.refus++; },
       ignorerAppel: function () {
         s.flags.t1Ignore++;
-        if (s.flags.t1Ignore >= 2 && s.flags.ligne === 'fermee') { s.flags.ligne = 'coupee'; g.narr('La sonnerie s\'arrête. Pour de bon.'); g.ecran('LIGNE|TERMINÉE.'); }
-        else g.narr('La sonnerie s\'arrête.');
+        if (s.flags.t1Ignore >= 2 && s.flags.ligne === 'fermee') { s.flags.ligne = 'coupee'; g.ecran('LIGNE 17|BLOQUÉE PAR|LE SYSTÈME.'); }
+        else g.narr('APPEL MANQUÉ — CH.18');
       },
-      ouvrirPorte: function (kind, until) { s.flags.porte = { kind: kind, until: until }; ev.push({ t: 'porte', open: true }); },
+      ouvrirPorte: function (kind, until) { s.flags.porte = { kind: kind, until: until }; s.flags.porteVue = true; ev.push({ t: 'porte', open: true }); },
       // Vérité C révélée : Briser la boucle (bouton désactivé + badge) ou le Miroir.
       verdictMiroir: function () { g.fin(has(s, 'boutonDesactive') && has(s, 'badge') ? 'boucle' : 'miroir'); }
     };
@@ -149,13 +158,12 @@
 
   function available(s, x) {
     if (x.ordre || x.appel) return false;
-    if (x.fil === 'piece' && s.flags.noirCycle === s.cycle) return false;
     return !!x.quand(ctx(s, [], x.fil));
   }
 
   function describe(s, x) {
     var g = ctx(s, [], x.fil);
-    function opt(c) { var o = x[c], ok = !o.req || !!o.req(g); return { label: o.label, ok: ok, raison: ok ? '' : (o.raison || '') }; }
+    function opt(c) { var o = x[c]; if (!o) return null; var ok = !o.req || !!o.req(g); return { label: o.label, sous: o.sous || '', ok: ok, raison: ok ? '' : (o.raison || '') }; }
     return { id: x.id, objet: x.objet, fil: x.fil, qui: x.qui, texte: resolve(x.texte, g), ecran: x.ecran || '', ordre: !!x.ordre, appel: !!x.appel, A: opt('A'), B: opt('B') };
   }
 
@@ -189,7 +197,6 @@
 
   function noteFil(s, fil) {
     if (fil === 'bouton') return 'Le bouton attend.';
-    if (fil === 'piece' && s.flags.noirCycle === s.cycle) return 'Noir complet : tu ne vois plus la pièce.';
     if ((fil === 'camera' || fil === 'passe') && s.cycle < 4) return 'Rien pour l\'instant.';
     if (fil === 'telephone') {
       if (s.flags.ligne === 'coupee') return 'La ligne est coupée.';
@@ -209,7 +216,7 @@
     if (action.type === 'situation') {
       var x = BY_ID[action.id], c = action.choix;
       if (!x) throw new Error('Situation inconnue : ' + action.id);
-      if (c !== 'A' && c !== 'B') throw new Error('Choix invalide : ' + c);
+      if ((c !== 'A' && c !== 'B') || !x[c]) throw new Error('Choix invalide : ' + c);
       if (forced ? x.id !== fid : !available(s, x)) throw new Error('Situation indisponible : ' + x.id);
       var g = ctx(s, ev, x.fil);
       if (x[c].req && !x[c].req(g)) throw new Error('Choix impossible : ' + x.id + ' ' + c);
@@ -229,7 +236,7 @@
       if (action.via === 'porte' && porteOuverte(s)) {
         var k = s.flags.porte.kind;
         ev.push({ t: 'choix', id: null, label: 'Sortir par la porte' });
-        gs.fin(k === 'h3' ? 'seulDehors' : (s.vie > 0 ? 'marche' : 'conforme'));
+        gs.fin(k === 'h3' ? 'evasion' : (s.vie > 0 ? 'marche' : 'conforme'));
       } else if (action.via === 'trappe' && has(s, 'sortieCachee')) {
         ev.push({ t: 'choix', id: null, label: 'Fuir par la trappe' });
         gs.fin('porteDerobee');
@@ -261,9 +268,7 @@
   function checkEnds(s, ev) {
     if (s.fin) return;
     var g = ctx(s, ev, null);
-    if (s.soupcon >= 4) g.fin('isolement');
-    else if (s.vie === 0 && has(s, 'objectif')) g.fin('tropTard');
-    else if (has(s, 'plan') && cameraAveugle(s) && s.vie > 0) { g.narr('Un déclic. Puis un autre, dans la pièce d\'à côté.'); g.fin('cooperation'); }
+    if (s.soupcon >= 4) { g.son('alarm'); g.ecran('Sujet 17.'); g.ecran('Vous avez été averti.'); g.fin('isolement'); }
   }
 
   function advance(s, ev) {
@@ -277,6 +282,7 @@
     if (t.voix) ev.push({ t: 'voix', txt: t.voix });
     if (t.apres) ev.push({ t: 'narr', txt: t.apres });
     (t.ecran || []).forEach(function (l) { ev.push({ t: 'ecran', txt: l }); });
+    (t.ecran2 || []).forEach(function (l) { ev.push({ t: 'ecran', txt: l }); });
   }
 
   // Début d'un moment libre : une phrase du Système (mémoire, soupçon, conformité, ambiance…) et parfois la 18.
@@ -292,16 +298,23 @@
       if (g.hasard() < 0.5) { var b = g.pick(P.fauxBugs); g.ecran(b[0]); g.ecran(b[1]); } else g.ecran(g.pick(P.rares));
       dit = true;
     }
-    if (!dit && g.hasard() < 0.12) { g.ecran(g.pick(P.douteSysteme)); dit = true; }
-    if (!dit && g.hasard() < 0.6) g.ecran(g.pick(P.ambiance));
-    if (s.vie > 0 && g.hasard() < 0.4) {
-      var r = g.hasard(), l;
+    var seize = has(s, 'mot16') || s.done.APP16;
+    if (!dit && seize && g.hasard() < 0.15) { g.ecran(P.ambiance16[0]); dit = true; }
+    if (!dit && g.hasard() < 0.1) { g.ecran(g.pick(P.douteSysteme)); dit = true; }
+    if (!dit && g.hasard() < 0.55) g.ecran(g.pick(P.ambiance));
+    // La 18 : à travers la vitre selon sa vie ; au téléphone si la ligne est ouverte.
+    if (s.vie <= 0) return;
+    var ligne = s.flags.ligne === 'ouverte';
+    var d = S.DOUTES[s.flags.doutes];
+    if (ligne && d && d.quand(g) && g.hasard() < 0.25) { s.flags.doutes++; d.ev.forEach(function (e) { e[0] === 'voix' ? g.voix(e[1]) : g.ecran(e[1]); }); return; }
+    if (g.hasard() < 0.4) {
+      var r = g.hasard(), l = null;
       if (s.vie < 3 && r < 0.5) l = g.pick(P.vie18[s.vie]);
-      else if (s.confiance >= 3 && r < 0.7) l = g.pick(P.confianceHaute);
-      else if (s.confiance === 0 && s.stats.suivis >= 2 && r < 0.7) l = g.pick(P.confianceBasse);
-      else if (r > 0.9) l = g.pick(P.doute18);
-      else l = g.pick(P.voix18);
-      g.voix(l);
+      else if (ligne && s.confiance >= 3 && r < 0.7) l = g.pick(P.confianceHaute);
+      else if (ligne && s.confiance === 0 && s.stats.suivis >= 2 && r < 0.7) l = g.pick(P.confianceBasse);
+      else if (ligne) l = g.pick(P.voix18);
+      else if (s.vie === 3 && r < 0.3) l = g.pick(P.vie18[3]);
+      if (l) g.voix(l);
     }
   }
 
@@ -310,30 +323,41 @@
     ev.push({ t: 'cycle', n: c });
     if (c >= DERNIER_CYCLE) { verdict(s, ev); return; }
     if (s.flags.porte && c > s.flags.porte.until) { s.flags.porte = null; ev.push({ t: 'porte', open: false }); g.narr('Ta porte se referme.'); }
-    if (s.flags.maskedUntil != null && c === s.flags.maskedUntil + 1 && !has(s, 'cameraCoupee')) g.narr('La veste glisse. La caméra voit à nouveau.');
+    if (s.flags.maskedUntil != null && c === s.flags.maskedUntil + 1 && !has(s, 'cameraCoupee') && !has(s, 'cameraTournee')) g.narr('Un petit bras mécanique retire ta veste. La caméra revient.');
+    if (c === 6) g.ecran('AUTOTEST|ALIMENTATION|IMMINENT.');
     chronoTexts(s, ev, c);
+    if (c === 7) {
+      // Retour du courant : le bus auxiliaire reste en défaut (fusible de protection ouvert).
+      g.narr('CLAC. Les lumières reviennent. Mais un bip persiste, sur le boîtier électrique.');
+      g.ecran('AUX 24 V —|DÉFAUT.'); g.ecran('FUSIBLE DE|PROTECTION|OUVERT.');
+      s.flags.aux = 'defaut';
+      if (has(s, 'fusible')) g.narr('Ton fusible porte la même étiquette : AUX 24 V. Pièce compatible.');
+    }
     if (s.flags.panneAt === c) { g.ecran('PANNE CAMÉRA|DÉTECTÉE.'); g.soupcon(1, true); }
-    if (s.flags.noirCycle === c) g.narr('Noir complet. Tu ne vois plus rien de la pièce.');
+    if (s.flags.t5Echec === c) { g.narr('Un bruit violent derrière la vitre. Elle a essayé seule.'); g.blesser(1); }
     if (c === 10) inspection(s, g);
     if (s.flags.compte && c >= 18) {
-      if (c === 18) { g.ecran('Vous avez refusé ' + s.stats.refus + ' instruction' + (s.stats.refus > 1 ? 's' : '') + '.'); g.ecran('Vous avez appuyé ' + (s.stats.presses + s.stats.auto) + ' fois.'); }
-      g.ecran(g.pick(S.PHRASES.compteFinal.slice(1, -1)));
-      if (c === 19) g.ecran('Choisissez.');
+      var lignes = [];
+      S.HISTORIQUE.forEach(function (h) { if (h.quand(g)) lignes.push(resolve(h.lignes, g)); });
+      var part = c === 18 ? lignes.slice(0, 2) : lignes.slice(2, 4);
+      part.forEach(function (ls) { ls.forEach(function (l) { g.ecran(l); }); });
+      g.ecran(c === 18 ? 'Nous allons évaluer l\'ensemble de vos décisions.' : 'IL RESTE UNE|DÉCISION.');
     }
     checkEnds(s, ev);
     if (s.fin) return;
     var fidA = forcedId(s, c);
     if (s.flags.awayCycle !== c) {
       if (fidA && BY_ID[fidA].annonce) BY_ID[fidA].annonce(ctx(s, ev, BY_ID[fidA].fil));
-      else if (!fidA && c > 1 && !(s.flags.compte && c >= 18)) ambiance(s, g);
+      else if (!fidA && c > 1 && c !== 6 && !(s.flags.compte && c >= 18)) ambiance(s, g);
     }
     if (s.flags.awayCycle === c) {
-      var fid = forcedId(s, c);
-      if (fid === 'T1') g.ignorerAppel();
-      else if (fid === 'T4') { s.done.T4 = 'auto'; g.narr('Là-haut, le téléphone sonne dans le vide.'); }
-      else if (fid) { s.done[fid] = 'auto'; g.narr('Là-haut, le bouton s\'enfonce tout seul.'); g.press(false); g.conformite(1); }
+      // Deuxième cycle au sous-sol : ce qui arrive là-haut suit les règles normales.
+      if (fidA === 'T1') g.ignorerAppel();
+      else if (fidA === 'T4') { s.done.T4 = 'auto'; g.narr('Là-haut, le téléphone sonne dans le vide.'); }
+      else if (fidA) { var o = BY_ID[fidA]; s.done[fidA] = 'B'; g.narr('Là-haut, un ordre reste sans réponse.'); o.B.fx(ctx(s, ev, o.fil)); }
+      g.narr('Le sous-sol : rayonnages, anciens dossiers, terminaux éteints. Des photos. « SUJET 03 — NON COOPÉRATIF ». « SUJET 16 — ARCHIVÉ ». « SUJET 17 — EN COURS ».');
       g.gain('badge'); g.gain('enregistrement');
-      g.narr('Dans le sous-sol : un badge au nom de 16, et une cassette. Tu remontes.');
+      g.narr('Tu remontes avec un badge et un enregistrement.');
       checkEnds(s, ev);
       if (!s.fin) advance(s, ev);
     }
@@ -341,27 +365,31 @@
 
   function inspection(s, g) {
     g.ecran(g.pick(S.PHRASES.inspection));
-    if (s.soupcon < 2) { g.narr('Il jette un œil autour de lui. Il regarde la vitre de la 18, puis toi. Il repart.'); return; }
-    if (s.flags.gravuresEffacees) { g.narr('Il fouille sous le bureau.'); g.ecran('Aucun élément inhabituel détecté.'); return; }
+    if (s.soupcon < 2) { g.narr('Il regarde la vitre de la 18, puis toi. Il repart.'); return; }
     var k = null;
     for (var i = s.found.length - 1; i >= 0; i--) {
       var it = s.found[i];
-      if (S.CONFISCABLES.indexOf(it) >= 0 && has(s, it) && !(it === 'badge' && s.flags.badgeCache)) { k = it; break; }
+      if (S.CONFISCABLES.indexOf(it) >= 0 && has(s, it) && s.flags.cache !== it) { k = it; break; }
     }
-    if (k) { g.lose(k); g.ecran('OBJET NON|AUTORISÉ.'); g.narr('Il fouille la pièce et confisque : ' + S.OBJETS[k].toLowerCase() + '. Avant de partir, il regarde la vitre de la 18, puis toi.'); }
-    else g.narr('Il fouille la pièce. Rien. Avant de partir, il regarde la vitre de la 18, puis toi.');
+    if (k) { g.lose(k); g.ecran('OBJET NON AUTORISÉ|CONFISQUÉ.'); g.narr('Il confisque : ' + S.OBJETS[k].toLowerCase() + '.' + (s.flags.cache && has(s, s.flags.cache) ? ' Il ne voit pas la plaque desserrée.' : '')); }
+    else g.narr('Il fouille. Rien. Il repart.');
   }
 
+  // Cycle 20 : le verdict, si le joueur n'est pas sorti.
   function verdict(s, ev) {
     var g = ctx(s, ev, null);
     g.ecran('Évaluation terminée.');
-    if (has(s, 'verite') && s.truth === 'B' && s.conformite >= 5) g.fin('employe');
-    else if (s.vie === 0) g.fin('conforme');
+    if (has(s, 'objectif') && s.vie === 0) g.fin('tropTard');
+    else if (has(s, 'verite') && s.truth === 'B' && s.conformite >= 5) g.fin('employe');
+    else if (s.vie === 0 && s.conformite >= 3) g.fin('conforme');
     else g.fin('tempsEcoule');
   }
 
+  // Description d'un objet des poches (peut dépendre de l'état).
+  function decrire(s, k) { return resolve(S.DESCRIPTIONS[k], ctx(s, [], null)) || ''; }
+
   var api = {
-    newGame: newGame, intro: intro, turn: turn, choose: choose, regarder: regarder, AIDES: S.AIDES, DESCRIPTIONS: S.DESCRIPTIONS, PHRASES: S.PHRASES,
+    newGame: newGame, intro: intro, turn: turn, choose: choose, regarder: regarder, decrire: decrire, AIDES: S.AIDES, DESCRIPTIONS: S.DESCRIPTIONS, PHRASES: S.PHRASES,
     forcedId: forcedId, cameraAveugle: cameraAveugle, porteOuverte: porteOuverte, has: has,
     DUREES: DUREES, DERNIER_CYCLE: DERNIER_CYCLE,
     FILS: S.FILS, OBJETS: S.OBJETS, FINS: S.FINS, VERITES: S.VERITES,
