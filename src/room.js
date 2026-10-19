@@ -84,10 +84,10 @@
   '<g class="hs" data-k="monitor">' + I('', 'moniteur', 657, 190, 355, 230.6) + '</g>' +
   '<g class="hs" data-k="light"><line x1="838" y1="-400" x2="838" y2="40" stroke="#1a1f1e" stroke-width="4"/>' + I('', 'lampe', 758, 28, 160, 155.7) +
   '<circle id="bulb" cx="838" cy="163" r="34" fill="url(#bulbG)" style="pointer-events:none"/></g>' +
-  '<g class="hs" data-k="bureau">' + I('socleImg', 'bureau_socle', 590, 572, 480, 318) + '</g>' +
-  '<g id="compart" class="hs" data-k="compart"><rect x="896" y="780" width="72" height="64" fill="transparent"/>' +
-  I('compFuse', 'fusible', 908, 806, 48, 15.6, ' opacity="0"') + I('compImg', 'compart2_ferme', 901, 786.5, 62, 54) + '</g>' +
-  '<g id="drawer" class="hs" data-k="drawer">' + I('drawerImg', 'tiroir2_ferme', 722.5, 581, 222, 60) + '</g>' +
+  '<g class="hs" data-k="bureau">' + I('socleImg', 'bureau_socle', 590, 554, 480, 318) + '</g>' +
+  '<g id="compart" class="hs" data-k="compart"><rect x="896" y="762" width="72" height="64" fill="transparent"/>' +
+  I('compFuse', 'fusible', 908, 788, 48, 15.6, ' opacity="0"') + I('compImg', 'compart2_ferme', 901, 768.5, 62, 54) + '</g>' +
+  '<g id="drawer" class="hs" data-k="drawer">' + I('drawerImg', 'tiroir2_ferme', 722.5, 563, 222, 60) + '</g>' +
   I('', 'bureau_plateau', 568, 462, 520, 115.6, ' style="pointer-events:none"') +
   '<ellipse cx="830" cy="505" rx="250" ry="48" fill="url(#poolG)" style="pointer-events:none"/>' +
   '<ellipse id="btnGlow" cx="835" cy="495" rx="120" ry="60" fill="url(#glowG)" opacity="0" style="pointer-events:none"/>' +

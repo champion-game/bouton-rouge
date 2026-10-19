@@ -1,0 +1,335 @@
+LE BOUTON ROUGE — DIRECTIVES DE MODIFICATION
+Document à transmettre au développeur — Révision 2 — 19 octobre 2026
+Correction validée : correspondance fixe entre silhouette et vérité.
+Ajouts : qualité narrative, mise en scène, rejouabilité et critères de recette.
+
+BASE DE TRAVAIL
+Sources examinées : RESUME_JEU.txt (V4.1) et Le_Bouton_Rouge_V3_Canonique.md.
+Ce document décrit une proposition de révision, sans code. Il ne décrit pas des changements déjà implémentés. Les valeurs proposées doivent être validées en jouant.
+Pour les points ci-dessous, appliquer ces nouvelles règles à la place des règles contradictoires des deux sources. Conserver le contenu existant qui reste compatible.
+
+OBJECTIF
+Renforcer la tension, la compréhension et les conséquences des choix. Préserver la chambre unique, les interactions avec les objets, les cinq fils narratifs, les trois vérités fixes par partie et les dix-huit fins avec un bonus.
+Ne pas ajouter de difficulté sélectionnable. Ne pas révéler les variables internes au joueur.
+
+1. CONSERVER LA SILHOUETTE COMME INDICE RÉTROSPECTIF
+
+Décision validée par l'auteur : conserver la correspondance fixe suivante.
+- Vérité A : silhouette d'homme, véritable victime.
+- Vérité B : silhouette de femme, complice.
+- Vérité C : silhouette d'enfant, projection.
+Ne pas tirer l'apparence indépendamment de la vérité. Cette directive remplace explicitement la recommandation contraire de la première version du présent fichier.
+
+Objectif : après plusieurs découvertes, le joueur peut comprendre que l'indice était visible dès le début. Ne pas annoncer cette correspondance dans le tutoriel, les dialogues, les titres de sauvegarde ou les indices de fin.
+Conserver des proportions perceptibles mais un traitement flou uniforme. Aucun visage visible, même dans les révélations. Employer les mêmes six poses et la même qualité de flou ; ne pas identifier un scénario par une animation exclusive ou un éclairage particulier.
+Conserver une échelle commune : la silhouette enfant est plus petite dans la vitre, elle n'est pas agrandie pour remplir autant de surface qu'un adulte. Préserver son point d'appui au sol.
+Ne pas renforcer automatiquement la silhouette par une blouse constamment visible ou une voix enfantine systématique. Traiter toutes les voix avec le même filtrage de téléphone ; la projection peut employer un enregistrement adulte.
+
+Justification de C à ajouter aux archives, uniquement lorsqu'elles sont explorées : le dispositif utilise une apparence enfantine pour solliciter le réflexe de protection, avec des fragments audio d'une ancienne session du Sujet 17. Exemple d'annotation technique : « PROFIL VISUEL : PROTECTION / SOURCE AUDIO : SESSION ANTÉRIEURE ». Ne pas présenter ce texte dès l'introduction.
+Reconnaître la silhouette peut permettre de déduire la vérité. Ne pas tricher pour empêcher cette déduction. Savoir qui se trouve derrière la vitre ne donne ni les outils, ni les accès, ni la bonne stratégie de sortie.
+La vérité et la silhouette associée sont fixées au début de la partie et conservées dans la sauvegarde.
+
+Vérification : chaque vérité conserve sa silhouette sur toutes les parties ; aucune interface n'explique prématurément la correspondance. Un joueur qui connaît cette règle doit encore prendre des décisions intéressantes.
+
+2. UNIFIER LE TEMPS ET LE COÛT DES ACTIONS
+
+Supprimer les cycles libres de 30, 20 ou 15 secondes et les comptes à rebours globaux incompatibles avec la progression par actions.
+Une partie comporte au maximum vingt moments. Un moment imposé remplace une action libre ; il ne s'ajoute pas à elle.
+Observer, lire, consulter un indice déjà acquis et prendre un objet déjà accessible ne consomment aucun moment.
+Forcer, démonter, appeler, saboter, préparer une sortie ou réaliser une opération consomment un moment.
+Un appel complet et sa décision consomment un moment, pas un moment par phrase.
+Une descente aux archives consomme deux moments libres consécutifs. Si un événement imposé doit survenir entre les deux, afficher le conflit avant départ et proposer d'attendre. Ne pas autoriser silencieusement une opération qui saute une scène obligatoire.
+Une attente volontaire permet de terminer un moment libre sans agir.
+Une action impossible affiche sa condition manquante et ne coûte rien.
+
+Chronomètre : trente secondes uniquement pour les ordres urgents, après présentation du texte. Suspendre pendant pause, perte de focus et chargement ; ne pas faire perdre le joueur pendant une lecture imposée.
+L'expiration sans pression signifie toujours REFUS. Supprimer toute pression automatique du bouton.
+Examiner un autre objet ne constitue jamais un refus automatique. Avant une action qui ferait manquer l'ordre, demander une confirmation explicite indiquant cette conséquence.
+
+3. REMPLACER LA CHRONOLOGIE PAR UNE TABLE UNIQUE
+
+Cette table remplace les deux anciennes chronologies. Elle réserve douze moments libres et huit moments imposés, verdict inclus.
+
+0 : introduction, gratuite.
+1 : exploration libre.
+2 : B1, premier ordre.
+3 : premier appel de la 18, ou autre action libre. Un appel non pris reste rappelable.
+4 : B2, trois pressions. Arrivée du mot de 16 en conclusion, sans coût supplémentaire.
+5 : coupure programmée ; une action libre protégée de la caméra.
+6 : retour du secteur, défaut AUX ; action libre.
+7 : B3, offre de preuve.
+8 : action libre ; inspection annoncée pour le moment 10.
+9 : action libre.
+10 : inspection, puis B4, fausse purge. Une seule décision chronométrée : B4.
+11 : demande d'aide T4 si ligne ouverte et interlocuteur encore disponible ; sinon action libre.
+12 : action libre, notamment plan T5.
+13 : B5, marché.
+14 : action libre ; porte B5 éventuellement ouverte.
+15 : action libre ; dernière possibilité de sortir par B5 avant fermeture.
+16 : message du Système fondé sur l'historique et choix de maintenir ou d'abandonner un engagement encore actif. Aucun dégât automatique.
+17 : action libre.
+18 : B6, dernière pression.
+19 : dernière action libre ou dernière tentative avant intervention.
+20 : verdict si aucune fin n'a déjà été déclenchée.
+
+Les appels T2, T3 et T5 occupent des moments libres choisis par le joueur. Si T4 est déclenché au moment 11, il occupe ce moment libre.
+Ne pas supprimer le fil téléphone après deux appels ignorés : permettre un rappel tant que la ligne n'a pas été coupée par un événement identifié.
+La réduction de ventilation renforce l'ambiance à partir du moment 16 ; elle ne raccourcit pas arbitrairement le temps de lecture.
+
+4. REFAIRE LES SIX ORDRES DU BOUTON
+
+B1 : une pression provoque une réaction inquiétante et une première dégradation réelle en vérité A.
+B2 : permettre d'interrompre la séquence après chaque pression. Première pression : tiroir déverrouillé. Deuxième : compartiment du fusible ouvert. Troisième : impulsion dangereuse et validation complète de l'ordre. Annoncer le risque croissant par le son et les réactions. Les récompenses déjà obtenues restent acquises si le joueur s'arrête.
+B3 : une pression donne la vidéo. Elle provoque une réaction douloureuse apparente et détériore la relation, mais pas un niveau supplémentaire de dégradation irréversible dans ce premier réglage.
+B4 : conserver le bluff de purge. Une absence de pression n'inflige aucun dégât. Donner un indice observable avant la décision : bruit enregistré répétitif, absence de mouvement de la ventilation ou incohérence d'état. La conclusion obtenue est « menace non réalisée », pas une certitude universelle sur tous les mensonges du Système.
+B5 : une pression ouvre réellement la porte jusqu'à la fin du moment 15. Pas de dégradation irréversible supplémentaire. Le dilemme porte sur l'abandon de la 18. Si l'actionneur est coupé, le Système peut honorer cette offre ; seule B6 exige un retour de puissance.
+B6 : si l'actionneur fonctionne, la pression met la victime hors de combat et ouvre la porte. Si l'actionneur est coupé, elle n'affecte pas la victime et ne déverrouille pas la porte. Le refus ne provoque pas une pression automatique.
+
+Chaque ordre rapporte au maximum un point de conformité. B2 n'en rapporte un que si la séquence est achevée. Les autres gestes d'obéissance restent mémorisés séparément. Échelle de conformité : 0 à 6.
+
+5. SÉPARER ÉTAT RÉEL, AFFICHAGE ET OBSERVATION
+
+Remplacer la simple jauge de vie par trois informations distinctes.
+- État réel interne en A : stable, affaiblie, critique, hors de combat.
+- Témoins affichés : information émise par le dispositif.
+- Observations : voix, posture, réponse aux appels.
+
+Réglage initial en A : départ stable ; B1 fait avancer d'un niveau ; troisième pression de B2 fait avancer d'un niveau ; B6 impose hors de combat. Une action ne dégrade rien si l'actionneur est coupé. Le refus de T5 ne retire plus automatiquement un niveau.
+En B et C, les témoins et les réactions peuvent être simulés. Ne pas appliquer une mort réelle de victime à une projection ou à une complice qui joue un rôle.
+À disparition du signal, afficher « Aucun signal reçu ». Ne pas écrire « morte » tant qu'aucune scène n'a confirmé ce fait.
+Ne pas afficher les états internes dans le journal du joueur.
+
+6. RENDRE LA SURVEILLANCE COMPRÉHENSIBLE
+
+Distinguer vidéo, audio et contrôle technique.
+La vidéo détecte les manipulations visibles ; la masquer ne coupe pas le microphone ni les retours électriques.
+L'audio détecte les conversations et bruits. Indiquer visuellement quand la ligne est écoutée.
+Le contrôle technique détecte les circuits coupés et les ouvertures forcées.
+
+Angle mort : protège uniquement les manipulations dans une petite zone sous le bureau. Il ne protège ni la grille murale ni le boîtier à distance.
+Veste : masque la vidéo pendant trois moments ; son retrait doit être montré ou expliqué par une intervention, sans bras mécanique improvisé.
+Caméra tournée : masque la vidéo jusqu'à réparation lors d'une inspection.
+Caméra coupée au circuit : protège la vidéo mais produit un défaut technique détectable.
+
+Refuser un ordre simple n'ajoute plus de soupçon. Le Système commente et mémorise ce refus.
+Barème initial : manipulation interdite vue +1 ; obstruction vidéo détectée +1 ; défaut caméra diagnostiqué +1 ; sabotage de l'actionneur diagnostiqué +2 ; porte forcée par badge non autorisé +2.
+Ne compter chaque incident qu'une fois. Ne pas cumuler « coupure », « anomalie » et « confirmation » pour le même défaut.
+Une obéissance peut calmer le discours, mais n'efface pas le soupçon lié à une preuve technique.
+À soupçon 4, annoncer une intervention. Accorder la prochaine décision, au plus tard au moment 19, pour terminer une sortie déjà préparée ou fuir. En l'absence de résolution, déclencher Isolement. À partir du verdict, aucune action supplémentaire.
+
+7. DONNER UN COÛT AU SABOTAGE SANS ANNULER SON UTILITÉ
+
+Après coupure de l'actionneur, la victime est protégée.
+Afficher un diagnostic à venir : il aura lieu après deux moments écoulés, ou immédiatement lors de B6 si elle survient avant. Le défaut confirmé ajoute +2 une seule fois.
+Ne pas remettre arbitrairement le circuit en marche à distance. Une réparation physique doit être annoncée et visible.
+L'inspection peut remettre la caméra en place et revisser une grille, mais ne répare pas automatiquement tous les circuits.
+Confiscation : dernier objet interdit visible acquis, jamais un objet caché ni une récompense autorisée. S'il n'y a aucun objet éligible, ne rien confisquer.
+
+8. CLARIFIER LES ACCÈS ET LES OBJETS
+
+Séparer « trappe repérée » et « trappe déverrouillée ».
+T3-A révèle un déverrouillage mécanique manuel ; le code ouvre le même verrou par son mécanisme de secours ; le rétablissement AUX permet son ouverture électrique. Ces trois voies restent alternatives.
+Ne plus conditionner la recherche des gravures au fait d'avoir conservé le mot. Le mot suggère où regarder ; il ne crée pas physiquement les gravures.
+Le code peut être connu mais nécessite toujours une saisie sur le mécanisme découvert. Ne pas ouvrir la trappe automatiquement à la découverte des chiffres.
+Prévoir l'usage légitime du tournevis pour ouvrir le compartiment du fusible même si B2 a été refusé : une action, risque visuel normal.
+Le badge reste dans l'inventaire après lecture. S'il doit être consommé ou confisqué, montrer la raison ; « utiliser » ne signifie pas « perdre » automatiquement.
+
+9. RÉÉQUILIBRER LES SORTIES TROP FACILES
+
+Opérateur : faire signe permet seulement le contact. Pour obtenir son aide, il faut une preuve vérifiable et le bus AUX rétabli. L'opérateur autorise alors le verrou ; le joueur choisit encore de partir ou de rester.
+Les routes caméra et téléphone appliquent les mêmes conditions. Supprimer la fin instantanée obtenue en lui parlant sans preuve.
+
+Malaise : donner un indice audible ou visible sur le nombre de gardiens avant la tentative de fuite. Un gardien si soupçon <=1, deux sinon. Le joueur choisit courir ou maintenir le bluff. Maintenir le bluff permet de rester dans la partie avec +1 soupçon ; courir face à deux gardiens mène au Gardien.
+
+Conduit : ajouter une grille terminale accessible seulement avec l'outil, pour une action supplémentaire, précédée d'un avertissement. Conserver une voie de fuite réelle et relativement rapide ; ne pas ajouter une chaîne d'énigmes.
+
+Coopération : exige accord actif, interlocuteur disponible, AUX rétabli et vidéo neutralisée au moment du signal. Accepter le plan ne déclenche pas la fuite. Le joueur doit envoyer le signal convenu.
+En B, le piège démarre au signal du plan, pas au simple fait de couper une caméra avant d'avoir accepté le plan.
+
+10. TRANSFORMER LA CONFIANCE EN RELATION
+
+Demander une preuve de manière neutre ne diminue plus la confiance.
+Augmenter la confiance pour un engagement tenu, un avertissement utile ou un signal respecté ; limiter chaque gain à une seule occurrence.
+Une promesse non tenue n'est pénalisée qu'après une échéance annoncée : « J'attends ton signal pendant trois moments. » Représenter cette attente dans la pièce ou au téléphone.
+Permettre d'annuler une promesse explicitement. Conséquence : perte de confiance et fermeture du plan, sans blessure automatique.
+La 18 peut agir seule après avertissement, mais sa conséquence dépend de la vérité. Ne pas appliquer aveuglément un dégât à tous les scénarios.
+
+11. RÉÉCRIRE LES INDICES ET LES TROIS VÉRITÉS
+
+Les indices faibles restent ambigus : connaissance du fusible, répétition d'une phrase, délai de réaction, vidéo avec technicien.
+Ajouter une vérification possible : question imprévue, signal convenu, comparaison d'horodatage ou recoupement avec archives.
+Ne pas limiter arbitrairement toute la partie à deux indices si le joueur investit des actions dans l'enquête. Limiter les indices gratuits ; les preuves gagnées par exploration restent accessibles.
+L'enregistrement fournit une preuve forte de l'installation ou du protocole. Il ne récite pas automatiquement la vérité complète de la session actuelle sans identification vérifiable de celle-ci.
+
+A : homme réellement prisonnier, aide cohérente avec ce qu'il peut entendre ou avoir appris.
+B : femme collaborant sous contrainte. Montrer pourquoi elle participe et permettre une négociation ; la confiance peut infléchir sa réaction, sans transformer rétrospectivement B en A.
+C : projection enfantine et fragments audio enregistrés du Sujet 17 ; appliquer la justification du paragraphe 1. Aucun papier ne revient spontanément du conduit : répondre par un son ou une séquence enregistrée. Tout objet physique doit avoir une origine matérielle crédible.
+Ne pas prétendre connaître le vrai nom du joueur si ce nom n'a jamais été demandé. Utiliser un nom de personnage établi ou un élément réellement enregistré dans la partie.
+
+12. RÉPARER LA CAUSALITÉ DES GRANDES FINS
+
+Révolte : diffuser les archives provoque une réaction des sujets ou de l'opérateur ; cela n'ouvre pas électriquement les portes. Exiger AUX rétabli et une autorisation obtenue de l'opérateur, ou un relais de déverrouillage collectif préparé dans les archives. Montrer la commande de déverrouillage.
+Briser la boucle : remplacer « actionneur coupé » par « relais de réinitialisation identifié et neutralisé ». Les archives indiquent ce relais ; le badge ouvre son accès. La destruction de la boucle exige ensuite une action finale dans la zone accessible depuis la 18.
+L'Employé du mois : conformité >=5 permet une offre de recrutement en B ; le joueur doit l'accepter. La découverte de la vérité n'impose pas cette fin.
+Complice démasqué : conserve la possibilité de bloquer la fermeture avec le tournevis. Annoncer le mouvement de la porte et laisser cette intervention possible avant toute capture.
+Trop tard : exige une victime A réellement hors de combat et une promesse ou tentative de secours. Ne pas la déclencher simplement parce qu'une projection a disparu.
+
+13. CORRIGER LA RÉSOLUTION DES FINS
+
+Une fin déclenchée par une action terminale est verrouillée immédiatement. Aucune priorité ultérieure ne la remplace.
+Le verdict au moment 20 ne traite que les joueurs encore présents dans le dispositif.
+Ne jamais utiliser Le Gardien comme résultat de secours générique. Cette fin exige la scène d'intervention correspondante.
+Le Temps est écoulé traite les autres joueurs encore enfermés ; adapter la scène à A, B ou C, sans matérialiser soudain une personne inexistante en C.
+Conserver les identifiants des dix-huit fins pour les sauvegardes, mais mettre leurs conditions en cohérence avec ces directives.
+Les trois routes de fuite seule doivent préciser le sort connu ou inconnu de la 18, les preuves emportées et les promesses abandonnées.
+
+Bonus Curiosité : uniquement si une sortie est ouverte, l'évaluation est explicitement terminée et aucun ordre n'est actif. Une pression demandée par B6 ne peut jamais déclencher ce bonus.
+
+14. FAIRE SE CROISER LES FILS DANS LE FINAL
+
+Les préparatifs ouvrent des possibilités ; ils ne terminent pas tous la partie immédiatement.
+Avant les derniers moments, rappeler les engagements réellement pris et les sorties réellement préparées.
+Exemple à implémenter avec états explicites : l'opérateur ouvre temporairement la porte, la 18 attend un signal, la diffusion exige encore une action. Partir abandonne les autres objectifs ; rester utilise la fenêtre disponible.
+Toute incompatibilité technique doit être annoncée avant activation. Ne pas inventer une panne après le choix pour empêcher le joueur de réussir.
+Les reproches du Système citent seulement des actions réellement accomplies. Ne pas accuser le joueur d'avoir promis, menti ou abandonné s'il ne l'a pas fait.
+
+15. INTERFACE ET RETOURS
+
+Conserver les objets cliquables comme entrée principale. Supprimer les onglets abstraits obligatoires de la V3 si l'interface actuelle fonctionne directement dans la chambre.
+Un clic inspecte ; une commande explicite engage l'action coûteuse. Ne pas demander une confirmation pour chaque observation.
+Toujours expliquer une impossibilité par une cause physique : outil absent, ligne coupée, verrou alimenté, emplacement inconnu.
+Journal : faits observés uniquement, sans valeurs cachées ni vérité non découverte.
+Un signal sonore et un changement visuel accompagnent toute conséquence importante.
+Sur mobile, séparer les zones tactiles du bouton, du téléphone et de la tasse ; aucun clic voisin ne doit être interprété comme une pression volontaire.
+
+16. ORDRE DE RÉALISATION ET VALIDATION
+
+Priorité 1 : un seul moteur de progression, refus sans pression automatique, correspondance silhouette/vérité stable et discrète, résolution des fins sans contradictions.
+Priorité 2 : B2 interrompable, état réel séparé des témoins, surveillance par source, accès aux objets et conditions des sorties.
+Priorité 3 : preuves recoupables, dialogues selon l'historique, final avec engagements concurrents, retours visuels et sonores.
+
+Tests d'acceptation indispensables :
+01. Lire tous les indices disponibles ne fait pas avancer un moment libre.
+02. Laisser expirer un ordre n'appuie jamais à la place du joueur.
+03. Un clic d'inspection ne coupe pas automatiquement un appel.
+04. B2 arrêté après une ou deux pressions conserve la récompense déjà acquise.
+05. La victime peut être encore secourue après B1 et B2 complets.
+06. Couvrir la caméra n'efface pas un défaut électrique ni une écoute audio.
+07. Un incident n'ajoute pas plusieurs fois le même soupçon.
+08. Une preuve technique n'est pas annulée par une obéissance ultérieure.
+09. Toute arrivée au soupçon maximal annonce la dernière fenêtre d'action.
+10. La trappe possède trois voies d'accès cohérentes et atteignables.
+11. Un appel à l'opérateur sans preuve n'ouvre pas la porte.
+12. Les fins de fuite et de coopération ont chacune au moins un parcours réalisable dans vingt moments.
+13. Tester une route complète vers chacun des dix-huit identifiants de fin ; signaler les conditions devenues inaccessibles avant livraison.
+14. B6 avec porte ouverte ne déclenche pas Curiosité tant que l'ordre est actif.
+15. Une fin acquise n'est jamais remplacée au verdict.
+16. En vérité C, aucune action ne crée sans explication une personne ou une lettre physique.
+17. Recharger conserve vérité, apparence, objets, engagements, incidents déjà comptés et échéances.
+18. A conserve la silhouette homme, B la silhouette femme, C la silhouette enfant ; le flou, les poses et les éclairages n’ajoutent pas un second code visuel involontaire.
+
+Ces tests sont des critères à exécuter sur le jeu modifié. Ils n'ont pas été exécutés sur le code dans le cadre de cette analyse.
+
+
+17. DONNER UNE PRÉSENCE À LA 18 AVANT DE DEMANDER UN SACRIFICE
+
+À ajouter : une courte interaction humaine lors du premier appel. Elle doit montrer une personnalité, pas seulement annoncer une quête.
+Exemple : « J'ai posé ma tasse contre le mur. Quand ton téléphone sonne, elle tremble. » Le joueur peut répondre par un petit coup sur la vitre ou rester silencieux. La réponse visuelle confirme que le contact est possible, sans certifier la vérité.
+Ne pas transformer chaque phrase en test de confiance. Une conversation peut être importante sans donner de points.
+Avant T4, faire référence à un détail réellement partagé lors d'un appel précédent. Sans appel précédent, utiliser une réplique de premier contact.
+Éviter les supplications répétitives. Varier les intentions : comprendre, négocier, rassurer, se méfier, se mettre en colère, demander un service précis.
+En C, chaque réponse doit être produite par des fragments disponibles ou un système de sélection clairement compatible avec le dispositif ; ne pas improviser une connaissance impossible uniquement pour faire peur.
+
+Critère : la demande de secours rappelle un échange vécu, et pas une relation que le joueur n'a jamais construite.
+
+18. ÉCRIRE DES DIALOGUES QUI RÉAGISSENT AUX ACTES
+
+Préparer pour chaque scène critique trois entrées : coopération, méfiance, rupture. Choisir une entrée à partir des actes observés ; ne pas changer toute la scène pour chaque variable.
+Distinguer le Système et l'opérateur : le Système est bref, administratif et sûr de lui ; l'opérateur hésite, reformule et connaît seulement les informations auxquelles il a accès.
+Réserver les phrases marquantes aux moments importants. Ne pas afficher une maxime inquiétante après chaque clic.
+Lorsqu'une preuve est déjà connue, supprimer les questions redondantes et proposer la confrontation correspondante.
+Exemple après sabotage puis pression : le Système relève une commande sans retour de puissance ; la 18 remarque l'absence de réaction. Ne pas jouer la même douleur que lorsque le circuit fonctionne, sauf simulation explicitement prévue en B ou C.
+Une réplique de culpabilisation ne peut citer que le vrai historique. Un refus n'est pas une promesse. Une interruption de ligne n'est pas un abandon volontaire.
+Donner à B une motivation compréhensible, sans excuser ni effacer sa trahison. Une négociation peut modifier son comportement au sein des fins existantes ; ne pas créer automatiquement une dix-neuvième fin.
+
+19. RENDRE CHAQUE ACTION IMPORTANTE VISIBLE DANS LA CHAMBRE
+
+Pour chaque action coûteuse, définir : objet manipulé, animation immédiate, son, changement durable, réaction éventuelle du Système ou de la 18.
+Exemples :
+- Dévisser : vis retirées et grille désormais absente ; ne pas réafficher une grille intacte après fermeture d'une fenêtre de dialogue.
+- Couper la caméra : moteur arrêté et voyant éteint ; une phrase seule ne suffit pas.
+- Retirer le fusible : logement réellement vide ; le fusible ne reste pas simultanément dans le décor et l'inventaire.
+- Ouvrir une sortie : verrou déplacé, filet de lumière et ambiance du couloir ; le joueur comprend où partir.
+- Préparer la trappe : goupille absente et possibilité d'interaction explicite.
+
+Les transformations persistent jusqu'à une réparation montrée. Ne pas rejouer un gain d'objet ni une animation de découverte déjà consommée.
+Créer un tableau de correspondance entre chaque état de jeu et son sprite. Les variantes d'un même objet doivent partager exactement dimensions, cadrage et ancrage. Tester les superpositions en jeu, pas uniquement les images côte à côte.
+Pour le bureau, utiliser une structure fixe cohérente et des calques mobiles calibrés sur elle. Ne plus assembler des pièces redimensionnées indépendamment à l'œil.
+Ces exigences concernent l'intégration : les planches d'images existantes ne constituent pas encore des PNG découpés et alignés validés.
+
+20. COMPOSER LA TENSION AVEC LE SON ET LE SILENCE
+
+Prévoir trois phases : installation, surveillance accrue, confrontation finale. Modifier progressivement l'ambiance sans ajouter de jauge.
+Installation : ventilation régulière, petit bruit de relais, espace sonore stable.
+Surveillance : moteur de caméra plus présent, pas annoncés avant inspection, sonnerie qui coupe le calme.
+Final : retirer une partie du bruit habituel, laisser ressortir respiration et petits mouvements. Le silence peut être plus inquiétant qu'une sirène permanente.
+Réserver la sirène aux menaces réelles ou au bluff scénarisé de B4. Une alarme continue rend les événements suivants moins lisibles.
+Ne pas utiliser de son différent entre les trois vérités qui donnerait une réponse automatique supplémentaire.
+Chaque information indispensable portée par un son doit aussi disposer d'un équivalent visuel ou d'un sous-titre descriptif. Le jeu reste compréhensible sans casque et avec le son coupé.
+Les animations d'ambiance répétées ne font pas progresser le temps ni les variables.
+
+21. ASSURER UNE PREMIÈRE PARTIE LISIBLE
+
+Pendant le premier moment, rendre visibles au moins trois possibilités sans imposer de parcours : inspecter le tiroir, observer la vitre, examiner la porte.
+Le premier clic explique l'objet ; l'action engageante indique son coût avant validation. Ne pas afficher toutes les solutions futures.
+Montrer tôt un changement durable : tiroir forcé, détail découvert ou réaction de la silhouette. Ne pas laisser la première minute se limiter à du texte.
+Ne pas bloquer l'introduction derrière une recherche de pixel. Les objets interactifs ont des zones tactiles confortables et ne se recouvrent pas.
+Prévoir un rappel volontaire des objets actuellement utilisables, sans dévoiler leurs objets cachés ni leurs solutions.
+Un échec de préparation doit fermer une possibilité précise, pas supprimer sans explication tous les fils du jeu.
+Ne pas garantir une bonne fin après chaque erreur ; garantir une suite compréhensible et une conclusion cohérente.
+
+22. AMÉLIORER LA REJOUABILITÉ SANS CHANGER LES RÈGLES EN SECRET
+
+Garder le tirage de la vérité au début de la partie. Ne pas modifier ses probabilités pendant la session et ne pas changer la vérité après une déduction.
+La connaissance acquise entre parties doit servir : le joueur peut réexaminer une zone déjà connue, tenter un numéro découvert ou saisir un code connu dès que le mécanisme est accessible.
+Éviter les blocages du type « tu connais le code, mais tu dois relire le papier ». La limite reste physique : outil manquant, accès fermé, appareil hors tension.
+Prévoir une option pour passer les passages déjà vus. Elle ne saute pas un choix, une récompense ou une conséquence. Elle ne fait pas expirer un ordre pendant la transition.
+Les variantes de dialogue peuvent changer, mais les règles de causalité restent identiques.
+Après chaque fin, montrer trois éléments maximum : un acte décisif réellement accompli, sa conséquence, une question encore ouverte. Aucun tableau des combinaisons secrètes.
+Ne pas afficher automatiquement la vérité lorsqu'elle n'a pas été découverte. Ne pas expliquer la correspondance des silhouettes dans le bilan.
+La mémoire des parties précédentes peut apparaître dans des répliques, mais ne doit pas inventer un nom, une pression ou une fin jamais jouée. Prévoir une remise à zéro explicite de cette mémoire.
+
+23. ÉVITER LES CHOIX GRATUITS ET LES COÛTS ARTIFICIELS
+
+B2 doit donner une raison perceptible d'envisager la troisième pression, au-delà d'un point invisible : annoncer l'accès à un extrait du dossier personnel. Cette troisième pression donne réellement cet extrait, sans en faire une clé obligatoire de toutes les sorties. Réutiliser le moniteur et les archives existantes.
+L'extrait contient un renseignement exploitable ou une contradiction recoupable, jamais une simple phrase décorative présentée comme une récompense majeure. Il ne révèle pas directement la correspondance des silhouettes.
+Au moment 16, si aucun engagement n'est actif, remplacer le faux choix de maintien/abandon par une proposition réelle du Système : accepter l'examen du dossier de conformité ou refuser. L'examen expose des faits déjà enregistrés, ne modifie pas la conformité et ne provoque aucun dégât. Ce moment imposé ne doit pas attribuer une promesse fictive au joueur.
+Une préparation accomplie très tard doit rester utilisable si les conditions le permettent. Ne pas la rendre inutile uniquement parce qu'une scène était prévue plus tôt.
+Réduire les coûts de manipulation répétitive : ouvrir un panneau est une action ; regarder de nouveau son intérieur est gratuit. Une réparation déjà faite n'est pas facturée à chaque consultation.
+Avant d'ajouter un coût, vérifier qu'il crée un vrai arbitrage. Ne pas rallonger artificiellement les routes avec plusieurs confirmations ou des objets sans autre fonction.
+
+24. TESTER LA QUALITÉ AVEC DES JOUEURS, PAS SEULEMENT LES CONDITIONS
+
+Organiser une petite première série de tests avec des personnes qui ne connaissent pas le scénario. Observer sans expliquer les solutions pendant la partie.
+Relever : premier objet compris, clics sans effet, décisions regrettées pour une raison narrative, décisions regrettées à cause de l'interface, scènes trop longues, hypothèse sur la 18 et indices cités.
+Après la partie, demander :
+- Qu'est-ce que tu cherchais à faire ?
+- Quelle décision a changé la suite selon toi ?
+- Pourquoi penses-tu avoir obtenu cette fin ?
+- Qu'est-ce que tu essaierais autrement ?
+Ne pas demander spontanément si le joueur a compris le lien homme/femme/enfant : cela révèle l'indice. Après plusieurs parties, recueillir d'abord ses propres rapprochements.
+
+Critères de qualité :
+- Le joueur sait expliquer le résultat d'au moins une action importante.
+- Il distingue un choix dangereux d'un clic d'inspection.
+- Une fin perdue pour un mauvais choix n'est pas confondue avec un bug.
+- Un joueur connaissant les silhouettes hésite encore sur une action ou une priorité.
+- Chaque route longue possède un budget d'actions réalisable, documenté avant livraison.
+- La sortie la plus courte ne rend pas les autres sans intérêt : leurs enjeux et résultats diffèrent clairement.
+- Les textes restent lisibles sur téléphone ; les indices essentiels ne dépendent pas d'une petite différence de couleur ou d'un son seul.
+
+Ne pas annoncer que ces critères sont validés tant que les essais n'ont pas été réalisés. Prioriser les corrections de compréhension et de causalité avant d'ajouter des dialogues ou de nouveaux effets.
+
+PÉRIMÈTRE DES AJOUTS
+La correspondance des silhouettes est une décision validée par l'auteur. Les autres ajouts constituent des directives de conception proposées pour améliorer la version à développer ; leurs réglages restent à éprouver.
+Réutiliser en priorité le moniteur, le téléphone, les archives, la caméra et les sprites existants. Aucun ajout ci-dessus ne nécessite une nouvelle pièce jouable, un système de combat ou une simulation 3D.

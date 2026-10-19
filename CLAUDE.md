@@ -6,6 +6,7 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 - `docs/V3_CANONIQUE.md` : **la référence de conception actuelle (V3)**, écrite par Amine. Lis-la avant toute modification de règles.
 - `docs/V3_DECISIONS.md` : ce qui a été tranché en codant la V3 (cycles et chronos jamais visibles, ordre ignoré = refus, solutions aux failles).
 - `docs/ARBORESCENCE_V2.md` : l'ancienne conception v2, gardée pour l'historique.
+- `docs/DIRECTIVES_REV2.txt` : directives de modification d'Amine (révision 2, 19/10), à appliquer par lots après accord.
 - `docs/SCRIPT_NARRATIF.md` : **la référence des textes** (dialogues, phrases du Système et de la 18, fins), écrite par Amine. Les textes du jeu (`src/story.js`) en viennent.
 
 ## Contexte du créateur
@@ -25,7 +26,7 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 
 ## État actuel
 
-- `index.html` est la **V3** jouable (version 4.2) : 20 cycles cachés, 5 fils, 23 situations + 11 actions (appels sortants, fusible, plan, objets à prendre, pages du journal de 16), 18 fins + Curiosité. Code dans `src/`, dessins de l'artiste dans `assets/img/` (WebP découpés depuis ses planches).
+- `index.html` est la **V3** jouable (version 4.3) : 20 cycles cachés, 5 fils, 23 situations + 11 actions (appels sortants, fusible, plan, objets à prendre, pages du journal de 16), 18 fins + Curiosité. Code dans `src/`, dessins de l'artiste dans `assets/img/` (WebP découpés depuis ses planches).
 - La silhouette de la 18 change selon la vérité cachée : homme (A), femme (B), enfant (C).
 - La pièce reprend l'image de référence d'Amine (vue de face, base 1672 × 941). `docs/RESUME_JEU.txt` résume le jeu et tous les scénarios.
 - `prototype-v1.html` garde le prototype v1 (histoire linéaire, 4 fins) pour comparaison.
@@ -47,6 +48,7 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 - Garde la séparation moteur / rendu : une règle de jeu va dans `engine.js` ou `story.js`, jamais dans `game.js`.
 - Mets à jour `docs/V3_DECISIONS.md` quand une décision de conception change.
 - Après chaque changement visible, teste le jeu sur téléphone en paysage et sur écran d'ordinateur, et vérifie qu'il n'y a aucune erreur dans la console.
+- **Tests rapides seulement** (demande d'Amine, 19/10) : pas de longues séries de tests navigateur pendant le développement. Un passage court du moteur suffit ; Amine teste lui-même quand une version est consolidée.
 - Fais des commits petits, avec un message clair en français.
 - **Version** : à chaque push qui change le jeu, augmente le numéro dans `index.html` (texte « Version X.Y » de l'écran d'accueil et `?v=X.Y` des scripts), pour qu'Amine voie qu'il a la bonne version et que les scripts se rechargent.
 - Lien pour jouer : https://champion-game.github.io/bouton-rouge/ (GitHub Pages, mis à jour tout seul après chaque push sur `main`). Ne publie plus d'artefact Claude.
