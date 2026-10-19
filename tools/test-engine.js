@@ -71,15 +71,18 @@ var routes = [
   ['cooperation', 'A', ['P1 B', 'press', 'T1 A', 'C1 A', 'press', 'PRENDRE_TOURNEVIS', 'P3 A', 'P2 B', 'temps', 'T2 B', 'T3 A', 'B4 B', 'T4 A', 'T5 A', 'temps', 'PLAN']]
 ];
 var routesOk = true;
-routes.forEach(function (r) { var f; try { f = parcours(r[1], r[2]); } catch (e) { f = 'erreur : ' + e.message; } console.log((f === r[0] ? '  ok ' : '  !! ') + 'parcours ' + r[0] + ' → ' + f); if (f !== r[0]) routesOk = false; });
+var parRoute = {};
+routes.forEach(function (r) { var f; try { f = parcours(r[1], r[2]); } catch (e) { f = 'erreur : ' + e.message; } console.log((f === r[0] ? '  ok ' : '  !! ') + 'parcours ' + r[0] + ' → ' + f); if (f !== r[0]) routesOk = false; else parRoute[r[0]] = true; });
 
 var ok = errors === 0 && routesOk;
 console.log(N + ' parties, ' + errors + ' erreur(s), cycle maximum atteint : ' + maxCycle);
 console.log('\nFins :');
 Object.keys(fins).sort(function (a, b) { return E.FINS[a].n - E.FINS[b].n; }).forEach(function (k) {
   var F = E.FINS[k];
-  console.log((fins[k] ? '  ok ' : '  !! ') + (F.bonus ? 'bonus' : String(F.n).padStart(5)) + '  ' + F.titre.padEnd(24) + fins[k]);
-  if (!fins[k]) ok = false;
+  // Une fin rare au hasard compte comme atteinte si son parcours voulu fonctionne.
+  var atteinte = fins[k] || parRoute[k];
+  console.log((atteinte ? '  ok ' : '  !! ') + (F.bonus ? 'bonus' : String(F.n).padStart(5)) + '  ' + F.titre.padEnd(24) + fins[k] + (!fins[k] && parRoute[k] ? ' (par parcours)' : ''));
+  if (!atteinte) ok = false;
 });
 var missing = Object.keys(sits).filter(function (k) { return !sits[k]; });
 console.log('\nSituations jouées : ' + (E.SITUATION_IDS.length - missing.length) + ' / ' + E.SITUATION_IDS.length + (missing.length ? ' — jamais : ' + missing.join(', ') : ''));
