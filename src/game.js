@@ -231,6 +231,7 @@
       if (t.sonne) ringT = setTimeout(function () { ringT = null; A.ring(false); if (!busy) R.render(s, roomInfo()); }, E.DUREES.appel * 1000);
     }
     else if (!lastEcran) R.ecran('TEST EN|COURS.');
+    if (s.cycle === 4 && !s.done.H1) { A.sfx('paper'); toast('Un papier glisse sous la porte.'); addHist('Un papier glisse sous la porte.'); }
     lastEcran = '';
     timeTotal = timeLeft = (t.duree || 0) * 1000; lastTick = performance.now(); lastSec = -1;
     if (tuto && s.cycle > 3) { tuto = false; try { localStorage.setItem(TUTO_KEY, '1'); } catch (e) {} }

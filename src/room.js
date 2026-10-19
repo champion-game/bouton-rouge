@@ -104,7 +104,7 @@
   '<g id="door" class="hs" data-k="door">' +
   '<rect id="doorLight" x="60" y="90" width="240" height="600" fill="#f4fbf8" opacity="0" filter="url(#flou)"/>' +
   I('doorImg', 'porte_fermee', -15.7, 17.5, 377.9, 709.6) + '</g></g>' +
-  '<g id="gNote"><g id="note" class="hs" data-k="note" opacity="0"><rect x="140" y="672" width="108" height="44" fill="transparent"/>' + I('', 'mot_plie', 150, 682, 88, 26.4) + '</g></g>' +
+  '<g id="gNote"><g id="note" class="hs" data-k="note" opacity="0"><rect x="140" y="672" width="108" height="44" fill="transparent"/><g id="noteSlide">' + I('', 'mot_plie', 150, 682, 88, 26.4) + '</g></g></g>' +
   // grille d'aération
   '<g id="gGrille"><g id="grille" class="hs" data-k="grille">' + I('grilleImg', 'grille', 1282.4, 518.9, 178.2, 92.3) + '</g></g>' +
   // trappe au sol, devant le bureau (apparaît quand on la connaît)
@@ -163,7 +163,7 @@
   '<g id="btn" class="hs" data-k="btn" role="button" tabindex="0" aria-label="Appuyer sur le bouton rouge">' +
   I('btnImg', 'bouton', BTN.x, BTN.y, BTN.w, BTN.h) + I('btnImg2', 'bouton_enfonce', BTN.x, BTN.y, BTN.w, BTN.h, ' opacity="0"') + '</g>' +
   '<ellipse cx="837" cy="470" rx="70" ry="30" fill="url(#glowG)" opacity=".3" style="pointer-events:none"/>' +
-  '<g id="phone" class="hs" data-k="phone" opacity="0"><rect x="500" y="440" width="172" height="104" fill="transparent"/><g id="phoneInner">' +
+  '<g id="phone" class="hs" data-k="phone"><rect x="500" y="440" width="172" height="104" fill="transparent"/><g id="phoneInner">' +
   I('telImg', 'tel_pose', 479.3, 445.5, 188.4, 99.6) + I('telImg2', 'tel_decroche', 479.3, 445.5, 188.4, 99.6, ' opacity="0"') + '</g>' +
   '<circle id="ecouteLed" cx="640" cy="520" r="4.5" fill="#ff3b30" class="pulse" opacity="0"/></g>' +
   '<g class="hs" data-k="mug"><rect x="998" y="452" width="90" height="82" fill="transparent"/>' + I('', 'tasse', 1010, 468, 65.3, 58) + '</g>' +
@@ -187,7 +187,7 @@
   '<rect id="flash" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="#fff" opacity="0" style="pointer-events:none"/>' +
   '</svg>';
 
-  var svg = null, onHot = null, track = false, glitchT = null, host = null, sujet = 'A', pose = 'debout';
+  var svg = null, onHot = null, track = false, noteAvant = null, glitchT = null, host = null, sujet = 'A', pose = 'debout';
   function silNom(p) { return 'sil_' + (SIL_PAR_VERITE ? sujet + '_' : '') + p; }
   function $(id) { return document.getElementById(id); }
   function attr(id, k, v) { var e = $(id); if (e) e.setAttribute(k, v); }
@@ -288,9 +288,13 @@
     var led = blind ? '#2a2e2d' : s.cycle < 3 ? '#3b3f3e' : ['#3ee08f', '#3ee08f', '#f2a33a', '#e3262b', '#e3262b'][s.soupcon];
     attr('camLed', 'fill', led); attr('camLed', 'class', !blind && s.soupcon >= 3 ? 'pulse' : '');
     // objets
-    attr('phone', 'opacity', s.cycle >= 3 ? 1 : 0);
     attr('telImg', 'opacity', info.decroche ? 0 : 1); attr('telImg2', 'opacity', info.decroche ? 1 : 0);
-    attr('note', 'opacity', s.cycle >= 4 && !s.done.H1 ? 1 : 0);
+    // Le mot de 16 glisse sous la porte au 4e appui (pas d'animation au chargement d'une partie).
+    var noteVue = s.cycle >= 4 && !s.done.H1;
+    if (!noteVue) attr('noteSlide', 'class', '');
+    else if (noteAvant === false && s.cycle === 4) attr('noteSlide', 'class', 'glisse');
+    noteAvant = noteVue;
+    attr('note', 'opacity', noteVue ? 1 : 0);
     var tir = s.flags.tiroirOuvert ? (s.flags.tournevisDispo && !s.flags.tournevisPris && !has('tournevis') ? 'tiroir2_tournevis' : 'tiroir2_vide') : 'tiroir2_ferme';
     src('drawerImg', tir);
     src('compImg', !s.flags.compartiment ? 'compart_ferme' : s.flags.compartiment === 'ouvert' ? 'compart_fusible' : 'compart_vide');

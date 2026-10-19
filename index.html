@@ -58,10 +58,12 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);out
 .timer.low i{background:var(--red);opacity:1}
 .paused{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);font-family:var(--f-stencil);font-weight:800;font-size:2rem;letter-spacing:.1em;color:var(--amber);z-index:3}
 /* Messages courts posés sur la pièce, qui s'effacent seuls */
-.toast{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);max-width:calc(100% - 24px);background:rgba(5,8,8,.86);border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:.9rem;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s;z-index:2}
+.toast{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);max-width:calc(100% - 24px);padding:2px 8px;font-size:.78rem;line-height:1.25;text-align:center;color:rgba(230,236,233,.88);text-shadow:0 1px 2px #000,0 0 8px #000;pointer-events:none;opacity:0;transition:opacity .3s;z-index:2}
 .toast.on{opacity:1}
-.toast.obj{color:var(--green);font-weight:700}
-.toast.ecr{font-family:var(--f-crt);font-size:1.15rem;color:var(--phos)}
+.toast.obj{color:var(--green)}
+.toast.ecr{font-family:var(--f-crt);font-size:1rem;color:var(--phos)}
+.glisse{animation:glisse 1.2s ease-out}
+@keyframes glisse{from{transform:translate(0,-18px);opacity:0}}
 .hintcap{position:absolute;left:50%;top:46px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 24px);background:rgba(5,8,8,.82);border-radius:6px;padding:5px 10px;text-align:center;font-size:.85rem;color:var(--text);pointer-events:none;z-index:2}
 
 /* Inventaire : 6 cases dessinées */
@@ -154,7 +156,7 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 .fins span{font-size:.74rem;font-weight:700;border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:#56625f}
 .fins span.on{border-color:var(--green);color:var(--green)}
 .fins span.cur{background:var(--green);color:#071311}
-@media (prefers-reduced-motion:reduce){.ring,.pulse{animation:none}}
+@media (prefers-reduced-motion:reduce){.ring,.pulse,.glisse{animation:none}}
 /* Le jeu se joue en paysage : en portrait sur téléphone ou tablette, on demande de tourner l'écran. */
 .rotate{display:none;position:fixed;inset:0;z-index:100;background:#050707;color:var(--text);flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px}
 .rotate svg{width:84px;height:84px;animation:tourne 2.4s ease-in-out infinite}
@@ -208,7 +210,7 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
       <button class="mbtn" id="setBtn">Réglages</button>
     </div>
     <p>Une pièce. Un bouton. Touche ce qui t'entoure. Le son est recommandé.</p>
-    <p class="ver">Version 5.9 · 20/10</p>
+    <p class="ver">Version 6.0 · 20/10</p>
   </div>
   <div class="intro panel" id="finsPanel" hidden>
     <h2>Fins découvertes</h2>
@@ -230,10 +232,10 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 </div>
 <div class="ov" id="endOv" hidden><div class="end" id="endBox"></div></div>
 
-<script src="src/story.js?v=5.9"></script>
-<script src="src/engine.js?v=5.9"></script>
-<script src="src/audio.js?v=5.9"></script>
-<script src="src/room.js?v=5.9"></script>
-<script src="src/game.js?v=5.9"></script>
+<script src="src/story.js?v=6.0"></script>
+<script src="src/engine.js?v=6.0"></script>
+<script src="src/audio.js?v=6.0"></script>
+<script src="src/room.js?v=6.0"></script>
+<script src="src/game.js?v=6.0"></script>
 </body>
 </html>
