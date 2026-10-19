@@ -30,15 +30,26 @@
       vie: 3, confiance: 0, soupcon: 0, conformite: 0,
       rng: (seed ^ 0x9E3779B9) >>> 0, // pour tirer les variantes de texte (même graine = même partie)
       items: [], found: [], done: {}, flags: { ligne: 'fermee', t1Ignore: 0, memoire: {}, soupconDit: 0, aux: 'ok', doutes: 0 }, fin: null,
-      stats: { presses: 0, auto: 0, suivis: 0, refus: 0, blessures: 0, actions: 0 }
+      stats: { presses: 0, auto: 0, suivis: 0, refus: 0, blessures: 0, actions: 0 },
+      // Ce dont le Système se souvient des sessions précédentes : { session, dernier: { fin, presses } }.
+      memoire: opts.memoire || { session: 1 }
     };
     return s;
   }
 
   // Événements du début de partie (cycle 1).
   function intro(s) {
-    var ev = [];
-    S.INTRO.forEach(function (e) { ev.push(e[0] === 'anim' ? { t: 'anim', n: e[1] } : { t: e[0], txt: e[1] }); });
+    var ev = [], m = s.memoire || { session: 1 }, d = m.dernier, g = ctx(s, ev, null), M = S.SESSIONS;
+    S.INTRO.forEach(function (e) {
+      var txt = e[1];
+      if (e[0] === 'ecran' && txt === 'SUJET 17' && d && d.fin === 'miroir') { ev.push({ t: 'ecran', txt: 'SUJET 18|IDENTIFIÉ.' }); ev.push({ t: 'ecran', txt: 'CORRECTION :|SUJET 17' }); return; }
+      if (e[0] === 'ecran' && txt === 'TEST COMPORTEMENTAL|04-17') txt = 'TEST COMPORTEMENTAL|04-' + (16 + m.session);
+      if (e[0] === 'ecran' && txt === 'L\'ÉVALUATION COMMENCE MAINTENANT.' && m.session > 1) {
+        g.ecran(d && M.fin[d.fin] ? M.fin[d.fin] : g.pick(M.retour));
+        if (d && d.presses > 0) g.ecran(M.presses(d.presses));
+      }
+      ev.push(e[0] === 'anim' ? { t: 'anim', n: txt } : { t: e[0], txt: txt });
+    });
     return ev;
   }
   function tirer(s) { // mulberry32, l'état est gardé dans la partie
@@ -391,7 +402,7 @@
   function decrire(s, k) { return resolve(S.DESCRIPTIONS[k], ctx(s, [], null)) || ''; }
 
   var api = {
-    LETTRES: S.LETTRES, newGame: newGame, intro: intro, turn: turn, choose: choose, regarder: regarder, decrire: decrire, AIDES: S.AIDES, DESCRIPTIONS: S.DESCRIPTIONS, PHRASES: S.PHRASES,
+    LETTRES: S.LETTRES, INDICES_FINS: S.INDICES_FINS, newGame: newGame, intro: intro, turn: turn, choose: choose, regarder: regarder, decrire: decrire, AIDES: S.AIDES, DESCRIPTIONS: S.DESCRIPTIONS, PHRASES: S.PHRASES,
     forcedId: forcedId, cameraAveugle: cameraAveugle, porteOuverte: porteOuverte, has: has,
     DUREES: DUREES, DERNIER_CYCLE: DERNIER_CYCLE,
     FILS: S.FILS, OBJETS: S.OBJETS, FINS: S.FINS, VERITES: S.VERITES,

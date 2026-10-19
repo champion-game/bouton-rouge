@@ -5,7 +5,10 @@
   'use strict';
   var E = window.BREngine, R = window.BRRoom, A = window.BRAudio;
   var $ = function (id) { return document.getElementById(id); };
-  var FOUND_KEY = 'bouton-rouge-v2-fins', TUTO_KEY = 'bouton-rouge-v2-tuto';
+  var FOUND_KEY = 'bouton-rouge-v2-fins', TUTO_KEY = 'bouton-rouge-v2-tuto', SESSION_KEY = 'bouton-rouge-v3-sessions';
+  // Mémoire des sessions précédentes (dans ce navigateur) : le Système s'en souvient.
+  function lireMemoire() { try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; } }
+  function ecrireMemoire(m) { try { localStorage.setItem(SESSION_KEY, JSON.stringify(m)); } catch (e) {} }
   // Les 6 cases de l'inventaire, et l'objet de la pièce auquel chaque objet renvoie (pour agir avec).
   var POCHES = ['tournevis', 'fusible', 'code', 'mot16', 'badge', 'enregistrement'];
   var POCHE_OBJET = { badge: 'badge', enregistrement: 'cassette' };
@@ -176,6 +179,7 @@
   }
 
   function refresh() {
+    A.ambiance({ vie: s.vie, soupcon: s.soupcon, vent: s.cycle === 6 ? 'off' : s.cycle >= 15 ? 'faible' : 'normal', actif: !!t && !s.fin && !paused });
     R.render(s, roomInfo());
     renderBag(); updateTimer();
     var k = forcedKind(), hint = !busy && t && tuto && s.cycle <= 3 ? (k === 'ordre' ? E.AIDES.ordre : k ? E.AIDES.appel : E.AIDES.libre) : '';
@@ -265,6 +269,7 @@
   }, 100);
   function setPaused(p) {
     paused = p; $('pauseBtn').textContent = p ? 'Reprendre' : 'Pause'; $('pauseBtn').setAttribute('aria-pressed', p); $('pausedLbl').hidden = !p;
+    A.ambiance({ actif: !p && !!t && s && !s.fin });
     if (p) A.ring(false); else if (!busy && (forcedKind() === 'T1' || (forcedKind() === 'T4' && sel !== 'phone'))) A.ring(true);
   }
   $('pausedLbl').addEventListener('click', function () { setPaused(false); });
@@ -273,7 +278,7 @@
   var SONS_FIN = { conforme: 'lock', employe: 'lock', marche: 'ring', seulDehors: 'thud', porteDerobee: 'thud', evasion: 'alarm', cooperation: 'lock', sauvetage: 'thud', tropTard: 'blink', complice: 'alarm', sujet18: 'thud', miroir: 'glitch', boucle: 'blink', isolement: 'slam', gardien: 'alarm', temoin: 'pickup', revolte: 'alarm', tempsEcoule: 'cry', curiosite: 'slam' };
   async function finale(my) {
     var F = E.FINS[s.fin];
-    A.ring(false); $('timer').hidden = true; $('hintcap').hidden = true;
+    A.ring(false); A.ambiance({ actif: false }); $('timer').hidden = true; $('hintcap').hidden = true;
     R.ecran(F.crt === '_' ? '' : F.crt, { glitch: 500 });
     R.fin(s.fin);
     var son = SONS_FIN[s.fin];
@@ -285,6 +290,7 @@
   function endScreen() {
     var found = loadFound(); found[s.fin] = 1;
     try { localStorage.setItem(FOUND_KEY, JSON.stringify(found)); } catch (e) {}
+    ecrireMemoire({ sessions: s.memoire.session, dernier: { fin: s.fin, presses: s.stats.presses + s.stats.auto } });
     var F = E.FINS[s.fin], st = s.stats;
     var ids = E.FIN_IDS.slice().sort(function (a, b) { return (E.FINS[a].bonus ? 99 : E.FINS[a].n) - (E.FINS[b].bonus ? 99 : E.FINS[b].n); });
     var nb = ids.filter(function (k) { return found[k] && !E.FINS[k].bonus; }).length;
@@ -300,6 +306,10 @@
     h += '<div class="k">FINS DÉCOUVERTES : ' + nb + ' / 18</div><div class="fins">' + ids.map(function (k) {
       return '<span class="' + (k === s.fin ? 'cur' : found[k] ? 'on' : '') + '">' + (found[k] ? esc(E.FINS[k].titre) : '???') + '</span>';
     }).join('') + '</div>';
+    // Un indice vers une fin pas encore découverte, pour donner envie de relancer.
+    var reste = ids.filter(function (k) { return !found[k] && k !== s.fin; });
+    if (reste.length) { var kx = reste[Math.floor(Math.random() * reste.length)]; h += '<p class="indice">Une autre fin t\'attendait si tu avais ' + esc(E.INDICES_FINS[kx]) + '</p>'; }
+    else h += '<p class="indice">Tu as tout vu. Vraiment ?</p>';
     h += '<div><button class="enter" id="againBtn">Retourner dans la Chambre 17</button></div>';
     $('endBox').innerHTML = h; $('endOv').hidden = false;
     $('againBtn').onclick = function () { $('endOv').hidden = true; start(); };
@@ -316,7 +326,9 @@
     run++; var my = run;
     A.stopAll(); setPaused(false);
     if (!$('pop').hidden) { popDone = null; $('pop').hidden = true; }
-    s = E.newGame(); t = null; busy = true; sel = null; lastEcran = ''; hist = []; flashItems = []; introSil = true;
+    var mem = lireMemoire();
+    s = E.newGame({ memoire: { session: mem ? mem.sessions + 1 : 1, dernier: mem ? mem.dernier : null } });
+    t = null; busy = true; sel = null; lastEcran = ''; hist = []; flashItems = []; introSil = true;
     try { tuto = !localStorage.getItem(TUTO_KEY); } catch (e) { tuto = true; }
     $('histLast').textContent = '…'; $('histBox').innerHTML = ''; $('histBox').hidden = true;
     timeLeft = timeTotal = 0; refresh();

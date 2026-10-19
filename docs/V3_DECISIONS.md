@@ -49,3 +49,9 @@ Coopération et Briser la boucle sortent rarement dans les parties au hasard, ca
 - **Le popup** reste réservé aux informations importantes (appels, découvertes, conséquences).
 - **La lettre de 16** s'affiche comme une vraie feuille manuscrite (recto, et verso une fois gardée).
 
+## Rejouabilité et ambiance (19/10, validé par Amine)
+
+- **Le Système se souvient des sessions précédentes** (gardées dans le navigateur du joueur). Le numéro de test augmente (04-17, 04-18…). Le Système commente la dernière fin (« Vous aviez choisi le bouton. Encore ? ») et le nombre de pressions (« La dernière fois, vous avez appuyé 4 fois. »). Après la fin Miroir, l'intro affiche « SUJET 18 IDENTIFIÉ » avant de se corriger. Au premier appel, la 18 dit : « J'ai l'impression de t'avoir déjà parlé. »
+- **L'écran de fin donne un indice** vers une fin pas encore découverte : « Une autre fin t'attendait si tu avais… ».
+- **L'ambiance sonore évolue** : respiration derrière la vitre (calme, rapide, hachée, puis silence), bourdonnement grave qui monte avec le soupçon, ventilation coupée pendant l'autotest et affaiblie quand l'air se raréfie, bruits lointains de temps en temps (pas, porte, métal, coups).
+

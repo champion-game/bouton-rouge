@@ -55,11 +55,52 @@
 
   function sfx(n) { if (SFX[n]) SFX[n](); }
 
+  // ---------- ambiance qui évolue avec la partie ----------
+  var humG = null, ventG = null, droneG = null;
+  var etat = { vie: 3, soupcon: 0, vent: 'normal', actif: false }, souffleT = null, eventT = null;
   function startAmbience() {
     if (!AC || hum) return; try {
-      hum = AC.createOscillator(); var g = AC.createGain(); hum.frequency.value = 50; g.gain.value = 0.025; hum.connect(g); g.connect(master); hum.start();
-      var s = AC.createBufferSource(), f = AC.createBiquadFilter(), g2 = AC.createGain(); s.buffer = noiseBuf; s.loop = true; f.type = 'lowpass'; f.frequency.value = 380; g2.gain.value = 0.05; s.connect(f); f.connect(g2); g2.connect(master); s.start(); vent = s;
+      hum = AC.createOscillator(); humG = AC.createGain(); hum.frequency.value = 50; humG.gain.value = 0.025; hum.connect(humG); humG.connect(master); hum.start();
+      var s = AC.createBufferSource(), f = AC.createBiquadFilter(); ventG = AC.createGain(); s.buffer = noiseBuf; s.loop = true; f.type = 'lowpass'; f.frequency.value = 380; ventG.gain.value = 0.05; s.connect(f); f.connect(ventG); ventG.connect(master); s.start(); vent = s;
+      // Bourdonnement grave qui monte avec le soupçon (deux notes proches qui battent).
+      droneG = AC.createGain(); droneG.gain.value = 0; var lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 140; lp.connect(droneG); droneG.connect(master);
+      [41, 43.3].forEach(function (fq) { var o = AC.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fq; o.connect(lp); o.start(); });
     } catch (e) {}
+  }
+  function rampe(g, v) { if (g && AC) { g.gain.cancelScheduledValues(now()); g.gain.setTargetAtTime(v, now(), 0.8); } }
+  // État de la partie → sons de fond : ventilation, bourdonnement du soupçon, respiration derrière la vitre, bruits lointains.
+  function ambiance(e) {
+    for (var k in e) etat[k] = e[k];
+    if (!AC) return;
+    rampe(ventG, { normal: 0.05, faible: 0.012, off: 0 }[etat.vent]);
+    rampe(humG, etat.vent === 'off' ? 0.004 : 0.025);
+    rampe(droneG, etat.actif ? [0, 0.008, 0.02, 0.04, 0.06][etat.soupcon] || 0 : 0);
+    if (etat.actif && !souffleT) souffle();
+    if (etat.actif && !eventT) evenement();
+  }
+  // Respiration de la 18 : calme, puis plus rapide, puis hachée ; plus rien quand elle n'a plus de vie.
+  function souffle() {
+    souffleT = null;
+    if (!etat.actif || !AC) return;
+    if (etat.vie > 0) {
+      var t = now(), g = [0, 0.05, 0.04, 0.03][etat.vie];
+      noise(t, 0.9, g, 'bandpass', 700); noise(t + 1.1, 1.1, g * 0.8, 'bandpass', 500);
+      if (etat.vie === 1) noise(t + 0.5, 0.25, g * 0.6, 'bandpass', 900);
+    }
+    souffleT = setTimeout(souffle, [5000, 2300, 3200, 4400][etat.vie] + Math.random() * 600);
+  }
+  // Un bruit lointain de temps en temps : des pas, une porte, du métal, trois coups.
+  function evenement() {
+    eventT = setTimeout(function () {
+      eventT = null;
+      if (!etat.actif || !AC) return;
+      var t = now(), r = Math.random();
+      if (r < 0.35) { for (var i = 0; i < 4; i++) { osc('sine', 70, t + i * 0.55, 0.2, 0.12, 45); noise(t + i * 0.55, 0.08, 0.05, 'lowpass', 400); } }
+      else if (r < 0.6) { noise(t, 0.5, 0.18, 'lowpass', 300); osc('sine', 48, t, 0.7, 0.18, 32); }
+      else if (r < 0.8) { osc('triangle', 1900, t, 1.2, 0.025); osc('triangle', 2650, t + 0.01, 0.9, 0.015); }
+      else { for (var j = 0; j < 3; j++) { osc('sine', 160, t + j * 0.35, 0.1, 0.1, 90); } }
+      evenement();
+    }, 22000 + Math.random() * 20000);
   }
 
   function ring(on) {
@@ -73,5 +114,5 @@
   function stopAll() { ringOn = false; alarmOn = false; }
   function setMuted(m) { muted = m; if (master) master.gain.value = m ? 0 : 0.8; }
 
-  root.BRAudio = { init: init, sfx: sfx, startAmbience: startAmbience, ring: ring, stopAll: stopAll, setMuted: setMuted, isMuted: function () { return muted; } };
+  root.BRAudio = { ambiance: ambiance, init: init, sfx: sfx, startAmbience: startAmbience, ring: ring, stopAll: stopAll, setMuted: setMuted, isMuted: function () { return muted; } };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

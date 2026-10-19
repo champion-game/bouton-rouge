@@ -235,6 +235,7 @@
         g.tel('« Je suis dans la pièce à côté. Je te vois pas bien… »');
         g.tel('« Quand tu appuies… ça fait quelque chose ici. »');
         if (g.s.stats.presses > 0) g.tel('« Tu l\'as senti aussi ? Moi oui. »');
+        if (g.s.memoire && g.s.memoire.session > 1) g.tel(SESSIONS.deja18);
         g.ecran('COMMUNICATION|NON|AUTORISÉE.');
       } },
       B: { label: 'Laisser sonner', fx: function (g) { g.conformite(1); g.narr('Après plusieurs sonneries : silence.'); g.ecran('BIEN.'); g.ignorerAppel(); } } },
@@ -532,6 +533,47 @@
     enregistrement: 'Un enregistrement technique récent du système.'
   };
 
+  // Le Système se souvient des sessions précédentes (rangées dans le navigateur du joueur).
+  var SESSIONS = {
+    retour: ['Bon retour, Sujet 17.', 'Vous êtes déjà venu ici.', 'Nous reprenons là où nous nous étions arrêtés.'],
+    fin: {
+      curiosite: 'Vous aviez choisi le bouton. Encore ?',
+      conforme: 'Votre dernière évaluation était satisfaisante.',
+      employe: 'Votre poste d\'opérateur vous attendra.',
+      isolement: 'Nous espérons que l\'isolement vous a été profitable.',
+      gardien: 'Les sangles ne seront pas nécessaires cette fois.',
+      tempsEcoule: 'Cette fois, vous êtes de ce côté de la vitre.',
+      sujet18: 'Cette fois, vous êtes de ce côté de la vitre.',
+      seulDehors: 'Vous étiez sorti. Vous êtes revenu.', porteDerobee: 'Vous étiez sorti. Vous êtes revenu.', evasion: 'Vous étiez sorti. Vous êtes revenu.', marche: 'Vous étiez sorti. Vous êtes revenu.',
+      boucle: 'Restauration de session réussie.', revolte: 'Les chambres 01 à 24 ont été réinitialisées.', temoin: 'L\'opérateur a été remplacé.'
+    },
+    presses: function (n) { return 'La dernière fois, vous avez appuyé ' + n + ' fois.'; },
+    deja18: '« J\'ai l\'impression de t\'avoir déjà parlé. »'
+  };
+
+  // Indices de l'écran de fin : « Une autre fin t'attendait si tu avais… »
+  var INDICES_FINS = {
+    conforme: 'obéi jusqu\'à la toute dernière pression.',
+    employe: 'obéi sans faillir, puis découvert qui était vraiment la 18.',
+    marche: 'accepté le marché de la porte, tant que la 18 vivait encore.',
+    seulDehors: 'suivi la flèche « EXT. » dans le conduit.',
+    porteDerobee: 'préparé une sortie sous le bureau au lieu de descendre.',
+    evasion: 'fait semblant de t\'évanouir devant une caméra qui ne se méfiait pas.',
+    cooperation: 'promis de venir, accepté son plan, puis aveuglé la caméra.',
+    sauvetage: 'rampé jusqu\'à elle tant qu\'elle respirait encore.',
+    tropTard: 'promis de venir, et laissé sa lumière s\'éteindre.',
+    complice: 'gardé ton tournevis en allant la voir de près, sans éveiller les soupçons.',
+    sujet18: 'rejoint la 18 les mains vides.',
+    miroir: 'écouté ta propre voix jusqu\'au bout.',
+    boucle: 'coupé l\'actionneur, gardé le badge de 16, puis compris ce qu\'était la 18.',
+    isolement: 'désobéi devant la caméra une fois de trop.',
+    gardien: 'simulé un malaise alors qu\'ils se méfiaient déjà de toi.',
+    temoin: 'parlé à la personne derrière l\'objectif.',
+    revolte: 'rétabli le courant auxiliaire, puis diffusé l\'enregistrement.',
+    tempsEcoule: 'simplement attendu, jusqu\'au bout.',
+    curiosite: 'appuyé alors que ta porte était ouverte.'
+  };
+
   // Les lettres qu'on peut lire (affichées comme de vrais papiers).
   var LETTRES = {
     mot16: { recto: ['ILS MENTENT.'], signature: '—16', verso: ['NE FAIS PAS', 'CE QUE J\'AI FAIT.'] }
@@ -544,6 +586,6 @@
     appel: 'Touche le téléphone pour décrocher.'
   };
 
-  var api = { FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, ORDRES: ORDRES, VERITES: VERITES, SITUATIONS: SITUATIONS, FINS: FINS, INTRO: INTRO, CHRONO: CHRONO, HISTORIQUE: HISTORIQUE, REGARDS: REGARDS, AIDES: AIDES, DESCRIPTIONS: DESCRIPTIONS, LETTRES: LETTRES, PHRASES: PHRASES, MEMOIRE: MEMOIRE, DOUTES: DOUTES, REPLIQUES_OBJETS: REPLIQUES_OBJETS };
+  var api = { FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, ORDRES: ORDRES, VERITES: VERITES, SITUATIONS: SITUATIONS, FINS: FINS, INTRO: INTRO, CHRONO: CHRONO, HISTORIQUE: HISTORIQUE, REGARDS: REGARDS, AIDES: AIDES, DESCRIPTIONS: DESCRIPTIONS, LETTRES: LETTRES, SESSIONS: SESSIONS, INDICES_FINS: INDICES_FINS, PHRASES: PHRASES, MEMOIRE: MEMOIRE, DOUTES: DOUTES, REPLIQUES_OBJETS: REPLIQUES_OBJETS };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.BRStory = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
