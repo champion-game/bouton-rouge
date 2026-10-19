@@ -103,6 +103,25 @@
     }, 22000 + Math.random() * 20000);
   }
 
+  // Murmure synthétisé pendant que la voix de la 18 (ou une voix au téléphone) se tape : des syllabes sans mots.
+  // `hauteur` : grave pour un homme, plus aigu pour une femme ou un enfant. `tel` : bande étroite du combiné.
+  function murmure(ms, hauteur, tel) {
+    if (!AC || muted || !ms) return; try {
+      var t = now() + 0.03, fin = t + Math.min(ms, 7000) / 1000, h = hauteur || 1;
+      var out = AC.createBiquadFilter(); out.type = tel ? 'bandpass' : 'lowpass'; out.frequency.value = tel ? 1400 : 900; out.Q.value = tel ? 0.8 : 0.7;
+      var g = AC.createGain(); g.gain.value = tel ? 0.5 : 0.35; out.connect(g); g.connect(master);
+      while (t < fin) {
+        var d = 0.07 + Math.random() * 0.11, f0 = 105 * h * (0.88 + Math.random() * 0.28);
+        var o = AC.createOscillator(), fo = AC.createBiquadFilter(), a = AC.createGain();
+        o.type = 'sawtooth'; o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f0 * (0.9 + Math.random() * 0.2), t + d);
+        fo.type = 'bandpass'; fo.frequency.value = (450 + Math.random() * 900) * Math.sqrt(h); fo.Q.value = 3;
+        a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(0.09, t + d * 0.3); a.gain.linearRampToValueAtTime(0, t + d);
+        o.connect(fo); fo.connect(a); a.connect(out); o.start(t); o.stop(t + d + 0.02);
+        t += d + (Math.random() < 0.18 ? 0.12 + Math.random() * 0.15 : 0.01);
+      }
+    } catch (e) {}
+  }
+
   function ring(on) {
     if (on === ringOn) return; ringOn = on; if (!on) return;
     (function loop() { if (!ringOn || !AC) return; var t = now(); for (var i = 0; i < 2; i++) { osc('sine', 440, t + i * 0.5, 0.4, 0.08); osc('sine', 480, t + i * 0.5, 0.4, 0.08); } setTimeout(loop, 2200); })();
@@ -114,5 +133,5 @@
   function stopAll() { ringOn = false; alarmOn = false; }
   function setMuted(m) { muted = m; if (master) master.gain.value = m ? 0 : 0.8; }
 
-  root.BRAudio = { ambiance: ambiance, init: init, sfx: sfx, startAmbience: startAmbience, ring: ring, stopAll: stopAll, setMuted: setMuted, isMuted: function () { return muted; } };
+  root.BRAudio = { murmure: murmure, ambiance: ambiance, init: init, sfx: sfx, startAmbience: startAmbience, ring: ring, stopAll: stopAll, setMuted: setMuted, isMuted: function () { return muted; } };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

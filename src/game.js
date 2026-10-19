@@ -6,11 +6,14 @@
   var E = window.BREngine, R = window.BRRoom, A = window.BRAudio;
   var $ = function (id) { return document.getElementById(id); };
   var FOUND_KEY = 'bouton-rouge-v2-fins', TUTO_KEY = 'bouton-rouge-v2-tuto', SESSION_KEY = 'bouton-rouge-v3-sessions';
+  var SAVE_KEY = 'bouton-rouge-v4-partie', REGLAGES_KEY = 'bouton-rouge-v4-reglages';
+  function lire(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+  function ecrire(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   // Mémoire des sessions précédentes (dans ce navigateur) : le Système s'en souvient.
   function lireMemoire() { try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; } }
   function ecrireMemoire(m) { try { localStorage.setItem(SESSION_KEY, JSON.stringify(m)); } catch (e) {} }
   // Les 6 cases de l'inventaire, et l'objet de la pièce auquel chaque objet renvoie (pour agir avec).
-  var POCHES = ['tournevis', 'fusible', 'code', 'mot16', 'badge', 'enregistrement'];
+  var POCHES = ['tournevis', 'fusible', 'code', 'mot16', 'badge', 'enregistrement', 'journal'];
   var POCHE_OBJET = { badge: 'badge', enregistrement: 'cassette' };
   // Indices (connaissances) montrés à la fin.
   var INDICES = ['angleMort', 'operateur', 'mensonge', 'miroir', 'objectif', 'plan', 'verite'];
@@ -21,9 +24,9 @@
 
   function ecranTxt(t) { return t.replace(/-\|/g, '-').replace(/\|/g, ' '); }
   // Une lettre affichée comme un vrai papier (recto, et verso si on l'a gardée).
-  function lettreHtml(k, verso) {
-    var L = E.LETTRES[k];
-    var h = '<div class="lettre"><p>' + L.recto.map(esc).join('<br>') + '</p><p class="sig">' + esc(L.signature) + '</p></div>';
+  function lettreHtml(L, verso) {
+    if (typeof L === 'string') L = E.LETTRES[L];
+    var h = '<div class="lettre">' + (L.titre ? '<span>' + esc(L.titre) + '</span>' : '') + '<p>' + L.recto.map(esc).join('<br>') + '</p>' + (L.signature ? '<p class="sig">' + esc(L.signature) + '</p>' : '') + '</div>';
     if (verso && L.verso) h += '<div class="lettre verso"><span>AU DOS</span><p>' + L.verso.map(esc).join('<br>') + '</p></div>';
     return h;
   }
@@ -66,17 +69,21 @@
   function tempsEcran(n) { return Math.min(7000, n * R.VITESSE + 1300 + n * 35); }
 
   // ---------- texte tapé dans les popups ----------
-  var typer = null;
-  function taper(els, textes, fin) {
-    var li = 0, ci = 0, iv = null;
+  var typer = null, PAS = { lent: 1, normal: 2, rapide: 4 }, vitesse = 'normal';
+  // La voix de la 18 murmure pendant que son texte se tape (plus grave ou plus aiguë selon qui elle est).
+  var HAUTEUR = { A: 1, B: 1.35, C: 1.7 };
+  function taper(els, textes, fin, types) {
+    var li = 0, ci = 0, iv = null, pas = PAS[vitesse] || 2;
+    function voix(i) { var k = types && types[i]; if (k === 'voix' || k === 'tel') A.murmure(Math.ceil(textes[i].length / pas) * 22, k === 'voix' || /^«/.test(textes[i]) ? HAUTEUR[s.truth] : 0.9, k === 'tel'); }
     function finir() { clearInterval(iv); typer = null; els.forEach(function (el, i) { el.textContent = textes[i]; }); if (fin) fin(); }
     els.forEach(function (el) { el.textContent = ''; });
     if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return finir();
     typer = { finir: finir };
+    if (els.length) voix(0);
     iv = setInterval(function () {
       if (li >= els.length) return finir();
-      ci += 2; els[li].textContent = textes[li].slice(0, ci);
-      if (ci >= textes[li].length) { li++; ci = 0; }
+      ci += pas; els[li].textContent = textes[li].slice(0, ci);
+      if (ci >= textes[li].length) { li++; ci = 0; if (li < els.length) voix(li); }
     }, 22);
   }
 
@@ -86,13 +93,23 @@
   // Popup d'information : les textes d'une action, puis « Continuer ».
   function infoPop(lines, my, auto) {
     return new Promise(function (res) {
-      var textes = lines.map(function (e) { return e.t === 'ecran' ? ecranTxt(e.txt) : e.txt; });
-      var h = '<div class="lines">' + lines.map(function (e) { return '<p class="' + ({ tel: 'tel', voix: 'voix', ecran: 'sys' }[e.t] || '') + '"></p>'; }).join('') + '</div><div class="ab"><button class="ch go" data-go="1">Continuer</button></div>';
+      var txt = lines.filter(function (e) { return e.txt != null; });
+      var textes = txt.map(function (e) { return e.t === 'ecran' ? ecranTxt(e.txt) : e.txt; });
+      var h = '<div class="lines">' + lines.map(function (e) {
+        if (e.t === 'image') return imageHtml(e.n);
+        if (e.t === 'papier') return lettreHtml(e.p, true);
+        return '<p class="t ' + ({ tel: 'tel', voix: 'voix', ecran: 'sys' }[e.t] || '') + '"></p>';
+      }).join('') + '</div><div class="ab"><button class="ch go" data-go="1">Continuer</button></div>';
       openPop(h, function () { res(my === run); });
-      taper(Array.prototype.slice.call($('card').querySelectorAll('.lines p')), textes);
+      taper(Array.prototype.slice.call($('card').querySelectorAll('.lines p.t')), textes, null, txt.map(function (e) { return e.t; }));
       // Popup qui se referme tout seul (intro) : pas besoin de toucher « Continuer ».
       if (auto) { var n = textes.join('').length, card = $('card').firstChild; setTimeout(function () { if (!$('pop').hidden && $('card').firstChild === card) closePop(); }, n * 11 + 2600 + n * 40); }
     });
+  }
+  // Ce qu'on voit vraiment : une révélation floue, ou les gravures de 16.
+  function imageHtml(n) {
+    if (n === 'gravures') return '<div class="gravure"><b>||||| ||||| ||||| |||||</b><b>20 = OTHER SIDE</b><b>4 / 1</b></div>';
+    return '<img class="rev" src="assets/img/' + n + '.webp" alt="">';
   }
   function choiceBtn(x, c) {
     var o = x[c]; if (!o) return '';
@@ -109,7 +126,7 @@
       if (i || texte || titre) h += (i || texte ? '<div class="sep"></div>' : '') + '<div class="who"><span>' + esc(x.qui) + '</span></div>';
       h += (x.id === 'H1' ? lettreHtml('mot16', false) : '<p>' + esc(x.texte) + '</p>') + '<div class="ab' + (x.B ? '' : ' one') + '">' + choiceBtn(x, 'A') + choiceBtn(x, 'B') + '</div>';
     });
-    openPop(h, function () { sel = null; });
+    openPop(h, function () { sel = null; if (s && !s.fin) R.render(s, roomInfo()); });
   }
   $('pop').addEventListener('click', function (e) {
     var b = e.target.closest('button');
@@ -130,7 +147,9 @@
       switch (e.t) {
         case 'choix': addHist('› ' + e.label, 'me'); break;
         case 'ecran': var n = R.ecran(e.txt, { glitch: 250 }); lastEcran = e.txt; A.sfx('glitch'); addHist(ecranTxt(e.txt), 'ecr'); await wait(tempsEcran(n), my); break;
-        case 'tel': case 'narr': case 'voix': lines.push(e); addHist(e.txt, e.t === 'narr' ? '' : 'tel'); if (e.t === 'voix') A.sfx('knock'); break;
+        case 'tel': case 'narr': case 'voix': lines.push(e); addHist(e.txt, e.t === 'narr' ? '' : 'tel'); break;
+        case 'image': lines.push(e); break;
+        case 'papier': lines.push(e); addHist((e.p.titre ? e.p.titre + ' : ' : '') + e.p.recto.join(' '), 'tel'); break;
         case 'press': R.press(); A.sfx('clac'); await wait(250, my); break;
         case 'cri': R.harm(e.vie); A.sfx('cry'); await wait(700, my); break;
         case 'soupcon': if (e.d > 0) { A.sfx('blink'); toast('La caméra t\'a vu.', 'ecr'); addHist('La caméra t\'a vu.', 'ecr'); } break;
@@ -162,7 +181,7 @@
     var k = forcedKind();
     return {
       cameraAveugle: E.cameraAveugle(s), porteOuverte: E.porteOuverte(s), urgence: s.cycle === 6, silCachee: introSil,
-      ordre: !busy && k === 'ordre', sonne: !busy && (k === 'T1' || (k === 'T4' && sel !== 'phone'))
+      ordre: !busy && k === 'ordre', sonne: !busy && (k === 'T1' || (k === 'T4' && sel !== 'phone')), decroche: sel === 'phone' && !$('pop').hidden
     };
   }
 
@@ -176,6 +195,8 @@
     lastEcran = '';
     timeTotal = timeLeft = (t.duree || 0) * 1000; lastTick = performance.now(); lastSec = -1;
     if (tuto && s.cycle > 3) { tuto = false; try { localStorage.setItem(TUTO_KEY, '1'); } catch (e) {} }
+    // Sauvegarde à chaque moment : « Continuer » reprend ici.
+    ecrire(SAVE_KEY, { v: 4, s: s, hist: hist.slice(-60) });
     refresh();
   }
 
@@ -204,14 +225,16 @@
     var k = b.dataset.k, o = POCHE_OBJET[k], list = !busy && t && o ? t.objets[o] : null;
     flashItems = flashItems.filter(function (x) { return x !== k; }); renderBag();
     if (list && list.length) { sel = o; objetPop(nomPoche(k), '', list, true); }
+    else if (k === 'journal') { openPop('<div class="who"><span>' + esc(nomPoche(k)) + '</span><button class="x" data-close="1" aria-label="Fermer">×</button></div>' + (s.flags.journal || []).slice().sort(function (a, b) { return a.n - b.n; }).map(function (p) { return lettreHtml({ titre: p.titre, recto: p.lignes, signature: '—16' }); }).join(''), null); }
     else if (E.LETTRES[k]) { openPop('<div class="who"><span>' + esc(nomPoche(k)) + '</span><button class="x" data-close="1" aria-label="Fermer">×</button></div>' + lettreHtml(k, true), null); }
     else objetPop(nomPoche(k), E.decrire(s, k), null, true);
   });
 
   // ---------- toucher un objet de la pièce ----------
-  var TITRES = { compart: 'LE COMPARTIMENT', phone: 'LE TÉLÉPHONE', drawer: 'LE TIROIR', grille: 'LA GRILLE', box: 'LE BOÎTIER', trappe: 'LA TRAPPE', camera: 'LA CAMÉRA', note: 'LE MOT', bureau: 'SOUS LE BUREAU', window: 'LA CHAMBRE 18', monitor: 'LE MONITEUR', light: 'LA LAMPE', mug: 'LA TASSE', door: 'LA PORTE' };
+  var TITRES = { mug: 'LA TASSE', compart: 'LE COMPARTIMENT', phone: 'LE TÉLÉPHONE', drawer: 'LE TIROIR', grille: 'LA GRILLE', box: 'LE BOÎTIER', trappe: 'LA TRAPPE', camera: 'LA CAMÉRA', note: 'LE MOT', bureau: 'SOUS LE BUREAU', window: 'LA CHAMBRE 18', monitor: 'LE MONITEUR', light: 'LA LAMPE', mug: 'LA TASSE', door: 'LA PORTE' };
   function hot(k) {
     A.init();
+    if (!$('intro').hidden) return;
     if (s && busy && !s.fin) { passer(); return; }
     if (!s || s.fin || paused || busy || !t || !$('pop').hidden) return;
     var kind = forcedKind();
@@ -226,8 +249,8 @@
       return toast('Le téléphone sonne.');
     }
     if (kind === 'T1' && k === 'phone') return act({ type: 'situation', id: 'T1', choix: 'A' });
-    if (kind === 'T4' && k === 'phone') { sel = 'phone'; A.ring(false); A.sfx('pickup'); R.render(s, roomInfo()); objetPop('', '', t.objets.phone, false); return; }
-    if (t.objets[k]) { sel = k; objetPop(t.objets[k].length > 1 ? (TITRES[k] || '') : '', '', t.objets[k], true); return; }
+    if (kind === 'T4' && k === 'phone') { sel = 'phone'; A.ring(false); A.sfx('pickup'); objetPop('', '', t.objets.phone, false); R.render(s, roomInfo()); return; }
+    if (t.objets[k]) { sel = k; objetPop(t.objets[k].length > 1 ? (TITRES[k] || '') : '', '', t.objets[k], true); if (k === 'phone') R.render(s, roomInfo()); return; }
     var txt = E.regarder(s, k);
     if (txt) objetPop(TITRES[k] || '', txt, null, true);
   }
@@ -276,8 +299,10 @@
 
   // ---------- fin ----------
   var SONS_FIN = { conforme: 'lock', employe: 'lock', marche: 'ring', seulDehors: 'thud', porteDerobee: 'thud', evasion: 'alarm', cooperation: 'lock', sauvetage: 'thud', tropTard: 'blink', complice: 'alarm', sujet18: 'thud', miroir: 'glitch', boucle: 'blink', isolement: 'slam', gardien: 'alarm', temoin: 'pickup', revolte: 'alarm', tempsEcoule: 'cry', curiosite: 'slam' };
+  function texteFin(F) { return (s.flags.variante && F.variante && F.variante[s.flags.variante]) || F.texte; }
   async function finale(my) {
     var F = E.FINS[s.fin];
+    ecrire(SAVE_KEY, null);
     A.ring(false); A.ambiance({ actif: false }); $('timer').hidden = true; $('hintcap').hidden = true;
     R.ecran(F.crt === '_' ? '' : F.crt, { glitch: 500 });
     R.fin(s.fin);
@@ -297,7 +322,7 @@
     var rows = [['Pressions sur le bouton', st.presses], ['Ordres suivis', st.suivis], ['Ordres refusés', st.refus], ['Douleur infligée à la Chambre 18', st.blessures + ' fois']];
     var h = '<div class="k">' + (F.bonus ? 'FIN BONUS' : 'FIN ' + F.n + ' / 18') + '</div><h2>' + esc(F.titre) + '</h2>';
     if (F.crt !== '_') h += '<div class="crt">' + esc(F.crt) + '</div>';
-    h += '<p>' + esc(F.texte) + '</p>';
+    h += '<p>' + esc(texteFin(F)) + '</p>';
     h += '<p class="truth">' + (E.has(s, 'verite') ? esc(E.VERITES[s.truth].texte) : 'Ce que cachait la Chambre 18 : tu ne l\'as pas découvert.') + '</p>';
     var inds = INDICES.filter(function (k) { return E.has(s, k); });
     h += '<div class="k">DANS TES POCHES</div><div class="bag">' + POCHES.map(function (k) { return '<div class="slot">' + (possede(k) ? R.icone(k, codeTexte()) : '') + '</div>'; }).join('') + '</div>';
@@ -310,9 +335,10 @@
     var reste = ids.filter(function (k) { return !found[k] && k !== s.fin; });
     if (reste.length) { var kx = reste[Math.floor(Math.random() * reste.length)]; h += '<p class="indice">Une autre fin t\'attendait si tu avais ' + esc(E.INDICES_FINS[kx]) + '</p>'; }
     else h += '<p class="indice">Tu as tout vu. Vraiment ?</p>';
-    h += '<div><button class="enter" id="againBtn">Retourner dans la Chambre 17</button></div>';
+    h += '<div class="endbtns"><button class="enter" id="againBtn">Retourner dans la Chambre 17</button><button class="mbtn" id="menuBtn2">Menu</button></div>';
     $('endBox').innerHTML = h; $('endOv').hidden = false;
     $('againBtn').onclick = function () { $('endOv').hidden = true; start(); };
+    $('menuBtn2').onclick = function () { $('endOv').hidden = true; titre(); };
     $('againBtn').focus();
   }
 
@@ -322,7 +348,25 @@
   });
 
   // ---------- partie ----------
+  // Reprendre la partie sauvegardée, au début du dernier moment.
+  async function reprendre() {
+    var sv = lire(SAVE_KEY); if (!sv || !sv.s) return start();
+    run++; var my = run;
+    A.stopAll(); setPaused(false);
+    if (!$('pop').hidden) { popDone = null; $('pop').hidden = true; }
+    s = sv.s; t = null; busy = true; sel = null; lastEcran = ''; hist = sv.hist || []; flashItems = []; introSil = false; tuto = false;
+    $('histBox').innerHTML = ''; $('histBox').hidden = true;
+    timeLeft = timeTotal = 0; refresh(); R.ecran('');
+    R.blackout(true);
+    if (!(await wait(900, my))) return;
+    R.anim('lumiere'); A.sfx('lock');
+    R.ecran('REPRISE DE|SESSION.', { glitch: 300 });
+    if (!(await wait(1600, my))) return;
+    startCycle(my);
+  }
+
   async function start() {
+    ecrire(SAVE_KEY, null);
     run++; var my = run;
     A.stopAll(); setPaused(false);
     if (!$('pop').hidden) { popDone = null; $('pop').hidden = true; }
@@ -343,10 +387,46 @@
   }
 
   R.mount($('scene'), hot);
-  $('muteBtn').onclick = function () { var m = !A.isMuted(); A.setMuted(m); this.textContent = 'Son : ' + (m ? 'non' : 'oui'); this.setAttribute('aria-pressed', m); };
+  $('muteBtn').onclick = function () { reglages.muet = !reglages.muet; ecrire(REGLAGES_KEY, reglages); appliquer(); };
   $('pauseBtn').onclick = function () { if (s && !s.fin && $('intro').hidden) setPaused(!paused); };
-  $('restartBtn').onclick = function () { if (!$('intro').hidden) return; $('endOv').hidden = true; start(); };
-  $('enterBtn').onclick = function () { A.init(); A.startAmbience(); $('intro').hidden = true; start(); };
+  $('restartBtn').onclick = function () { if (!$('intro').hidden) return; $('endOv').hidden = true; titre(); };
+
+  // ---------- écran titre : Continuer, Nouvelle partie, Fins découvertes, Réglages ----------
+  function titre() {
+    run++; busy = true; A.stopAll(); A.ambiance({ actif: false }); setPaused(false); $('pausedLbl').hidden = true;
+    if (!$('pop').hidden) { popDone = null; $('pop').hidden = true; }
+    $('timer').hidden = true; $('hintcap').hidden = true;
+    var sv = lire(SAVE_KEY);
+    $('contBtn').hidden = !(sv && sv.s);
+    panneau(null); $('intro').hidden = false;
+  }
+  function panneau(id) { ['menuMain', 'finsPanel', 'setPanel'].forEach(function (p) { $(p).hidden = p !== (id || 'menuMain'); }); }
+  function entrer(f) { A.init(); A.startAmbience(); $('intro').hidden = true; f(); }
+  $('contBtn').onclick = function () { entrer(reprendre); };
+  $('newBtn').onclick = function () { entrer(start); };
+  $('finsBtn').onclick = function () {
+    var found = loadFound(), ids = E.FIN_IDS.slice().sort(function (a, b) { return (E.FINS[a].bonus ? 99 : E.FINS[a].n) - (E.FINS[b].bonus ? 99 : E.FINS[b].n); });
+    var nb = ids.filter(function (k) { return found[k] && !E.FINS[k].bonus; }).length;
+    $('finsList').innerHTML = '<p class="k">' + nb + ' / 18</p><ol>' + ids.map(function (k) {
+      var F = E.FINS[k]; return '<li class="' + (found[k] ? 'on' : '') + '"><b>' + (F.bonus ? 'Bonus' : F.n) + '</b>' + (found[k] ? esc(F.titre) : '???') + '</li>';
+    }).join('') + '</ol>';
+    panneau('finsPanel');
+  };
+  $('setBtn').onclick = function () { majReglages(); panneau('setPanel'); };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-back]'), function (b) { b.onclick = function () { panneau(null); }; });
+  // Réglages : vitesse du texte et son (gardés dans ce navigateur).
+  var reglages = lire(REGLAGES_KEY) || { vitesse: 'normal', muet: false };
+  function appliquer() {
+    vitesse = reglages.vitesse; R.setVitesse(reglages.vitesse); A.setMuted(!!reglages.muet);
+    $('muteBtn').textContent = 'Son : ' + (reglages.muet ? 'non' : 'oui'); $('muteBtn').setAttribute('aria-pressed', !!reglages.muet);
+  }
+  function majReglages() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-vit]'), function (b) { b.setAttribute('aria-pressed', b.dataset.vit === reglages.vitesse); });
+    $('sonSet').textContent = reglages.muet ? 'Non' : 'Oui'; $('sonSet').setAttribute('aria-pressed', !reglages.muet);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-vit]'), function (b) { b.onclick = function () { reglages.vitesse = b.dataset.vit; ecrire(REGLAGES_KEY, reglages); appliquer(); majReglages(); }; });
+  $('sonSet').onclick = function () { reglages.muet = !reglages.muet; ecrire(REGLAGES_KEY, reglages); appliquer(); majReglages(); };
+  appliquer(); titre();
   document.addEventListener('visibilitychange', function () { if (document.hidden && s && !s.fin && !paused && $('intro').hidden) setPaused(true); });
   s = E.newGame(); R.render(s, {}); renderBag();
 })();
