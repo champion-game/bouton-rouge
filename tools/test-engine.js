@@ -4,7 +4,7 @@
    - chaque partie finit avant ou au cycle 20 ;
    - les jauges restent dans leurs plages ;
    - chacune des 18 fins (+ bonus Curiosité) est atteinte ;
-   - chacune des 23 situations est jouée au moins une fois.
+   - chacune des situations est jouée au moins une fois.
    Usage : node tools/test-engine.js [nombre de parties] */
 'use strict';
 var E = require('../src/engine.js');
@@ -62,19 +62,39 @@ function parcours(truth, steps) {
   for (var i = 0; i < steps.length && !st.fin; i++) {
     var p = steps[i].split(' ');
     var a = p[0] === 'press' ? { type: 'appuyer' } : p[0] === 'temps' ? { type: 'temps' } : { type: 'situation', id: p[0], choix: p[1] || 'A' };
-    st = E.choose(st, a).state;
+    var r = E.choose(st, a); st = r.state;
+    r.events.forEach(function (e) { if (e.t === 'choix' && e.id) sits[e.id]++; });
   }
   return st.fin;
 }
 var routes = [
-  ['boucle', 'C', ['P1 A', 'press', 'T1 A', 'C1 A', 'press', 'PRENDRE_FUSIBLE', 'P3 B', 'FUS', 'press', 'P4 A', 'press', 'T4 A', 'H3 B', 'B5 B', 'P2 A', 'P5 A']],
-  ['cooperation', 'A', ['P1 B', 'press', 'T1 A', 'C1 A', 'press', 'PRENDRE_TOURNEVIS', 'P3 A', 'P2 B', 'temps', 'T2 B', 'T3 A', 'B4 B', 'T4 A', 'T5 A', 'temps', 'PLAN']]
+  ['boucle', 'C', ['P1 B', 'press', 'T1 A', 'C1 A', 'press', 'PRENDRE_TOURNEVIS', 'PRENDRE_FUSIBLE', 'P3 B', 'FUS', 'press', 'P4 A', 'press', 'T4 A', 'H3 B', 'B5 B', 'P2 A', 'P5 A']],
+  ['cooperation', 'A', ['P1 B', 'press', 'T1 A', 'C1 A', 'press', 'PRENDRE_TOURNEVIS', 'P3 A', 'P2 B', 'temps', 'T2 B', 'T3 A', 'B4 B', 'T4 A', 'T5 A', 'temps', 'PLAN']],
+  // Garder le tournevis reçu en récompense (jamais confisqué) et rejoindre la 18 sans éveiller les soupçons.
+  ['complice', 'B', ['P1 B', 'press', 'T1 A', 'C1 A', 'press', 'PRENDRE_TOURNEVIS', 'P2 A', 'P5 A']]
 ];
 var routesOk = true;
 var parRoute = {};
 routes.forEach(function (r) { var f; try { f = parcours(r[1], r[2]); } catch (e) { f = 'erreur : ' + e.message; } console.log((f === r[0] ? '  ok ' : '  !! ') + 'parcours ' + r[0] + ' → ' + f); if (f !== r[0]) routesOk = false; else parRoute[r[0]] = true; });
 
-var ok = errors === 0 && routesOk;
+// Garde-fous G1 à G7 (docs/ETUDE_SCENARIOS.md).
+function etat(truth, f) { var st = E.newGame({ seed: 3, truth: truth }); E.intro(st); if (f) f(st); return st; }
+function txt(evs) { return evs.map(function (e) { return e.txt || ''; }).join(' | '); }
+var gardes = [
+  ['G1 tournevis forcé sous la caméra = confisqué', function () { var r = E.choose(etat('A'), { type: 'situation', id: 'P1', choix: 'A' }); return !E.has(r.state, 'tournevis') && /RÉCUPÉRÉ/.test(txt(r.events)); }],
+  ['G1 tournevis forcé pendant la coupure = gardé', function () { var r = E.choose(etat('A', function (st) { st.cycle = 6; }), { type: 'situation', id: 'P1', choix: 'A' }); return E.has(r.state, 'tournevis'); }],
+  ['G2 descendre sous la caméra = soupçon', function () { var r = E.choose(etat('A', function (st) { st.cycle = 9; st.items.push('trappe'); }), { type: 'situation', id: 'P4', choix: 'A' }); return r.state.soupcon >= 1; }],
+  ['G3 l\'inspection revisse la grille et remet la caméra', function () { var r = E.choose(etat('A', function (st) { st.cycle = 9; st.soupcon = 2; st.items.push('conduit', 'cameraTournee'); st.done.P2 = 'A'; }), { type: 'temps' }); return !E.has(r.state, 'conduit') && !E.has(r.state, 'cameraTournee'); }],
+  ['G4 18 morte et conformité faible = pièce vide', function () { var r = E.choose(etat('A', function (st) { st.cycle = 19; st.vie = 0; }), { type: 'appuyer' }); return r.state.fin === 'tempsEcoule' && r.state.flags.variante === 'vide'; }],
+  ['G5 B6 annonce la porte ouverte', function () { var r = E.choose(etat('A', function (st) { st.cycle = 16; st.flags.porte = { kind: 'b5', until: 20 }; }), { type: 'temps' }); return /VOTRE PORTE/.test(txt(r.events)); }],
+  ['G6 obéir fait baisser le soupçon', function () { var r = E.choose(etat('A', function (st) { st.cycle = 2; st.soupcon = 2; }), { type: 'appuyer' }); return r.state.soupcon === 1; }],
+  ['G7 plan abandonné : elle tente seule', function () { var r = E.choose(etat('A', function (st) { st.cycle = 15; st.items.push('plan'); st.flags.planAt = 13; }), { type: 'temps' }); return /essayé seule/.test(txt(r.events)) && !E.has(r.state, 'plan'); }]
+];
+var gardesOk = true;
+console.log('\nGarde-fous :');
+gardes.forEach(function (x) { var v = false; try { v = x[1](); } catch (e) { v = false; console.error(e); } console.log((v ? '  ok ' : '  !! ') + x[0]); if (!v) gardesOk = false; });
+
+var ok = errors === 0 && routesOk && gardesOk;
 console.log(N + ' parties, ' + errors + ' erreur(s), cycle maximum atteint : ' + maxCycle);
 console.log('\nFins :');
 Object.keys(fins).sort(function (a, b) { return E.FINS[a].n - E.FINS[b].n; }).forEach(function (k) {

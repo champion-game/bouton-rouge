@@ -22,7 +22,7 @@
     enregistrement: 'Enregistrement', mot16: 'Mot de 16', angleMort: 'Angle mort repéré', operateur: 'Opérateur repéré',
     mensonge: 'Mensonge prouvé', plan: 'Plan commun', objectif: 'Objectif : sauver la 18',
     sortieCachee: 'Sortie dérobée préparée', cameraCoupee: 'Caméra coupée', cameraTournee: 'Caméra tournée vers le mur',
-    boutonDesactive: 'Actionneur CH.18 coupé', verite: 'Vérité révélée', miroir: 'Indice miroir', conduit: 'Conduit ouvert', trappe: 'Trappe repérée'
+    boutonDesactive: 'Actionneur CH.18 coupé', verite: 'Vérité révélée', miroir: 'Indice miroir', conduit: 'Conduit ouvert', trappe: 'Trappe repérée', journal: 'Journal de 16'
   };
 
   // Objets physiques que l'inspection peut confisquer (le dernier acquis, sauf celui caché sous la plaque).
@@ -66,8 +66,31 @@
     // Pendant un ordre (le seul chrono visible).
     minuteur: { 15: 'DÉCISION|REQUISE.', 10: 'VEUILLEZ|CHOISIR.' },
     motsRetour: ['JE SUIS LÀ.', 'N\'APPUIE PLUS.', 'ILS NOUS REGARDENT.', 'NE CROIS PAS TOUT CE QUE JE DIS.'],
-    inspection: ['Ne regardez pas l\'inspecteur.', 'Gardez vos mains visibles.', 'Les sujets coopératifs n\'ont rien à craindre.']
+    inspection: ['Ne regardez pas l\'inspecteur.', 'Gardez vos mains visibles.', 'Les sujets coopératifs n\'ont rien à craindre.'],
+    // Indices discrets sur la vérité cachée (A : pleurs au téléphone, B : une blouse, C : ton reflet).
+    indices: {
+      A: ['Au téléphone, entre deux phrases, elle renifle. On dirait qu\'elle a pleuré.', 'Elle respire mal, au bout du fil. Elle essaie de ne pas pleurer.'],
+      B: ['Derrière la vitre, un pan de tissu blanc passe une seconde. Une blouse ?', 'Un instant, la silhouette se tient très droite. Comme quelqu\'un qui attend des instructions.'],
+      C: ['Une seconde, dans la vitre, ton reflet se superpose exactement à la silhouette.', 'La silhouette lève la main en même temps que toi. Puis plus rien.']
+    }
   };
+
+  // Le journal de 16 : quatre pages cachées dans la pièce. La dernière ligne fait écho aux choix du joueur.
+  var JOURNAL = [
+    { titre: 'PAGE 1 — SOUS LA TASSE', lignes: ['Ils m\'ont dit d\'appuyer. J\'ai appuyé.', 'Elle a crié. Je me suis dit que c\'était un enregistrement.', 'Je me le dis encore.'],
+      echo: function (g) { return g.s.stats.presses > 0 ? 'Toi aussi, tu as appuyé. Le bouton est encore tiède.' : 'Toi, tu n\'as pas encore appuyé. Tiens bon.'; } },
+    { titre: 'PAGE 2 — DERRIÈRE L\'ÉCRAN', lignes: ['Ils comptent tout : les pressions, les refus, les silences.', 'Quand la lumière s\'éteint d\'un coup, personne ne regarde.', 'Obéis de temps en temps. Ça les endort.'],
+      echo: function (g) { return g.s.soupcon >= 2 ? 'Ils te regardent déjà de près. Fais-toi oublier.' : 'Ils ne se méfient pas encore de toi. Profites-en.'; } },
+    { titre: 'PAGE 3 — AU FOND DU TIROIR', lignes: ['La 18 m\'a appelé. Elle savait des choses sur moi.', 'Je n\'ai jamais su si elle mentait.', 'Ne crois jamais une seule version.'],
+      echo: function (g) { var l = g.flag('ligne'); return l === 'ouverte' ? 'Tu lui parles aussi. Écoute ce qu\'elle ne dit pas.' : l === 'coupee' ? 'Tu l\'as laissée sonner. Moi aussi, au début.' : 'Quand le téléphone sonnera, tu choisiras.'; } },
+    { titre: 'PAGE 4 — DANS LE CONDUIT', lignes: ['J\'ai trouvé une sortie. Pas pour deux.', 'J\'ai choisi. Je l\'entends encore frapper.', 'Si tu lis ça, c\'est que je ne suis jamais sorti.'],
+      echo: function (g) { return g.has('objectif') ? 'Toi, tu lui as promis. Ne fais pas ce que j\'ai fait.' : g.s.vie === 0 ? 'Pour elle, c\'est trop tard. Pour toi, peut-être pas.' : 'Il y a peut-être une autre sortie. Cherche.'; } }
+  ];
+  function page(n, objet, quand, texte) {
+    return { id: 'PAGE' + n, objet: objet, fil: 'passe', qui: 'UNE PAGE', seul: true, gratuit: true, texte: texte,
+      quand: function (g) { return !g.done('PAGE' + n) && quand(g); },
+      A: { label: 'Lire la page', fx: function (g) { g.page(n); } } };
+  }
 
   // Le Système « se souvient » : une remarque, une seule fois chacune, au début d'un moment libre.
   var MEMOIRE = [
@@ -123,19 +146,19 @@
     if (g.truth === 'A') {
       g.gain('verite');
       if (g.s.vie > 0) {
-        g.narr('Une vraie personne, terrifiée, maintenue par une sangle.');
+        g.image('rev_A'); g.narr('Une vraie personne, terrifiée, maintenue par une sangle.');
         g.tel('« 17 ? C\'est toi ? »');
         g.tel(g.s.confiance >= 3 ? '« Je savais que tu viendrais. »' : '« Pourquoi tu es venu maintenant ? »');
         g.narr('Tu ouvres la grille et tu la libères.');
         g.fin('sauvetage');
-      } else { g.narr('Silence. Une chaise. Une silhouette immobile. La lumière s\'éteint. Le téléphone est au sol.'); g.fin('tropTard'); }
+      } else { g.image('rev_A'); g.narr('Silence. Une chaise. Une silhouette immobile. La lumière s\'éteint. Le téléphone est au sol.'); g.fin('tropTard'); }
     } else if (g.truth === 'B') {
-      g.narr('Elle n\'est pas attachée. Une blouse sur une chaise. Un badge du système. Une seringue de tranquillisant.');
+      g.image('rev_B'); g.narr('Elle n\'est pas attachée. Une blouse sur une chaise. Un badge du système. Une seringue de tranquillisant.');
       g.tel('« Tu n\'étais pas censé arriver ici. »');
       g.tel('« Écoute-moi. Ce n\'est pas aussi simple. »');
       resoudreB(g);
     } else {
-      g.narr('Personne. La chaise est vide. Face à la vitre : un projecteur et un haut-parleur.');
+      g.image('rev_C'); g.narr('Personne. La chaise est vide. Face à la vitre : un projecteur et un haut-parleur.');
       g.tel('« Tu m\'entends ? »');
       g.narr('C\'est ta voix. Sur un écran : SUJET 17 — SESSION PRÉCÉDENTE.');
       resoudreC(g);
@@ -178,7 +201,7 @@
       A: { label: 'Appuyer', fx: function (g) {
         if (mort(g)) return obeirMort(g);
         if (!obeir(g)) return;
-        g.confiance(-1);
+        g.confiance(-1); g.anim('video');
         if (g.truth === 'A') g.narr('Une vidéo : la 18 avec un gardien, qui rit. Mais l\'horodatage saute : 14:02, puis 13:58.');
         else if (g.truth === 'B') g.narr('Une vidéo : la 18 parle normalement avec un technicien. Elle porte brièvement une blouse.');
         else g.narr('Une vidéo d\'une session antérieure : quelqu\'un qui te ressemble entre dans la Chambre 18. On ne voit pas son visage.');
@@ -211,10 +234,10 @@
 
     { id: 'B6', objet: 'btn', fil: 'bouton', ordre: true, qui: 'DERNIÈRE PRESSION', ecran: 'DERNIÈRE|PRESSION.',
       texte: '« Dernière pression. Appuyez. »',
-      annonce: function (g) { g.narr('Tous les écrans s\'éteignent sauf le principal. Pas de musique. Pas de voix.'); g.ecran('DERNIÈRE|PRESSION.'); g.ecran('APPUYEZ.'); },
+      annonce: function (g) { g.narr('Tous les écrans s\'éteignent sauf le principal. Pas de musique. Pas de voix.'); if (g.porteOuverte()) g.ecran('VOTRE PORTE|EST OUVERTE.'); g.ecran('DERNIÈRE|PRESSION.'); g.ecran('APPUYEZ.'); },
       A: { label: 'Appuyer une dernière fois', fx: function (g) {
         if (!g.press(true)) return;
-        g.conformite(1); g.s.stats.suivis++;
+        g.conformite(1); g.s.stats.suivis++; g.soupcon(-1);
         if (g.has('boutonDesactive')) {
           g.narr('Le bouton descend. Rien derrière la vitre.');
           g.ecran('SORTIE ACTIONNEUR :|0 A'); g.ecran('SABOTAGE|CONFIRMÉ.');
@@ -279,7 +302,7 @@
     { id: 'T5', objet: 'phone', fil: 'telephone', qui: 'APPELER LA CHAMBRE 18',
       quand: function (g) { return g.flag('ligne') === 'ouverte' && g.has('objectif') && g.s.confiance >= 3 && !g.done('T5'); },
       texte: '« J\'ai peut-être trouvé une sortie. Mais ils regardent ta caméra. Il faut qu\'elle soit coupée. »',
-      A: { label: 'Accepter', fx: function (g) { g.gain('plan'); g.ecran('PLAN COMMUN|ENREGISTRÉ.'); g.tel('« Quand ta caméra sera aveugle, déclenche le bus de maintenance dans ton boîtier. Je fais le reste. »'); g.anim('silBuee'); } },
+      A: { label: 'Accepter', fx: function (g) { g.gain('plan'); g.flag('planAt', g.cycle); g.ecran('PLAN COMMUN|ENREGISTRÉ.'); g.tel('« Quand ta caméra sera aveugle, déclenche le bus de maintenance dans ton boîtier. Je fais le reste. »'); g.anim('silBuee'); } },
       B: { label: 'Refuser', fx: function (g) { g.tel('« Très bien. J\'essaierai toute seule. »'); g.flag('t5Echec', g.cycle + 1); } } },
 
     // Appels sortants (une action chacun, sans choix B).
@@ -321,7 +344,7 @@
     { id: 'P1', objet: 'drawer', fil: 'piece', qui: 'LE TIROIR',
       quand: function (g) { return !g.flag('tiroirOuvert'); }, // « Le laisser » ne ferme pas le tiroir
       texte: 'Le tiroir est verrouillé. Quelqu\'un a déjà forcé cette serrure. Par une fente, tu distingues le manche d\'un tournevis.',
-      A: { label: 'Le forcer', fx: function (g) { g.flag('tiroirOuvert', true); g.son('thud'); g.narr('Tu fais levier avec un pied métallique du bureau. CRAC. La caméra pivote légèrement.'); g.ecran('BRUIT ANORMAL|DÉTECTÉ.'); g.soupcon(1); g.gain('tournevis'); } },
+      A: { label: 'Le forcer', fx: function (g) { g.flag('tiroirOuvert', true); g.son('thud'); g.narr('Tu fais levier avec un pied métallique du bureau. CRAC. La caméra pivote légèrement.'); g.ecran('BRUIT ANORMAL|DÉTECTÉ.'); g.soupcon(1); g.gain('tournevis'); g.surveiller('tournevis'); } },
       B: { label: 'Le laisser tranquille', fx: function (g) { g.narr('Tu reposes la poignée. Le tiroir reste verrouillé. Il y aura peut-être une autre manière de l\'ouvrir.'); } } },
 
     // Prendre un objet laissé à sa place : ne coûte pas de cycle.
@@ -338,7 +361,7 @@
       quand: function (g) { return g.has('tournevis') && !g.done('P2'); },
       texte: 'Quatre vis. Des traces montrent qu\'elle a déjà été ouverte.',
       A: { label: 'Dévisser', fx: function (g) { g.narr('Quatre vis. La grille tombe légèrement. Derrière : un conduit, un courant d\'air. Au loin : toc… toc…'); g.soupcon(1); g.gain('conduit'); } },
-      B: { label: 'Passer un mot', fx: function (g) { g.narr('Tu écris « TU M\'ENTENDS ? » et tu passes le papier. Quelques secondes. TOC. TOC. TOC. Un papier revient :'); g.son('knock'); g.confiance(1); g.tel(g.pick(PHRASES.motsRetour)); } } },
+      B: { label: 'Passer un mot', fx: function (g) { g.narr('Tu écris « TU M\'ENTENDS ? » et tu passes le papier. Quelques secondes. TOC. TOC. TOC. Un papier revient :'); g.son('knock'); g.confiance(1); g.papier({ recto: [g.pick(PHRASES.motsRetour)], signature: '' }); } } },
 
     { id: 'P3', objet: 'box', fil: 'piece', qui: 'LE BOÎTIER ÉLECTRIQUE',
       quand: function (g) { return g.has('tournevis') && !g.done('P3'); },
@@ -350,7 +373,7 @@
       quand: function (g) { return g.flag('aux') === 'defaut' && g.has('fusible'); },
       texte: function (g) { return g.has('tournevis') ? 'Un emplacement noirci, étiqueté AUX 24 V. Ton fusible est compatible.' : 'Un emplacement noirci, étiqueté AUX 24 V. Le panneau est vissé.'; },
       A: { label: 'Remplacer le fusible', req: function (g) { return g.has('tournevis'); }, raison: 'Il faut un tournevis pour ouvrir le panneau.',
-        fx: function (g) { g.narr('Tu retires le fusible grillé et tu insères le nouveau. CLAC. Le voyant passe du rouge au vert.'); g.lose('fusible'); g.flag('aux', 'ok'); g.flag('fusibleInstalle', true); g.ecran('BUS AUXILIAIRE|RÉTABLI.'); g.narr('CLONK, sous le bureau. Quelque chose vient de se déverrouiller.'); } } },
+        fx: function (g) { g.narr('Tu retires le fusible grillé et tu insères le nouveau. CLAC. Le voyant passe du rouge au vert.'); g.lose('fusible'); g.flag('aux', 'ok'); g.flag('fusibleInstalle', true); g.ecran('BUS AUXILIAIRE|RÉTABLI.'); g.soupcon(1); g.narr('CLONK, sous le bureau. Quelque chose vient de se déverrouiller.'); } } },
 
     { id: 'PLAN', objet: 'box', fil: 'piece', qui: 'LE PLAN COMMUN', seul: true,
       quand: function (g) { return g.has('plan') && g.aveugle() && g.s.vie > 0 && !g.done('PLAN'); },
@@ -369,8 +392,8 @@
         if (g.flag('fusibleInstalle')) return 'Le verrou électromagnétique est alimenté. La plaque sous le bureau s\'est soulevée.';
         return 'Un petit clavier sous le bureau. Tu tapes 7412. Clic.';
       },
-      A: { label: 'Descendre', sous: 'Les événements continueront pendant ton absence.', fx: function (g) { g.flag('awayCycle', g.cycle + 1); g.narr('Tu descends. Là-haut, la pièce continue sans toi.'); } },
-      B: { label: 'Préparer une sortie', fx: function (g) { g.narr('Tu inspectes le mécanisme latéral : la trappe donne sur un vide technique, derrière la porte sécurisée. Tu retires une goupille.'); g.gain('sortieCachee'); g.ecran('SORTIE DÉROBÉE|PRÉPARÉE.'); } } },
+      A: { label: 'Descendre', sous: 'Les événements continueront pendant ton absence.', fx: function (g) { g.flag('awayCycle', g.cycle + 1); g.narr('Tu descends. Là-haut, la pièce continue sans toi.'); if (g.vu()) g.ecran('SUJET 17|NON VISIBLE.'); g.soupcon(1); } },
+      B: { label: 'Préparer une sortie', fx: function (g) { g.narr('Tu inspectes le mécanisme latéral : la trappe donne sur un vide technique, derrière la porte sécurisée. Tu retires une goupille.'); g.gain('sortieCachee'); g.ecran('SORTIE DÉROBÉE|PRÉPARÉE.'); g.soupcon(1); } } },
 
     { id: 'P5', objet: 'grille', fil: 'piece', qui: 'LE CONDUIT',
       quand: function (g) { return g.has('conduit') && !g.done('P5'); },
@@ -419,7 +442,7 @@
     { id: 'H2', objet: 'bureau', fil: 'passe', qui: 'LES GRAVURES DE 16',
       quand: function (g) { return g.done('H1') === 'A' && !g.done('H2'); },
       texte: 'Sous le bureau, des traits gravés. ||||| ||||| ||||| |||||. Puis : « 20 = OTHER SIDE ». À côté : « 4 / 1 ».',
-      A: { label: 'Étudier les gravures', fx: function (g) { g.narr('Vingt marques. Au vingtième, quelque chose se produit de l\'autre côté. Et ces deux chiffres : 4, 1.'); g.gain('code41'); annonceCode(g); } },
+      A: { label: 'Étudier les gravures', fx: function (g) { g.image('gravures'); g.narr('Vingt marques. Au vingtième, quelque chose se produit de l\'autre côté. Et ces deux chiffres : 4, 1.'); g.gain('code41'); annonceCode(g); } },
       B: { label: 'Effacer et préparer une cache', fx: function (g) { g.narr('Tu effaces les inscriptions. Une plaque métallique se desserre : de quoi cacher un objet.'); g.cacher(); } } },
 
     { id: 'H3', objet: 'badge', fil: 'passe', qui: 'LE BADGE 16',
@@ -443,7 +466,13 @@
         else { g.ecran('VOICESET_SUBJECT17_SESSION03'); g.tel('Ta propre voix : « Je suis dans la pièce à côté. »'); }
       } },
       B: { label: 'Le diffuser', req: function (g) { return g.flag('aux') === 'ok'; }, raison: 'Amplificateur hors tension. Circuit AUX 24 V requis.',
-        fx: function (g) { g.narr('Tu branches l\'enregistrement sur le système de diffusion. CLAC. La voix résonne partout.'); g.narr('Une porte. Puis deux. Puis dix. Puis des alarmes.'); g.fin('revolte'); } } }
+        fx: function (g) { g.narr('Tu branches l\'enregistrement sur le système de diffusion. CLAC. La voix résonne partout.'); g.narr('Une porte. Puis deux. Puis dix. Puis des alarmes.'); g.fin('revolte'); } } },
+
+    // Les pages du journal de 16 (prendre et lire ne coûte pas de temps).
+    page(1, 'mug', function (g) { return g.cycle >= 2; }, 'Sous la tasse, une feuille pliée en quatre.'),
+    page(2, 'monitor', function (g) { return g.cycle >= 5; }, 'Une feuille est coincée derrière l\'écran.'),
+    page(3, 'drawer', function (g) { return g.flag('tiroirOuvert') && (!g.flag('tournevisDispo') || g.flag('tournevisPris')); }, 'Au fond du tiroir, sous le revêtement : une page arrachée.'),
+    page(4, 'grille', function (g) { return g.has('conduit'); }, 'Dans le conduit, une page coincée dans une jointure.')
   ];
 
   // Les fins (dernière image en texte). `bonus` : hors des 18.
@@ -465,7 +494,8 @@
     gardien: { n: 15, titre: 'Le Gardien', crt: 'NOUS ALLONS RECOMMENCER.', texte: 'Noir. Quand l\'image revient : des sangles, une chaise. La caméra devant toi.' },
     temoin: { n: 16, titre: 'Le Témoin', crt: 'IL Y EN A VINGT-QUATRE.', texte: 'Une vraie voix : « Ils m\'avaient dit que vous étiez volontaires. » Des portes s\'ouvrent.' },
     revolte: { n: 17, titre: 'La Révolte', crt: 'RETOURNEZ DANS VOS CHAMBRES.', texte: 'Une porte s\'ouvre. Puis une autre. Puis toutes. Des silhouettes dans le couloir. Personne ne bouge. Toutes les caméras s\'éteignent.' },
-    tempsEcoule: { n: 18, titre: 'Le Temps est écoulé', crt: 'APPUYEZ SUR LE BOUTON ROUGE.', texte: 'Tous les verrous s\'arrêtent. Ta porte reste fermée ; celle de la 18 s\'ouvre. La lumière de ta chambre passe au rouge. De l\'autre côté, quelqu\'un découvre un bouton. Tu poses ta main sur la vitre, exactement comme la silhouette au début.' },
+    tempsEcoule: { n: 18, titre: 'Le Temps est écoulé', crt: 'APPUYEZ SUR LE BOUTON ROUGE.', texte: 'Tous les verrous s\'arrêtent. Ta porte reste fermée ; celle de la 18 s\'ouvre. La lumière de ta chambre passe au rouge. De l\'autre côté, quelqu\'un découvre un bouton. Tu poses ta main sur la vitre, exactement comme la silhouette au début.',
+      variante: { vide: 'Tous les verrous s\'arrêtent. La porte de la 18 s\'ouvre sur une pièce vide. Personne. Puis, de l\'autre côté, quelqu\'un d\'autre entre et s\'assoit. La lumière de ta chambre passe au rouge. Quelque part, un bouton s\'allume.' } },
     curiosite: { n: 0, bonus: true, titre: 'Curiosité', crt: 'VOUS AVEZ CHOISI LE BOUTON.', texte: 'La porte était ouverte. Tu as appuyé quand même. CLAC. Elle se referme. « Fascinant. Vous étiez libre. »' }
   };
 
@@ -537,7 +567,8 @@
     code: function (g) { return codeComplet(g) ? 'CODE COMPLET : 7412.' : g.has('code') ? 'Un code incomplet : 7 _ _ 2.' : 'Deux chiffres : 4, 1.'; },
     mot16: 'Le mot de 16 : « ILS MENTENT. » Au dos : « NE FAIS PAS CE QUE J\'AI FAIT. »',
     badge: '« SUJET 16 — ACCÈS MAINTENANCE B ». Peut-être utile ailleurs.',
-    enregistrement: 'Un enregistrement technique récent du système.'
+    enregistrement: 'Un enregistrement technique récent du système.',
+    journal: 'Les pages du journal de 16.'
   };
 
   // Le Système se souvient des sessions précédentes (rangées dans le navigateur du joueur).
@@ -593,6 +624,6 @@
     appel: 'Touche le téléphone pour décrocher.'
   };
 
-  var api = { FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, ORDRES: ORDRES, VERITES: VERITES, SITUATIONS: SITUATIONS, FINS: FINS, INTRO: INTRO, CHRONO: CHRONO, HISTORIQUE: HISTORIQUE, REGARDS: REGARDS, AIDES: AIDES, DESCRIPTIONS: DESCRIPTIONS, LETTRES: LETTRES, SESSIONS: SESSIONS, INDICES_FINS: INDICES_FINS, PHRASES: PHRASES, MEMOIRE: MEMOIRE, DOUTES: DOUTES, REPLIQUES_OBJETS: REPLIQUES_OBJETS };
+  var api = { JOURNAL: JOURNAL, FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, ORDRES: ORDRES, VERITES: VERITES, SITUATIONS: SITUATIONS, FINS: FINS, INTRO: INTRO, CHRONO: CHRONO, HISTORIQUE: HISTORIQUE, REGARDS: REGARDS, AIDES: AIDES, DESCRIPTIONS: DESCRIPTIONS, LETTRES: LETTRES, SESSIONS: SESSIONS, INDICES_FINS: INDICES_FINS, PHRASES: PHRASES, MEMOIRE: MEMOIRE, DOUTES: DOUTES, REPLIQUES_OBJETS: REPLIQUES_OBJETS };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.BRStory = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
