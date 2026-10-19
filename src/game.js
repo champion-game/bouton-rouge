@@ -129,7 +129,7 @@
       var e = events[i];
       switch (e.t) {
         case 'choix': addHist('› ' + e.label, 'me'); break;
-        case 'ecran': var n = R.ecran(e.txt, { glitch: 250 }); lastEcran = e.txt; A.sfx('glitch'); lines.push(e); addHist(ecranTxt(e.txt), 'ecr'); await wait(tempsEcran(n), my); break;
+        case 'ecran': var n = R.ecran(e.txt, { glitch: 250 }); lastEcran = e.txt; A.sfx('glitch'); addHist(ecranTxt(e.txt), 'ecr'); await wait(tempsEcran(n), my); break;
         case 'tel': case 'narr': case 'voix': lines.push(e); addHist(e.txt, e.t === 'narr' ? '' : 'tel'); if (e.t === 'voix') A.sfx('knock'); break;
         case 'press': R.press(); A.sfx('clac'); await wait(250, my); break;
         case 'cri': R.harm(e.vie); A.sfx('cry'); await wait(700, my); break;
@@ -151,8 +151,8 @@
           await wait(e.n === 'lumiere' ? 900 : 500, my); break;
       }
     }
-    // Popup seulement s'il y a autre chose que des phrases du moniteur (qui restent lisibles à l'écran).
-    if (lines.some(function (e) { return e.t !== 'ecran'; }) && my === run) { R.render(s, roomInfo()); renderBag(); return infoPop(lines, my, auto); }
+    // Le popup ne répète pas le moniteur : seulement le téléphone, la voix de la 18 et ce qu'on voit ou fait.
+    if (lines.length && my === run) { R.render(s, roomInfo()); renderBag(); return infoPop(lines, my, auto); }
     return my === run;
   }
 

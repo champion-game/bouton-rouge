@@ -79,9 +79,9 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 .histbox p.obj{color:var(--green);font-weight:700;font-size:.85rem}
 
 /* Popup au centre de l'écran */
-/* Popup dans le tiers bas : il ne cache jamais le moniteur ni le bouton. */
-.pop{position:fixed;inset:0;z-index:20;background:linear-gradient(to bottom,rgba(0,0,0,0) 35%,rgba(0,0,0,.6));display:flex;align-items:flex-end;justify-content:center;padding:16px 12px calc(16px + env(safe-area-inset-bottom,0px))}
-.card{width:100%;max-width:440px;max-height:46vh;overflow:auto;background:var(--panel);border:1px solid #3a4644;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+/* Popup au centre de l'écran. */
+.pop{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px 12px}
+.card{width:100%;max-width:440px;max-height:70vh;overflow:auto;background:var(--panel);border:1px solid #3a4644;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
 .card .who{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-stencil);font-weight:700;font-size:.9rem;letter-spacing:.12em;color:var(--amber)}
 .card p{margin:0;font-size:1.02rem;text-wrap:pretty}
 .card .lines{display:flex;flex-direction:column;gap:8px}
@@ -149,15 +149,15 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
     <p>Une pièce. Un bouton. Touche ce qui t'entoure.</p>
     <p>Le son est recommandé.</p>
     <button class="enter" id="enterBtn">Entrer dans la pièce</button>
-    <p class="ver">Version 3.3 · 19/10</p>
+    <p class="ver">Version 3.4 · 19/10</p>
   </div>
 </div>
 <div class="ov" id="endOv" hidden><div class="end" id="endBox"></div></div>
 
-<script src="src/story.js?v=3.3"></script>
-<script src="src/engine.js?v=3.3"></script>
-<script src="src/audio.js?v=3.3"></script>
-<script src="src/room.js?v=3.3"></script>
-<script src="src/game.js?v=3.3"></script>
+<script src="src/story.js?v=3.4"></script>
+<script src="src/engine.js?v=3.4"></script>
+<script src="src/audio.js?v=3.4"></script>
+<script src="src/room.js?v=3.4"></script>
+<script src="src/game.js?v=3.4"></script>
 </body>
 </html>
