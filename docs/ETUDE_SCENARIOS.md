@@ -1,6 +1,8 @@
 # Étude des scénarios et des fins (19/10)
 
-État : version 3.4. But : vérifier que chaque fin est atteignable de façon logique, repérer les actions sans conséquence et proposer des garde-fous. **Rien de ce qui suit n'est codé** tant qu'Amine ne l'a pas validé.
+État : version 3.4. But : vérifier que chaque fin est atteignable de façon logique, repérer les actions sans conséquence et proposer des garde-fous.
+
+**Les garde-fous G1 à G7 ont tous été validés par Amine le 19/10. Ils seront codés ensemble, en une seule fois (pas encore fait).**
 
 ## 1. Les 18 fins : comment on y arrive aujourd'hui
 
@@ -37,7 +39,7 @@ Toutes les fins sont atteignables (vérifié par 30 000 parties au hasard et deu
 5. **Le soupçon ne redescend presque jamais** (seulement en montrant le mot de 16) : à 3, le joueur est paralysé jusqu'à la fin.
 6. **Le plan commun accepté mais jamais exécuté** n'a aucune conséquence.
 
-## 3. Garde-fous proposés
+## 3. Garde-fous validés (à coder ensemble)
 
 - **G1 — Objet interdit vu = confisqué.** Si la caméra te voit prendre un objet interdit (forcer le tiroir pour le tournevis, remonter du sous-sol avec le badge ou l'enregistrement), un gardien vient le reprendre au début du moment suivant. Il ne le prend pas si tu l'as caché sous la plaque, si tu as aveuglé la caméra entre-temps, ou si tu as agi pendant la coupure du cycle 6 ou depuis l'angle mort. Le tournevis et le fusible donnés en récompense par le Système (B2) ne sont jamais confisqués.
 - **G2 — Actions vues = soupçon.** Descendre dans la trappe : +1 (« SUJET 17 NON VISIBLE »). Préparer la sortie dérobée : +1. Remplacer le fusible : +1. Toujours sauf si la caméra est aveugle, pendant la coupure, ou depuis l'angle mort.

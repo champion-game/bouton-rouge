@@ -25,7 +25,7 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 
 ## État actuel
 
-- `index.html` est la **V3** jouable (version 3.0) : 20 cycles cachés, 5 fils, 23 situations + 7 actions (appels sortants, fusible, plan), 18 fins + Curiosité. Code dans `src/`.
+- `index.html` est la **V3** jouable (version 3.4) : 20 cycles cachés, 5 fils, 23 situations + 7 actions (appels sortants, fusible, plan), 18 fins + Curiosité. Code dans `src/`.
 - `prototype-v1.html` garde le prototype v1 (histoire linéaire, 4 fins) pour comparaison.
 - Tests : `node tools/test-engine.js` (30 000 parties au hasard par défaut).
 - Les décisions d'intégration de la V3 sont dans `docs/V3_DECISIONS.md`.
@@ -53,6 +53,8 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 - Amine teste lui-même le ressenti : ne modifie pas les durées du chrono ni l'équilibrage des jauges sans son accord.
 
 ## Prochaines étapes (par ordre de priorité)
+
+0. **À coder ensemble, en une fois** : les garde-fous G1 à G7 de `docs/ETUDE_SCENARIOS.md`, validés par Amine le 19/10 (objet interdit vu = confisqué, actions vues = soupçon, l'inspection répare, verdict cohérent, B6 annoncé, soupçon qui redescend en obéissant, plan abandonné).
 
 1. ~~Coder la v2 avec un chrono réel et les 18 fins.~~ Fait, décisions validées, fins animées. Reste : polir les textes.
 2. Faire tester à 5 personnes qui ne connaissent pas le jeu. Question clé : relancent-elles une partie d'elles-mêmes après leur première fin ?
