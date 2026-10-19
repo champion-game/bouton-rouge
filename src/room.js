@@ -1,141 +1,109 @@
-/* Le Bouton Rouge — la Chambre 17 en SVG (vue fixe de face) et ses animations.
+/* Le Bouton Rouge — la Chambre 17 (vue fixe de face) : les dessins de l'artiste (assets/img), posés dans un SVG, et leurs animations.
    Ne contient aucune règle : render() dessine l'état que lui donne game.js. */
 (function (root) {
   'use strict';
   var NS = 'http://www.w3.org/2000/svg';
-  var STENCIL = 'Big Shoulders Stencil Text, Impact, sans-serif';
+  var IMG = 'assets/img/';
   var reduce = root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function I(id, name, x, y, w, h, extra) {
+    return '<image' + (id ? ' id="' + id + '"' : '') + ' href="' + IMG + name + '.webp" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" preserveAspectRatio="none"' + (extra || '') + '/>';
+  }
+  // Positions dans la pièce de base (carré de 600). layout() replace les blocs selon la forme de l'écran.
+  var GL = { x: 420, y: 140.6, w: 141.6, h: 86.6 };          // verre de la vitre de la 18
+  var SC = { x: 192.7, y: 90.2, w: 213.4, h: 117.5, cx: 299.4, cy: 149 }; // écran du moniteur
+  var VIES = [467.6, 494.4, 520.9], VIES_Y = 305.6;
+  var BTN = { x: 254, y: 294.8, w: 92, h: 55.2 }, BTN2 = { x: 255.9, y: 304.9, w: 88.1, h: 45.1 };
 
-  // La pièce est découpée en blocs. Chaque bloc garde ses coordonnées d'origine (pièce carrée de 600)
-  // et layout() le replace selon la forme de l'écran : le moniteur et le bouton restent toujours au centre.
   var SVG = '' +
   '<svg id="room" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid meet" role="img" aria-label="La Chambre 17">' +
   '<defs>' +
-  '<linearGradient id="wallG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3533"/><stop offset="1" stop-color="#1b2322"/></linearGradient>' +
-  '<linearGradient id="floorG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2120"/><stop offset="1" stop-color="#0b0e0e"/></linearGradient>' +
-  '<radialGradient id="coneG" cx="50%" cy="0%" r="100%"><stop id="coneStop" offset="0" stop-color="#fff3d6" stop-opacity=".55"/><stop offset="1" stop-color="#fff3d6" stop-opacity="0"/></radialGradient>' +
-  '<radialGradient id="btnG" cx="40%" cy="30%" r="80%"><stop id="btnS1" offset="0" stop-color="#ff6a58"/><stop id="btnS2" offset=".45" stop-color="#d4161c"/><stop id="btnS3" offset="1" stop-color="#6e080c"/></radialGradient>' +
-  '<radialGradient id="glowG"><stop offset="0" stop-color="#ff2a2a" stop-opacity=".55"/><stop offset="1" stop-color="#ff2a2a" stop-opacity="0"/></radialGradient>' +
+  '<pattern id="wallP" width="220" height="220" patternUnits="userSpaceOnUse">' + I('', 'mur', 0, 0, 220, 220) + '</pattern>' +
+  '<pattern id="floorP" width="170" height="170" patternUnits="userSpaceOnUse">' + I('', 'sol', 0, 0, 170, 170) + '</pattern>' +
+  '<pattern id="plinthP" width="110" height="22" patternUnits="userSpaceOnUse">' + I('', 'plinthe', 0, 0, 110, 22) + '</pattern>' +
+  '<radialGradient id="coneG" cx="50%" cy="0%" r="100%"><stop id="coneStop" offset="0" stop-color="#fff3d6" stop-opacity=".45"/><stop offset="1" stop-color="#fff3d6" stop-opacity="0"/></radialGradient>' +
+  '<radialGradient id="bulbG"><stop id="bulbStop" offset="0" stop-color="#fff3d6" stop-opacity=".95"/><stop offset="1" stop-color="#fff3d6" stop-opacity="0"/></radialGradient>' +
+  '<radialGradient id="glowG"><stop offset="0" stop-color="#ff2a2a" stop-opacity=".6"/><stop offset="1" stop-color="#ff2a2a" stop-opacity="0"/></radialGradient>' +
+  '<radialGradient id="vigG" cx="50%" cy="48%" r="70%"><stop offset=".35" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".62"/></radialGradient>' +
+  '<radialGradient id="ledG"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".35" stop-color="currentColor" stop-opacity="1"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></radialGradient>' +
+  '<filter id="flou" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="1.3"/></filter>' +
+  '<clipPath id="glassClip"><rect x="' + GL.x + '" y="' + GL.y + '" width="' + GL.w + '" height="' + GL.h + '"/></clipPath>' +
+  '<clipPath id="screenClip"><rect x="' + SC.x + '" y="' + SC.y + '" width="' + SC.w + '" height="' + SC.h + '" rx="4"/></clipPath>' +
   '<pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="2" fill="#000" opacity=".22"/></pattern>' +
   '</defs>' +
   '<g id="bg"></g>' +
-  '<g id="gTrappe">' +
-  '<g id="trappe" class="hs" data-k="trappe" opacity="0">' +
-  '<polygon id="trappeLid" points="34,526 176,526 186,582 16,582" fill="#151b1a" stroke="#4a5754" stroke-width="2"/>' +
-  '<rect id="trappeRing" x="90" y="550" width="22" height="6" rx="3" fill="#6b7673"/>' +
-  '</g>' +
-  '</g><g id="gDoor">' +
-  '<g id="door" class="hs" data-k="door">' +
-  '<rect x="26" y="203" width="124" height="266" fill="#111716" stroke="#3b4846" stroke-width="3"/>' +
-  '<rect id="doorLight" x="32" y="209" width="112" height="258" fill="#e9f6f0" opacity="0"/>' +
-  '<g id="doorPanel">' +
-  '<rect x="32" y="209" width="112" height="258" fill="#2e3938"/>' +
-  '<rect x="44" y="224" width="88" height="96" fill="none" stroke="#3a4745" stroke-width="2"/>' +
-  '<rect x="44" y="336" width="88" height="114" fill="none" stroke="#3a4745" stroke-width="2"/>' +
-  '<text x="88" y="285" text-anchor="middle" font-family="' + STENCIL + '" font-weight="800" font-size="40" fill="#46534f">17</text>' +
-  '<rect x="116" y="300" width="20" height="30" rx="2" fill="#0d1110"/>' +
-  '<circle id="doorLed" cx="126" cy="310" r="4.5" fill="#e3262b"/>' +
-  '<rect x="120" y="340" width="16" height="6" rx="3" fill="#8b9592"/>' +
+  // trappe au sol (apparaît quand on la connaît)
+  '<g id="gTrappe"><g id="trappe" class="hs" data-k="trappe" opacity="0">' + I('trappeImg', 'trappe_fermee', 34, 526, 124, 46) + '</g></g>' +
+  // porte
+  '<g id="gDoor"><g id="door" class="hs" data-k="door">' +
+  '<rect id="doorLight" x="20" y="226" width="150" height="250" fill="#f4fbf8" opacity="0" filter="url(#flou)"/>' +
+  I('doorImg', 'porte_fermee', 8, 218, 176.6, 252) + '</g></g>' +
+  // mot de 16 glissé sous la porte
+  '<g id="gNote"><g id="note" class="hs" data-k="note" opacity="0"><rect x="60" y="470" width="66" height="36" fill="transparent"/>' + I('', 'mot_plie', 70, 480, 46, 18.6, ' transform="rotate(-6 93 489)"') + '</g></g>' +
+  // grille d'aération
+  '<g id="gGrille"><g id="grille" class="hs" data-k="grille">' + I('grilleImg', 'grille', 112, 128, 60, 58.7) + '</g></g>' +
+  // vitre de la Chambre 18 : la pièce floue, la silhouette, le verre dépoli
+  '<g id="gWin"><g id="win" class="hs" data-k="window">' + I('', 'vitre', 388, 112, 210, 149.8) +
+  '<g clip-path="url(#glassClip)">' +
+  I('', 'chambre18', GL.x - 4, GL.y - 6, 150, 97.4, ' opacity=".9"') +
+  '<g id="silMove" style="transition:transform .6s ease"><g id="sil" filter="url(#flou)" style="transition:opacity 1.2s ease">' + I('silImg', 'sil_A_debout', 431, 141, 119, 124) + '</g></g>' +
+  I('hand', 'main', 432, 150, 40, 47, ' opacity="0" style="transition:opacity .5s ease"') +
+  I('buee', 'fleche', 458, 172, 74, 43.5, ' opacity="0" style="transition:opacity .8s ease"') +
+  '<rect x="' + GL.x + '" y="' + GL.y + '" width="' + GL.w + '" height="' + GL.h + '" fill="#e8f0ec" opacity=".2"/>' +
+  '<rect id="glassTint" x="' + GL.x + '" y="' + GL.y + '" width="' + GL.w + '" height="' + GL.h + '" fill="#000" opacity="0"/>' +
+  '</g></g></g>' +
+  // témoins CH. 18 — SIGNES VITAUX
+  '<g id="gSig"><g id="vies">' + I('', 'signes', 435, 268, 116, 61) +
+  VIES.map(function (x, i) { return '<circle id="vieGlow' + (i + 1) + '" cx="' + x + '" cy="' + VIES_Y + '" r="13" fill="url(#ledG)" style="color:#3ee08f" opacity="0"/><circle id="vie' + (i + 1) + '" cx="' + x + '" cy="' + VIES_Y + '" r="6.2" fill="#3ee08f" opacity="0"/>'; }).join('') +
   '</g></g>' +
-  '</g><g id="gNote">' +
-  '<g id="note" class="hs" data-k="note" opacity="0"><rect x="50" y="462" width="80" height="44" fill="transparent"/><g transform="rotate(-6 90 482)"><rect x="70" y="472" width="40" height="22" fill="#e7e2d2"/><g stroke="#9a9484" stroke-width="1"><line x1="75" y1="479" x2="104" y2="479"/><line x1="75" y1="484" x2="100" y2="484"/><line x1="75" y1="489" x2="96" y2="489"/></g></g></g>' +
-  '</g><g id="gGrille">' +
-  '<g id="grille" class="hs" data-k="grille">' +
-  '<rect x="470" y="40" width="92" height="56" rx="2" fill="#151b1a" stroke="#4a5754" stroke-width="2"/>' +
-  '<g id="grilleSlats" stroke="#5d6a67" stroke-width="3"><line x1="478" y1="52" x2="554" y2="52"/><line x1="478" y1="62" x2="554" y2="62"/><line x1="478" y1="72" x2="554" y2="72"/><line x1="478" y1="82" x2="554" y2="82"/></g>' +
-  '<g fill="#8b9592"><circle cx="475" cy="45" r="2"/><circle cx="557" cy="45" r="2"/><circle cx="475" cy="91" r="2"/><circle cx="557" cy="91" r="2"/></g>' +
-  '</g>' +
-  '</g><g id="gWin">' +
-  '<g id="win" class="hs" data-k="window">' +
-  '<rect x="446" y="138" width="136" height="194" fill="#0f1414" stroke="#3b4846" stroke-width="4"/>' +
-  '<rect id="glass" x="454" y="146" width="120" height="178" fill="#7d7150"/>' +
-  '<g id="silMove" style="transition:transform .6s ease"><g id="sil" opacity=".82" style="transition:opacity 1.2s ease">' +
-  '<ellipse cx="514" cy="214" rx="18" ry="22" fill="#0b0e0e"/>' +
-  '<path d="M470 324 Q472 262 514 250 Q556 262 558 324 Z" fill="#0b0e0e"/>' +
+  // boîtier électrique de maintenance
+  '<g id="gBox"><g id="box" class="hs" data-k="box">' + I('boxImg', 'boitier_ferme', 447, 350, 92, 96.8) +
+  '<g id="boxOpen" opacity="0" font-family="VT323, monospace" font-size="8" fill="#e8f0ec" text-anchor="middle">' +
+  '<text x="471" y="373">CAM</text><text x="493" y="373">BTN</text><text x="515" y="373">AUX</text>' +
+  '<circle id="ledCam" cx="471" cy="428" r="2.6" fill="#3ee08f"/><circle id="ledBtn" cx="493" cy="428" r="2.6" fill="#3ee08f"/><circle id="ledAux" cx="515" cy="428" r="2.6" fill="#3ee08f"/></g>' +
+  '<circle id="auxLed" cx="528" cy="360" r="3.2" fill="#3ee08f"/>' +
   '</g></g>' +
-  '<path id="hand" opacity="0" style="transition:opacity .5s ease" d="M488 236 q-4 -18 2 -20 q4 0 4 12 q1 -16 6 -16 q5 0 4 16 q2 -12 6 -11 q4 1 2 14 q3 -7 6 -5 q3 2 -2 14 q-6 14 -20 12 q-6 -2 -8 -16z" fill="#0b0e0e"/>' +
-  '<path id="buee" opacity="0" style="transition:opacity .8s ease" d="M480 280 L548 250 M548 250 l-14 -2 M548 250 l-6 12" stroke="#e8f0ec" stroke-width="3" fill="none" stroke-linecap="round"/>' +
-  '<rect x="454" y="146" width="120" height="178" fill="#e8f0ec" opacity=".2"/>' +
-  '<g stroke="#ffffff" stroke-width="1" opacity=".12"><line x1="460" y1="160" x2="500" y2="150"/><line x1="470" y1="300" x2="560" y2="280"/></g>' +
-  '<text x="514" y="350" text-anchor="middle" font-family="' + STENCIL + '" font-weight="700" font-size="15" fill="#5d6a67" letter-spacing="2">CH. 18</text>' +
-  '<text x="514" y="366" text-anchor="middle" font-family="' + STENCIL + '" font-weight="700" font-size="11" fill="#4d5956" letter-spacing="1.5">SIGNES VITAUX</text>' +
-  '</g>' +
-  '<g id="vies"><rect x="482" y="112" width="64" height="18" rx="9" fill="#0d1110" stroke="#3b4846"/>' +
-  '<circle id="vie1" cx="497" cy="121" r="5"/><circle id="vie2" cx="514" cy="121" r="5"/><circle id="vie3" cx="531" cy="121" r="5"/></g>' +
-  '</g><g id="gBox">' +
-  '<g id="box" class="hs" data-k="box">' +
-  '<rect x="458" y="366" width="114" height="84" rx="3" fill="#161d1c" stroke="#59645f" stroke-width="2"/>' +
-  '<path d="M468 374 l8 0 l-6 10 l8 0 l-12 16 l4 -12 l-7 0z" fill="#f2c14e" opacity=".8"/>' +
-  '<text x="522" y="386" text-anchor="middle" font-family="' + STENCIL + '" font-weight="700" font-size="11" fill="#7f8d89" letter-spacing="2">COURANT</text>' +
-  '<circle id="auxLed" cx="560" cy="382" r="4" fill="#3ee08f"/>' +
-  '<g id="boxOpen" opacity="0">' +
-  '<rect x="484" y="396" width="20" height="40" rx="2" fill="#0b0f0e"/><rect id="levCam" x="486" y="399" width="16" height="16" rx="2" fill="#d4dcd9"/>' +
-  '<rect x="526" y="396" width="20" height="40" rx="2" fill="#0b0f0e"/><rect id="levBtn" x="528" y="399" width="16" height="16" rx="2" fill="#d4dcd9"/>' +
-  '<text x="494" y="447" text-anchor="middle" font-family="VT323, monospace" font-size="12" fill="#bff5e4">CAM</text>' +
-  '<text x="536" y="447" text-anchor="middle" font-family="VT323, monospace" font-size="12" fill="#bff5e4">BTN</text>' +
-  '</g></g>' +
-  '</g><g id="gCenter">' +
-  '<g class="hs" data-k="monitor">' +
-  '<rect x="290" y="44" width="20" height="20" fill="#151b1a"/>' +
-  '<rect x="158" y="60" width="284" height="172" rx="8" fill="#111615" stroke="#36403e" stroke-width="2"/>' +
-  '<text x="300" y="226" text-anchor="middle" font-family="' + STENCIL + '" font-weight="700" font-size="9" fill="#4d5956" letter-spacing="2">UNITÉ 17</text>' +
-  '</g>' +
-  '<polygon id="cone" points="276,54 324,54 480,470 120,470" fill="url(#coneG)" opacity=".6" style="pointer-events:none"/>' +
-  '<g class="hs" data-k="light">' +
-  '<line x1="300" y1="0" x2="300" y2="30" stroke="#0f1312" stroke-width="3"/>' +
-  '<path d="M272 50 L284 30 L316 30 L328 50 Z" fill="#283130"/>' +
-  '<ellipse id="bulb" cx="300" cy="53" rx="11" ry="6" fill="#fff3d6"/>' +
-  '</g>' +
-  '<rect x="160" y="432" width="280" height="38" fill="#252d2c" stroke="#3a4644" stroke-width="2"/>' +
-  '<g id="drawer" class="hs" data-k="drawer"><rect x="166" y="434" width="74" height="40" fill="transparent"/>' +
-  '<rect x="176" y="440" width="54" height="24" fill="#070909"/>' +
-  '<g id="drawerFront"><rect x="176" y="440" width="54" height="24" fill="#2f3938" stroke="#46524f"/><rect x="195" y="449" width="16" height="4" rx="2" fill="#8b9592"/></g>' +
-  '</g>' +
-  '<g class="hs" data-k="bureau"><rect x="214" y="470" width="172" height="104" fill="#1b2221"/>' +
-  '<g opacity=".85"><rect x="228" y="488" width="144" height="12" fill="#f2c14e"/><g fill="#1b2221"><path d="M236 488 h8 l-8 12 h-8z"/><path d="M256 488 h8 l-8 12 h-8z"/><path d="M276 488 h8 l-8 12 h-8z"/><path d="M296 488 h8 l-8 12 h-8z"/><path d="M316 488 h8 l-8 12 h-8z"/><path d="M336 488 h8 l-8 12 h-8z"/><path d="M356 488 h8 l-8 12 h-8z"/><path d="M376 488 h8 l-8 12 h-8z"/></g></g>' +
-  '<text x="300" y="526" text-anchor="middle" font-family="' + STENCIL + '" font-weight="800" font-size="16" fill="#3e4a48" letter-spacing="4">ACTIVATION</text>' +
-  '<g stroke="#2d3736" stroke-width="1.4"><line x1="230" y1="545" x2="230" y2="562"/><line x1="236" y1="545" x2="236" y2="562"/><line x1="242" y1="545" x2="242" y2="562"/><line x1="248" y1="545" x2="248" y2="562"/><line x1="226" y1="556" x2="252" y2="550"/></g></g>' +
+  // le centre : lampe, moniteur, bureau, bouton
+  '<g id="gCenter">' +
+  '<polygon id="cone" points="282,50 318,50 470,520 130,520" fill="url(#coneG)" opacity=".5" style="pointer-events:none"/>' +
+  '<g class="hs" data-k="monitor">' + I('', 'moniteur', 150, 58, 300, 194.8) + '</g>' +
+  '<g class="hs" data-k="light"><line x1="300" y1="-200" x2="300" y2="0" stroke="#1a1f1e" stroke-width="2.5"/>' + I('', 'lampe', 267, -8, 66, 64.2) +
+  '<circle id="bulb" cx="300" cy="47" r="16" fill="url(#bulbG)" style="pointer-events:none"/></g>' +
+  '<g class="hs" data-k="bureau">' + I('socleImg', 'socle', 208, 430, 184, 149.6) + '</g>' +
+  '<g id="compart" class="hs" data-k="compart">' + I('compImg', 'compart_ferme', 342, 528, 34, 30.8) + '</g>' +
+  '<g id="drawer" class="hs" data-k="drawer">' + I('drawerImg', 'tiroir_ferme', 252, 396, 96, 49) + '</g>' +
+  I('', 'plateau', 182, 292, 236, 111.4, ' style="pointer-events:none"') +
+  '<ellipse id="btnGlow" cx="300" cy="330" rx="86" ry="44" fill="url(#glowG)" opacity="0" style="pointer-events:none"/>' +
   '<g id="btn" class="hs" data-k="btn" role="button" tabindex="0" aria-label="Appuyer sur le bouton rouge">' +
-  '<ellipse cx="300" cy="434" rx="74" ry="15" fill="#0b0d0d"/>' +
-  '<ellipse cx="300" cy="428" rx="64" ry="13" fill="#3a3f3f"/>' +
-  '<g id="dome"><path d="M240 426 Q240 376 300 374 Q360 376 360 426 Q330 438 300 438 Q270 438 240 426 Z" fill="url(#btnG)"/><ellipse cx="283" cy="392" rx="20" ry="8" fill="#fff" opacity=".32"/></g>' +
+  I('btnImg', 'bouton', BTN.x, BTN.y, BTN.w, BTN.h) + I('btnImg2', 'bouton_enfonce', BTN2.x, BTN2.y, BTN2.w, BTN2.h, ' opacity="0"') + '</g>' +
+  '<g id="phone" class="hs" data-k="phone" opacity="0"><rect x="184" y="296" width="80" height="50" fill="transparent"/><g id="phoneInner">' +
+  I('telImg', 'tel_pose', 188, 300, 64, 40.3) + I('telImg2', 'tel_decroche', 184, 304, 76, 37.3, ' opacity="0"') + '</g></g>' +
+  '<g class="hs" data-k="mug"><rect x="360" y="308" width="42" height="40" fill="transparent"/>' + I('', 'tasse', 366, 316, 30, 26.4) + '</g>' +
   '</g>' +
-  '<g id="phone" class="hs" data-k="phone" opacity="0" transform="translate(-36 0)"><rect x="196" y="388" width="64" height="50" fill="transparent"/><g id="phoneInner">' +
-  '<rect x="208" y="414" width="40" height="18" rx="4" fill="#1d1d1d"/><rect x="204" y="402" width="48" height="12" rx="6" fill="#2c2c2c"/><circle cx="228" cy="423" r="4" fill="#3a3a3a"/>' +
-  '</g></g>' +
-  // compartiment latéral du socle (s'ouvre après B2, contient le fusible)
-  '<g id="compart" class="hs" data-k="compart"><rect x="384" y="436" width="54" height="32" fill="transparent"/>' +
-  '<rect x="392" y="441" width="38" height="22" fill="#070909"/>' +
-  '<g id="compFuse" opacity="0"><rect x="399" y="448" width="24" height="9" rx="2" fill="#d6d1c4"/><rect x="405" y="449" width="12" height="7" fill="#f2c14e" opacity=".85"/></g>' +
-  '<g id="compDoor"><rect x="392" y="441" width="38" height="22" fill="#2a3332" stroke="#46524f"/><circle cx="424" cy="452" r="2" fill="#8b9592"/></g></g>' +
-  '<g class="hs" data-k="mug" transform="translate(34 0)"><rect x="358" y="398" width="40" height="36" fill="transparent"/><rect x="364" y="406" width="18" height="24" rx="3" fill="#d6d1c4"/><path d="M382 412 q8 0 8 7 q0 7 -8 7" fill="none" stroke="#d6d1c4" stroke-width="3"/></g>' +
-  '</g><g id="gCam">' +
-  '<g id="camPivot" transform="translate(78 64)" class="hs" data-k="camera">' +
-  '<rect x="-7" y="-64" width="14" height="56" fill="#1a2120"/>' +
-  '<g id="camRot" transform="rotate(25)">' +
-  '<rect x="-10" y="-11" width="50" height="22" rx="5" fill="#c4ccc9"/>' +
-  '<rect x="34" y="-8" width="12" height="16" rx="2" fill="#8d9794"/>' +
-  '<circle cx="44" cy="0" r="6" fill="#0b0d0d"/>' +
-  '<circle id="camLed" cx="2" cy="-3" r="3" fill="#3b3f3e"/>' +
-  '<path id="camMask" opacity="0" d="M20 -16 L58 -14 L62 22 L48 30 L36 20 L22 26 Z" fill="#3a2f2a"/>' +
-  '</g></g>' +
-  '</g>' +
-  // lumière et alarme
+  // caméra de surveillance (support fixe, corps qui pivote)
+  '<g id="gCam">' + I('', 'camera_support', 16, 60, 62, 43, ' style="pointer-events:none"') +
+  '<g id="camPivot" transform="translate(64 52)" class="hs" data-k="camera"><g id="camRot">' +
+  I('camImg', 'camera', -37, -34, 74, 64.3) +
+  '<circle id="camLed" cx="26" cy="-14" r="2.6" fill="#3b3f3e"/>' +
+  I('camMask', 'camera_drap', -38, -36, 76, 61.7, ' opacity="0"') +
+  '</g></g></g>' +
+  // ombre des coins, lumière et alarme
+  '<rect id="vig" x="0" y="0" width="600" height="600" fill="url(#vigG)" style="pointer-events:none"/>' +
   '<rect id="tint" x="0" y="0" width="600" height="600" fill="#ff1e1e" opacity="0" style="pointer-events:none"/>' +
   '<rect id="dark" x="0" y="0" width="600" height="600" fill="#000" opacity="0" style="pointer-events:none"/>' +
   // écran (reste lisible dans le noir)
   '<g id="gCenter2" style="pointer-events:none">' +
-  '<ellipse id="btnGlow" cx="300" cy="410" rx="90" ry="50" fill="url(#glowG)" opacity="0"/>' +
-  '<rect id="screen" x="170" y="72" width="260" height="140" rx="6" fill="#071311"/>' +
+  '<rect id="screen" x="' + SC.x + '" y="' + SC.y + '" width="' + SC.w + '" height="' + SC.h + '" rx="4" fill="#061210"/>' +
   '<g id="scr" font-family="VT323, Courier New, monospace" fill="#bff5e4" text-anchor="middle"></g>' +
-  '<rect x="170" y="72" width="260" height="140" rx="6" fill="url(#scan)"/>' +
+  '<g id="video" clip-path="url(#screenClip)" opacity="0"></g>' +
+  '<rect x="' + SC.x + '" y="' + SC.y + '" width="' + SC.w + '" height="' + SC.h + '" rx="4" fill="url(#scan)"/>' +
   '</g>' +
   '<rect id="flash" x="0" y="0" width="600" height="600" fill="#fff" opacity="0" style="pointer-events:none"/>' +
   '</svg>';
 
-  var svg = null, onHot = null, track = false, glitchT = null, host = null;
+  var svg = null, onHot = null, track = false, glitchT = null, host = null, sujet = 'A', pose = 'debout';
   function $(id) { return document.getElementById(id); }
   function attr(id, k, v) { var e = $(id); if (e) e.setAttribute(k, v); }
+  function src(id, name) { var e = $(id); if (e && e.getAttribute('href') !== IMG + name + '.webp') e.setAttribute('href', IMG + name + '.webp'); }
 
   function mount(el, handler) {
     el.innerHTML = SVG; svg = $('room'); onHot = handler; host = el;
@@ -150,12 +118,13 @@
     root.addEventListener('resize', layout);
     layout();
   }
-  // La caméra suit le pointeur (angle calculé à l'écran, quelle que soit la mise en page).
+  // La caméra suit le pointeur (petit angle : c'est un dessin de face).
+  var camBase = '';
   function aim(x, y) {
     if (!track) return;
     var m = $('camPivot').getScreenCTM(); if (!m) return;
-    var a = Math.atan2(y - m.f, x - m.e) * 180 / Math.PI; a = Math.max(-5, Math.min(85, a));
-    attr('camRot', 'transform', 'rotate(' + a.toFixed(1) + ')');
+    var a = Math.atan2(y - m.f, x - m.e) * 180 / Math.PI; a = Math.max(-14, Math.min(14, (a - 40) / 3));
+    attr('camRot', 'transform', camBase + ' rotate(' + a.toFixed(1) + ')');
   }
 
   // ---------- mise en page selon l'écran ----------
@@ -168,95 +137,107 @@
     if (a >= 0.9) {
       // Écran large : la pièce d'origine, élargie ; les objets des côtés s'écartent un peu.
       H = 600; W = Math.max(600, 600 * a); cx = W / 2; floorY = 470;
-      var dx = cx - 300, sp = Math.min((W - 600) / 2, 160) * 0.55;
+      var dx = cx - 300, sp = Math.min((W - 600) / 2, 170) * 0.55;
       ['gCenter', 'gCenter2'].forEach(function (id) { shift(id, dx, 0); });
-      ['gDoor', 'gNote', 'gTrappe', 'gCam'].forEach(function (id) { shift(id, dx - sp, 0); });
-      ['gWin', 'gBox', 'gGrille'].forEach(function (id) { shift(id, dx + sp, 0); });
+      ['gDoor', 'gNote', 'gTrappe', 'gCam', 'gGrille'].forEach(function (id) { shift(id, dx - sp, 0); });
+      ['gWin', 'gSig', 'gBox'].forEach(function (id) { shift(id, dx + sp, 0); });
     } else {
       // Écran haut (téléphone) : le moniteur et le bouton au centre, les autres objets autour.
       W = 460; H = Math.max(600, W / a); cx = W / 2;
-      var dy = H / 2 - 270; floorY = 470 + dy;
+      var dy = H / 2 - 290; floorY = 470 + dy;
       ['gCenter', 'gCenter2'].forEach(function (id) { shift(id, cx - 300, dy); });
-      place('gCam', 0, 0, -18, Math.max(40, dy - 110), 1);
-      place('gGrille', 470, 40, W - 104, Math.max(70, dy - 60), 1);
-      place('gWin', 446, 112, W - 86, dy + 70, 0.6);
-      place('gBox', 458, 366, W - 86, dy + 230, 0.7);
-      place('gDoor', 26, 203, 4, floorY - 266 * 0.62, 0.62);
-      place('gNote', 50, 462, 2, floorY + 4, 0.8);
-      place('gTrappe', 16, 526, 6, floorY + 62, 0.75);
+      var top = dy + 50, kw = Math.max(0.42, Math.min(0.8, (top - 62) / 150));
+      place('gWin', 388, 112, W - 210 * kw - 4, top - 150 * kw, kw);
+      place('gCam', 0, 0, 0, Math.max(0, top - 112), 1);
+      place('gGrille', 112, 128, 84, Math.max(4, top - 58), 0.85);
+      place('gSig', 435, 268, W - 82, dy + 262, 0.68);
+      place('gBox', 447, 350, W - 74, dy + 318, 0.76);
+      place('gDoor', 8, 218, 2, floorY - 252 * 0.56, 0.56);
+      place('gNote', 60, 470, 4, floorY + 8, 0.8);
+      place('gTrappe', 34, 526, 4, floorY + 50, 0.72);
     }
     svg.setAttribute('viewBox', '0 0 ' + W.toFixed(1) + ' ' + H.toFixed(1));
-    ['tint', 'dark', 'flash'].forEach(function (id) { attr(id, 'width', W); attr(id, 'height', H); });
-    // Mur, plinthe, sol et lignes de fuite, dessinés à la taille de l'écran.
-    var g = '<rect x="0" y="0" width="' + W + '" height="' + floorY + '" fill="url(#wallG)"/>' +
-      '<g stroke="#33403e" stroke-width="1.5" opacity=".6"><line x1="' + (cx - 140) + '" y1="0" x2="' + (cx - 140) + '" y2="' + (floorY - 8) + '"/><line x1="' + (cx + 140) + '" y1="0" x2="' + (cx + 140) + '" y2="' + (floorY - 8) + '"/></g>' +
-      '<line x1="' + cx + '" y1="0" x2="' + cx + '" y2="' + (floorY - 470 + 30) + '" stroke="#0f1312" stroke-width="3"/>' +
-      '<rect x="0" y="' + (floorY - 8) + '" width="' + W + '" height="8" fill="#151b1a"/>' +
-      '<rect x="0" y="' + floorY + '" width="' + W + '" height="' + (H - floorY) + '" fill="url(#floorG)"/><g stroke="#202827" stroke-width="1.2">';
-    for (var i = -6; i <= 6; i++) g += '<line x1="' + (cx + i * 100) + '" y1="' + floorY + '" x2="' + (cx + i * 260) + '" y2="' + (floorY + 330) + '"/>';
-    g += '<line x1="0" y1="' + (floorY + 50) + '" x2="' + W + '" y2="' + (floorY + 50) + '"/></g>';
-    $('bg').innerHTML = g;
+    ['tint', 'dark', 'flash', 'vig'].forEach(function (id) { attr(id, 'width', W); attr(id, 'height', H); });
+    // Mur, plinthe et sol (textures répétées), à la taille de l'écran.
+    $('bg').innerHTML = '<rect x="0" y="0" width="' + W + '" height="' + floorY + '" fill="url(#wallP)"/>' +
+      '<rect x="0" y="0" width="' + W + '" height="' + floorY + '" fill="#0d1212" opacity=".55"/>' +
+      '<rect x="0" y="' + floorY + '" width="' + W + '" height="' + (H - floorY) + '" fill="url(#floorP)"/>' +
+      '<rect x="0" y="' + floorY + '" width="' + W + '" height="' + (H - floorY) + '" fill="#050707" opacity=".62"/>' +
+      '<rect x="0" y="' + (floorY - 20) + '" width="' + W + '" height="22" fill="url(#plinthP)"/>' +
+      '<rect x="0" y="' + (floorY - 20) + '" width="' + W + '" height="22" fill="#000" opacity=".45"/>';
   }
 
   // ---------- état → dessin ----------
-  var GLASS = ['#000', '#463f30', '#5e553e', '#7d7150'];
+  function silhouette(p) {
+    pose = p || pose;
+    var nom = pose === 'tel' && sujet !== 'A' ? 'debout' : pose;
+    src('silImg', 'sil_' + sujet + '_' + nom);
+    // L'enfant (vérité C) est plus petit : sa tête apparaît plus bas derrière le verre.
+    var k = sujet === 'C' ? 0.8 : 1, S = 124 * k, pied = 141 + 0.975 * 124;
+    attr('silImg', 'width', (119 * k).toFixed(1)); attr('silImg', 'height', S.toFixed(1));
+    attr('silImg', 'x', (GL.x + GL.w / 2 - 119 * k / 2).toFixed(1)); attr('silImg', 'y', (pied - 0.975 * S).toFixed(1));
+  }
+  function poseVie(vie) { return vie >= 3 ? 'debout' : vie === 2 ? 'courbe' : 'accroupi'; }
+  var vieCourante = 3;
   function render(s, info) {
     info = info || {};
     resetFx();
     var has = function (k) { return s.items.indexOf(k) >= 0; };
-    // vie de la 18
-    for (var i = 1; i <= 3; i++) attr('vie' + i, 'fill', s.vie >= i ? '#3ee08f' : '#262c2b');
-    // La lumière de la 18 rougit quand le soupçon est élevé ; la silhouette se courbe avec sa vie.
-    attr('glass', 'fill', s.vie > 0 && s.soupcon >= 3 ? '#8a5a46' : GLASS[s.vie]);
-    attr('sil', 'opacity', s.vie > 0 && !info.silCachee ? 0.82 : 0);
-    attr('sil', 'transform', s.vie === 1 ? 'translate(0 46) scale(1 .85)' : 'translate(0 ' + (3 - s.vie) * 8 + ')');
+    sujet = s.truth || 'A'; vieCourante = s.vie;
+    // vie de la 18 : les trois voyants
+    for (var i = 1; i <= 3; i++) { var on = s.vie >= i; attr('vie' + i, 'opacity', on ? 1 : 0); attr('vieGlow' + i, 'opacity', on ? 0.8 : 0); }
+    // La silhouette se courbe avec sa vie ; la lumière de la 18 rougit quand le soupçon est élevé.
+    silhouette(poseVie(s.vie));
+    attr('sil', 'opacity', s.vie > 0 && !info.silCachee ? 1 : 0);
+    attr('glassTint', 'fill', s.vie > 0 && s.soupcon >= 3 ? '#7a1e10' : '#000');
+    attr('glassTint', 'opacity', s.vie <= 0 ? 0.82 : s.soupcon >= 3 ? 0.3 : [0.82, 0.38, 0.18, 0][s.vie]);
     attr('hand', 'opacity', 0); attr('buee', 'opacity', 0); attr('silMove', 'transform', '');
     // caméra
     var blind = info.cameraAveugle, cut = has('cameraCoupee'), tournee = has('cameraTournee');
     track = s.cycle >= 4 && !blind && !info.urgence;
+    camBase = tournee ? 'scale(-1 1)' : '';
+    attr('camRot', 'transform', camBase);
     attr('camMask', 'opacity', blind && !cut && !tournee ? 1 : 0);
-    if (cut) attr('camRot', 'transform', 'rotate(-60)');
-    if (tournee) attr('camRot', 'transform', 'rotate(-150)');
+    attr('camImg', 'opacity', cut ? 0.75 : 1);
     attr('auxLed', 'fill', s.flags.aux === 'defaut' ? '#e3262b' : '#3ee08f'); attr('auxLed', 'class', s.flags.aux === 'defaut' ? 'pulse' : '');
-    var led = blind ? '#3b3f3e' : s.cycle < 4 ? '#3b3f3e' : ['#3ee08f', '#3ee08f', '#f2a33a', '#e3262b', '#e3262b'][s.soupcon];
+    var led = blind ? '#2a2e2d' : s.cycle < 4 ? '#3b3f3e' : ['#3ee08f', '#3ee08f', '#f2a33a', '#e3262b', '#e3262b'][s.soupcon];
     attr('camLed', 'fill', led); attr('camLed', 'class', !blind && s.soupcon >= 3 ? 'pulse' : '');
     // objets
     attr('phone', 'opacity', s.cycle >= 3 ? 1 : 0);
+    attr('telImg', 'opacity', info.decroche ? 0 : 1); attr('telImg2', 'opacity', info.decroche ? 1 : 0);
     attr('note', 'opacity', s.cycle >= 4 && !s.done.H1 ? 1 : 0);
-    attr('drawerFront', 'transform', s.flags.tiroirOuvert ? 'translate(0 16)' : '');
-    attr('compDoor', 'opacity', s.flags.compartiment ? 0 : 1);
-    attr('compFuse', 'opacity', s.flags.compartiment === 'ouvert' ? 1 : 0);
-    attr('grilleSlats', 'opacity', has('conduit') ? 0 : 1);
+    var tir = s.flags.tiroirOuvert ? (s.flags.tournevisDispo && !s.flags.tournevisPris && !has('tournevis') ? 'tiroir_tournevis' : 'tiroir_vide') : 'tiroir_ferme';
+    src('drawerImg', tir); attr('drawerImg', 'height', tir === 'tiroir_ferme' ? 49 : 69.1);
+    src('compImg', s.flags.compartiment === 'ouvert' ? 'compart_fusible' : s.flags.compartiment === 'vide' ? 'compart_vide' : 'compart_ferme');
+    src('grilleImg', has('conduit') ? 'grille_ouverte' : 'grille');
+    src('socleImg', s.done.H2 === 'B' ? 'socle_efface' : 'socle');
     var known = has('trappe') || (has('code') && has('code41')) || s.flags.fusibleInstalle || s.done.P4;
     attr('trappe', 'opacity', known ? 1 : 0);
-    attr('trappeLid', 'fill', s.done.P4 === 'A' ? '#030404' : '#151b1a');
-    attr('trappeRing', 'opacity', s.done.P4 === 'B' ? 0 : 1);
-    attr('boxOpen', 'opacity', s.done.P3 ? 1 : 0);
-    attr('levCam', 'y', cut && s.done.P3 === 'A' ? 419 : 399);
-    attr('levBtn', 'y', has('boutonDesactive') ? 419 : 399);
+    src('trappeImg', s.done.P4 === 'A' ? 'trappe_ouverte' : s.done.P4 === 'B' ? 'trappe_preparee' : 'trappe_fermee');
+    var ouvert = !!s.done.P3;
+    src('boxImg', ouvert ? 'boitier_ouvert' : 'boitier_ferme'); attr('boxOpen', 'opacity', ouvert ? 1 : 0); attr('auxLed', 'opacity', ouvert ? 0 : 1);
+    attr('ledCam', 'fill', cut && s.done.P3 === 'A' ? '#e3262b' : '#3ee08f');
+    attr('ledBtn', 'fill', has('boutonDesactive') ? '#e3262b' : '#3ee08f');
+    attr('ledAux', 'fill', s.flags.aux === 'defaut' ? '#e3262b' : '#3ee08f');
     // bouton
-    attr('btnGlow', 'opacity', info.ordre ? 0.7 : 0);
-    // porte
-    var open = info.porteOuverte;
-    attr('doorLed', 'fill', open ? '#3ee08f' : '#e3262b');
-    attr('doorPanel', 'transform', open ? 'translate(32 0) scale(.25 1) translate(-32 0)' : '');
-    attr('doorLight', 'opacity', open ? 0.85 : 0);
+    attr('btnGlow', 'opacity', info.ordre ? 0.8 : 0); attr('btnGlow', 'class', info.ordre ? 'pulse' : '');
+    door(info.porteOuverte);
     // lumière
     var mode = info.urgence ? 'urgence' : (s.flags.compte && s.cycle >= 18) ? 'red' : s.cycle >= 15 ? 'cold' : 'normal';
     light(mode);
-    // téléphone qui sonne
     attr('phoneInner', 'class', info.sonne ? 'ring' : '');
   }
 
   function light(mode) {
     var off = mode === 'off' || mode === 'urgence';
     var col = { normal: '#fff3d6', cold: '#bfe3ff', red: '#ff3b30' }[mode] || '#000';
-    attr('coneStop', 'stop-color', col); attr('bulb', 'fill', off ? '#333' : col);
-    attr('cone', 'opacity', off ? 0 : 0.6);
-    attr('dark', 'opacity', mode === 'off' ? 0.82 : mode === 'urgence' ? 0.7 : 0);
+    attr('coneStop', 'stop-color', col); attr('bulbStop', 'stop-color', col);
+    attr('bulb', 'opacity', off ? 0 : 1);
+    attr('cone', 'opacity', off ? 0 : 0.5);
+    attr('dark', 'opacity', mode === 'off' ? 0.82 : mode === 'urgence' ? 0.66 : 0);
     // Lampe de secours orange pendant l'autotest.
     attr('tint', 'fill', mode === 'cold' ? '#3a7cff' : mode === 'urgence' ? '#ff8a1e' : '#ff1e1e');
-    attr('tint', 'opacity', mode === 'cold' ? 0.06 : mode === 'red' ? 0.16 : mode === 'urgence' ? 0.22 : 0);
+    attr('tint', 'opacity', mode === 'cold' ? 0.07 : mode === 'red' ? 0.16 : mode === 'urgence' ? 0.22 : 0);
   }
 
   // ---------- écran du moniteur ----------
@@ -267,7 +248,7 @@
     if (cur) lines.push(cur); return lines;
   }
   // Texte du moniteur, tapé lettre par lettre (sauf opt.instant). Renvoie le nombre de lettres.
-  var typeT = null, typeFin = null, VITESSE = 32;
+  var typeT = null, typeFin = null, VIT = { lent: 48, normal: 32, rapide: 16 }, vitesse = 'normal';
   function ecran(text, opt) {
     opt = opt || {}; var g = $('scr'); if (!g) return 0;
     clearInterval(typeT); typeFin = null;
@@ -275,19 +256,19 @@
     if (!text) return 0;
     var els = [], full = [];
     if (opt.big) {
-      els.push(add(g, 300, 196, 92, text, opt.color || '#ff5a4a')); full.push(text);
-      if (opt.label) { els.push(add(g, 300, 98, 20, opt.label, opt.color || '#ff5a4a')); full.push(opt.label); }
+      els.push(add(g, SC.cx, SC.cy + 30, 76, text, opt.color || '#ff5a4a')); full.push(text);
+      if (opt.label) { els.push(add(g, SC.cx, SC.y + 22, 17, opt.label, opt.color || '#ff5a4a')); full.push(opt.label); }
     } else {
-      var lines = wrap(text), fs = lines.length > 4 ? 20 : lines.length > 3 ? 23 : 29, lh = fs * 1.02, y0 = 142 - (lines.length - 1) * lh / 2 + fs * 0.32;
-      lines.forEach(function (l, i) { els.push(add(g, 300, y0 + i * lh, fs, l, opt.color)); full.push(l); });
+      var lines = wrap(text), fs = lines.length > 4 ? 16.5 : lines.length > 3 ? 19.5 : 24, lh = fs * 1.02, y0 = SC.cy - (lines.length - 1) * lh / 2 + fs * 0.32;
+      lines.forEach(function (l, i) { els.push(add(g, SC.cx, y0 + i * lh, fs, l, opt.color)); full.push(l); });
     }
     if (opt.glitch) glitch(opt.glitch === true ? 600 : opt.glitch);
     var total = full.join('').length;
     if (opt.instant || reduce) return total;
     // Les lignes restent centrées : on mesure leur largeur finale, puis on les tape depuis la gauche.
-    els.forEach(function (el, i) {
+    els.forEach(function (el) {
       var w = 0; try { w = el.getComputedTextLength(); } catch (e) {}
-      if (w) { el.setAttribute('text-anchor', 'start'); el.setAttribute('x', (300 - w / 2).toFixed(1)); }
+      if (w) { el.setAttribute('text-anchor', 'start'); el.setAttribute('x', (SC.cx - w / 2).toFixed(1)); }
       el.textContent = '';
     });
     var li = 0, ci = 0;
@@ -298,7 +279,7 @@
       ci++;
       els[li].textContent = full[li].slice(0, ci) + (ci < full[li].length ? '▌' : '');
       if (ci >= full[li].length) { li++; ci = 0; }
-    }, VITESSE);
+    }, VIT[vitesse]);
     return total;
   }
   function ecranFinir() { if (typeFin) typeFin(); }
@@ -316,6 +297,20 @@
       g.setAttribute('transform', 'translate(' + ((Math.random() - 0.5) * 10) + ' ' + ((Math.random() - 0.5) * 4) + ')'); g.setAttribute('opacity', Math.random() > 0.25 ? 1 : 0.3);
     }, 50);
   }
+  // B3 : la « preuve », une vidéo granuleuse sur le moniteur (différente selon la vérité).
+  function video(ms) {
+    var v = $('video'); if (!v) return;
+    var x = SC.x, y = SC.y, w = SC.w, h = SC.h, sil = 'sil_' + sujet + '_debout';
+    var fond = sujet === 'B' ? I('', 'rev_B', x - 10, y - 8, w + 20, h + 16) : I('', 'chambre18', x - 10, y - 8, w + 20, h + 16) +
+      (sujet === 'A' ? I('', sil, x + w * 0.2, y + 6, 100, 104) + I('', 'sil_A_poing', x + w * 0.55, y + 4, 100, 104, ' opacity=".8"') : I('vidSil', 'sil_C_debout', x - 60, y + 22, 84, 88));
+    v.innerHTML = '<g style="filter:grayscale(1) contrast(1.2) brightness(.8)">' + fond + '</g><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="#0a2a22" opacity=".35"/>' +
+      '<text id="vidT" x="' + (x + w - 6) + '" y="' + (y + 16) + '" text-anchor="end" font-family="VT323, monospace" font-size="14" fill="#bff5e4">14:02</text>' +
+      '<circle cx="' + (x + 10) + '" cy="' + (y + 11) + '" r="3.5" fill="#ff3b30" class="pulse"/>';
+    attr('video', 'opacity', 1);
+    if (!reduce && sujet === 'C') { var e = $('vidSil'); e.style.transition = 'transform 3.5s linear'; requestAnimationFrame(function () { e.style.transform = 'translateX(' + (w * 0.65) + 'px)'; }); }
+    later2(ms * 0.55, function () { var t = $('vidT'); if (t) t.textContent = sujet === 'A' ? '13:58' : '14:03'; glitch(300); });
+    later2(ms, function () { attr('video', 'opacity', 0); $('video').innerHTML = ''; });
+  }
 
   // ---------- animations de fin ----------
   var fxTimers = [];
@@ -324,85 +319,90 @@
   function resetFx() {
     fxTimers.forEach(clearTimeout); fxTimers = [];
     ['dark', 'flash', 'tint'].forEach(function (id) { var e = $(id); if (e) { e.style.transition = ''; e.style.opacity = ''; } });
-    attr('flash', 'fill', '#fff'); attr('screen', 'fill', '#071311');
+    attr('flash', 'fill', '#fff'); attr('screen', 'fill', '#061210');
   }
   function door(open) {
-    attr('doorLed', 'fill', open ? '#3ee08f' : '#e3262b');
-    attr('doorPanel', 'transform', open ? 'translate(32 0) scale(.25 1) translate(-32 0)' : '');
-    attr('doorLight', 'opacity', open ? 0.85 : 0);
+    src('doorImg', open ? 'porte_ouverte' : 'porte_fermee');
+    attr('doorLight', 'opacity', open ? 0.5 : 0);
   }
-  function glass(col, silhouette) { attr('glass', 'fill', col); attr('sil', 'opacity', silhouette ? 0.82 : 0); }
+  function glass(op, col, silhouetteVisible) { attr('glassTint', 'fill', col || '#000'); attr('glassTint', 'opacity', op); attr('sil', 'opacity', silhouetteVisible ? 1 : 0); }
   function white(ms) { fade('flash', 0.92, ms, '#f4fbf8'); }
   function black(ms, op) { fade('dark', op == null ? 1 : op, ms); }
   // Dernière image de chaque fin (2 à 3 secondes), avant l'écran de fin.
   var FIN_FX = {
-    conforme: function () { glass('#000', false); later(500, function () { door(true); }); },
+    conforme: function () { glass(0.85, '#000', false); later(500, function () { door(true); }); },
     employe: function () { light('cold'); later(700, function () { door(true); }); },
     marche: function () { door(true); later(1600, function () { black(1200, 0.5); }); },
-    seulDehors: function () { attr('grilleSlats', 'opacity', 0); later(400, function () { white(2000); }); },
-    porteDerobee: function () { attr('trappeLid', 'fill', '#030404'); later(300, function () { black(2200, 0.92); }); },
+    seulDehors: function () { src('grilleImg', 'grille_ouverte'); later(400, function () { white(2000); }); },
+    porteDerobee: function () { attr('trappe', 'opacity', 1); src('trappeImg', 'trappe_ouverte'); later(300, function () { black(2200, 0.92); }); },
     evasion: function () { door(true); alarm(2400); },
-    cooperation: function () { glass('#fff2c0', false); later(600, function () { door(true); }); },
-    sauvetage: function () { glass('#fff2c0', false); later(700, function () { white(1800); }); },
-    tropTard: function () { glass('#000', false); later(900, function () { light('off'); }); },
+    cooperation: function () { glass(0.5, '#fff2c0', false); later(600, function () { door(true); }); },
+    sauvetage: function () { glass(0.5, '#fff2c0', false); later(700, function () { white(1800); }); },
+    tropTard: function () { glass(0.9, '#000', false); later(900, function () { light('off'); }); },
     complice: function () { door(true); alarm(2000); },
     sujet18: function () { later(300, function () { black(1600); }); },
-    miroir: function () { glitch(1800); var n = 0, iv = setInterval(function () { attr('sil', 'opacity', n % 2 ? 0.82 : 0); if (++n > 9) { clearInterval(iv); attr('sil', 'opacity', 0); } }, 180); fxTimers.push(iv); },
+    miroir: function () { glitch(1800); var n = 0, iv = setInterval(function () { attr('sil', 'opacity', n % 2 ? 1 : 0); if (++n > 9) { clearInterval(iv); attr('sil', 'opacity', 0); } }, 180); fxTimers.push(iv); },
     boucle: function () { ecran(''); attr('screen', 'fill', '#000'); attr('btnGlow', 'opacity', 0); later(500, function () { black(1800, 0.95); }); },
     isolement: function () { black(700); },
     gardien: function () { alarm(2400); attr('camLed', 'fill', '#e3262b'); later(300, function () { door(true); }); later(1600, function () { door(false); }); },
     temoin: function () { attr('camLed', 'fill', '#3ee08f'); attr('camMask', 'opacity', 0); },
     revolte: function () { door(true); alarm(2400); later(900, function () { fade('flash', 0.5, 1500, '#f4fbf8'); }); },
-    tempsEcoule: function () { light('red'); later(600, function () { door(true); harm(0); }); },
+    tempsEcoule: function () { light('red'); later(600, function () { door(true); if (vieCourante > 0) harm(0); else glass(0.15, '#fff', false); }); },
     curiosite: function () { door(false); flash(); }
   };
   function fin(id) { resetFx(); if (FIN_FX[id]) FIN_FX[id](); }
 
   // ---------- animations ----------
   function press() {
-    attr('dome', 'transform', 'translate(0 9)');
-    setTimeout(function () { attr('dome', 'transform', ''); }, 140);
+    attr('btnImg', 'opacity', 0); attr('btnImg2', 'opacity', 1);
+    setTimeout(function () { attr('btnImg', 'opacity', 1); attr('btnImg2', 'opacity', 0); }, 150);
   }
-  // Animations jouées par les événements « anim » du moteur.
   function later2(ms, f) { setTimeout(f, ms); }
+  // Une pose de la silhouette pendant un moment, puis retour à la pose qui suit sa vie.
+  function poseTemp(p, ms) { silhouette(p); later2(ms, function () { silhouette(poseVie(vieCourante)); }); }
+  // Animations jouées par les événements « anim » du moteur.
   var ANIMS = {
     lumiere: function () { blackout(false); if (reduce) return; attr('dark', 'opacity', 0.9); later2(120, function () { attr('dark', 'opacity', 0); }); later2(260, function () { attr('dark', 'opacity', 0.7); }); later2(420, function () { attr('dark', 'opacity', 0); }); },
-    camTourne: function () { attr('camRot', 'transform', 'rotate(10)'); later2(700, function () { attr('camRot', 'transform', 'rotate(40)'); }); },
-    vitreAllumee: function () { attr('glass', 'fill', '#a8996a'); later2(500, function () { attr('glass', 'fill', GLASS[3]); }); },
-    silArrive: function () { attr('sil', 'opacity', 0.82); },
-    silMain: function () { attr('hand', 'opacity', 1); later2(2600, function () { attr('hand', 'opacity', 0); }); },
-    silFrappe: function () { attr('hand', 'opacity', 1); var n = 0, iv = setInterval(function () { attr('silMove', 'transform', n % 2 ? '' : 'translate(-3 0)'); if (++n > 5) { clearInterval(iv); attr('silMove', 'transform', ''); } }, 140); later2(1600, function () { attr('hand', 'opacity', 0); }); },
-    silTourne: function () { attr('silMove', 'transform', 'translate(22 0)'); later2(1800, function () { attr('silMove', 'transform', ''); }); },
-    silBuee: function () { attr('buee', 'opacity', 0.55); later2(3500, function () { attr('buee', 'opacity', 0); }); },
-    compartiment: function () { attr('compDoor', 'opacity', 0); attr('compFuse', 'opacity', 1); },
-    silFige: function () { attr('hand', 'opacity', 0); attr('silMove', 'transform', ''); }
+    camTourne: function () { attr('camRot', 'transform', 'rotate(-10)'); later2(700, function () { attr('camRot', 'transform', 'rotate(8)'); }); later2(1400, function () { attr('camRot', 'transform', ''); }); },
+    vitreAllumee: function () { attr('glassTint', 'opacity', 0.7); later2(300, function () { attr('glassTint', 'opacity', 0.3); }); later2(600, function () { attr('glassTint', 'opacity', 0); }); },
+    silArrive: function () { attr('sil', 'opacity', 1); },
+    silMain: function () { poseTemp('paume', 2800); attr('hand', 'opacity', 0.9); later2(2600, function () { attr('hand', 'opacity', 0); }); },
+    silFrappe: function () { poseTemp('poing', 1800); var n = 0, iv = setInterval(function () { attr('silMove', 'transform', n % 2 ? '' : 'translate(-2 1)'); if (++n > 5) { clearInterval(iv); attr('silMove', 'transform', ''); } }, 140); },
+    silTourne: function () { poseTemp('tel', 2600); if (sujet !== 'A') { attr('silMove', 'transform', 'translate(18 0)'); later2(2200, function () { attr('silMove', 'transform', ''); }); } },
+    silBuee: function () { attr('buee', 'opacity', 0.75); later2(3800, function () { attr('buee', 'opacity', 0); }); },
+    compartiment: function () { src('compImg', 'compart_fusible'); },
+    silFige: function () { attr('hand', 'opacity', 0); attr('silMove', 'transform', ''); silhouette('debout'); },
+    video: function () { video(5200); }
   };
   function anim(n) { if (ANIMS[n]) ANIMS[n](); }
   // B2 : chaque pression partielle fait sursauter la silhouette, sans blessure.
-  function harmLeger() { attr('silMove', 'transform', 'translate(10 0)'); later2(250, function () { attr('silMove', 'transform', ''); }); }
+  function harmLeger() { poseTemp('recule', 400); attr('silMove', 'transform', 'translate(6 0)'); later2(250, function () { attr('silMove', 'transform', ''); }); }
 
   function harm(vieApres) {
-    attr('silMove', 'transform', 'translate(26 0)'); later2(900, function () { attr('silMove', 'transform', ''); });
-    var n = 0, base = GLASS[vieApres];
-    var iv = setInterval(function () { attr('glass', 'fill', n % 2 ? base : '#ff2424'); if (++n > 5) { clearInterval(iv); attr('glass', 'fill', base); } }, 120);
+    vieCourante = vieApres;
+    silhouette('recule'); attr('silMove', 'transform', 'translate(14 0)');
+    later2(900, function () { attr('silMove', 'transform', ''); silhouette(poseVie(vieApres)); if (vieApres <= 0) attr('sil', 'opacity', 0); });
+    var n = 0;
+    var iv = setInterval(function () { attr('glassTint', 'fill', n % 2 ? '#000' : '#ff2424'); attr('glassTint', 'opacity', n % 2 ? 0.2 : 0.45); if (++n > 5) { clearInterval(iv); attr('glassTint', 'fill', '#000'); attr('glassTint', 'opacity', [0.82, 0.38, 0.18, 0][Math.max(0, vieApres)]); } }, 120);
   }
   function flash() { if (reduce) return; attr('flash', 'opacity', 0.45); setTimeout(function () { attr('flash', 'opacity', 0); }, 90); }
   function alarm(ms) {
     if (reduce) { attr('tint', 'opacity', 0.15); setTimeout(function () { attr('tint', 'opacity', 0); }, ms); return; }
     var n = 0, iv = setInterval(function () { attr('tint', 'fill', '#ff1e1e'); attr('tint', 'opacity', n % 2 ? 0.05 : 0.22); if (++n * 250 > ms) { clearInterval(iv); attr('tint', 'opacity', 0); } }, 250);
   }
-  function blackout(on) { attr('dark', 'opacity', on ? 0.96 : 0); attr('cone', 'opacity', on ? 0 : 0.6); }
+  function blackout(on) { attr('dark', 'opacity', on ? 0.96 : 0); attr('cone', 'opacity', on ? 0 : 0.5); attr('bulb', 'opacity', on ? 0 : 1); }
 
-  // ---------- dessins des objets de l'inventaire (viewBox 0 0 40 40) ----------
-  var ICONES = {
-    tournevis: '<rect x="6" y="15" width="13" height="10" rx="3" fill="#e3262b"/><rect x="8" y="17" width="9" height="1.6" fill="#ff7a70" opacity=".6"/><rect x="19" y="18.5" width="13" height="3" fill="#b9c2bf"/><path d="M32 18.5 L36 19.5 L36 20.5 L32 21.5 Z" fill="#8b9592"/>',
-    fusible: '<rect x="9" y="13" width="22" height="14" rx="2" fill="#d6d1c4"/><rect x="5" y="15" width="5" height="10" rx="1" fill="#9aa4a1"/><rect x="30" y="15" width="5" height="10" rx="1" fill="#9aa4a1"/><rect x="14" y="17" width="12" height="6" fill="#f2c14e" opacity=".85"/>',
-    code: '<path d="M8 7 h20 l5 5 v21 h-25 z" fill="#e7e2d2"/><path d="M28 7 v5 h5" fill="#c9c3b2"/><text x="20" y="25" text-anchor="middle" font-family="VT323, monospace" font-size="11" fill="#3a3a3a">@CODE@</text>',
-    mot16: '<g transform="rotate(-8 20 20)"><rect x="7" y="10" width="26" height="20" fill="#e7e2d2"/><g stroke="#9a9484" stroke-width="1.2"><line x1="11" y1="16" x2="29" y2="16"/><line x1="11" y1="20" x2="27" y2="20"/><line x1="11" y1="24" x2="22" y2="24"/></g><text x="27" y="28" font-family="Archivo, sans-serif" font-size="6" font-weight="700" fill="#e3262b">16</text></g>',
-    badge: '<rect x="17" y="4" width="6" height="7" rx="2" fill="#8b9592"/><rect x="9" y="9" width="22" height="27" rx="3" fill="#c4ccc9"/><rect x="13" y="13" width="14" height="11" fill="#2a3533"/><path d="M14 24 l3 -4 l2 3 l2 -5 l5 6 z" fill="#46534f"/><rect x="13" y="27" width="14" height="2" fill="#5d6a67"/><rect x="13" y="31" width="9" height="2" fill="#5d6a67"/>',
-    enregistrement: '<rect x="4" y="10" width="32" height="21" rx="2" fill="#2c2c2c"/><rect x="8" y="13" width="24" height="8" fill="#e7e2d2"/><text x="20" y="20" text-anchor="middle" font-family="VT323, monospace" font-size="8" fill="#3a3a3a">17</text><circle cx="14" cy="25" r="2.6" fill="#d6d1c4"/><circle cx="26" cy="25" r="2.6" fill="#d6d1c4"/><path d="M11 31 l3 -3 h12 l3 3z" fill="#1d1d1d"/>'
+  // ---------- objets de l'inventaire (dessins de l'artiste) ----------
+  var ICONES = { tournevis: 'tournevis', fusible: 'fusible', code: 'papier_carre', mot16: 'carte_pliee', badge: 'badge', enregistrement: 'cassette', journal: 'papier_lettre' };
+  function icone(k, code) {
+    var h = '<svg viewBox="0 0 40 40" aria-hidden="true"><image href="' + IMG + ICONES[k] + '.webp" x="2" y="2" width="36" height="36" preserveAspectRatio="xMidYMid meet"/>';
+    if (k === 'code') h += '<text x="20" y="24" text-anchor="middle" font-family="VT323, monospace" font-size="11" fill="#2b2620">' + (code || '7__2') + '</text>';
+    if (k === 'mot16') h += '<text x="27" y="27" font-family="Reenie Beanie, cursive" font-size="11" fill="#7a1d16">16</text>';
+    return h + '</svg>';
+  }
+
+  root.BRRoom = {
+    get VITESSE() { return VIT[vitesse]; }, setVitesse: function (v) { if (VIT[v]) vitesse = v; },
+    ecranFinir: ecranFinir, layout: layout, icone: icone, mount: mount, render: render, fin: fin, anim: anim, harmLeger: harmLeger, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout
   };
-  function icone(k, code) { return '<svg viewBox="0 0 40 40" aria-hidden="true">' + (ICONES[k] || '').replace('@CODE@', code || '7__2') + '</svg>'; }
-
-  root.BRRoom = { VITESSE: VITESSE, ecranFinir: ecranFinir, layout: layout, icone: icone, mount: mount, render: render, fin: fin, anim: anim, harmLeger: harmLeger, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
