@@ -94,7 +94,8 @@
   '<g id="btn" class="hs" data-k="btn" role="button" tabindex="0" aria-label="Appuyer sur le bouton rouge">' +
   I('btnImg', 'bouton', BTN.x, BTN.y, BTN.w, BTN.h) + I('btnImg2', 'bouton_enfonce', BTN2.x, BTN2.y, BTN2.w, BTN2.h, ' opacity="0"') + '</g>' +
   '<g id="phone" class="hs" data-k="phone" opacity="0"><rect x="580" y="436" width="170" height="104" fill="transparent"/><g id="phoneInner">' +
-  I('telImg', 'tel_pose', 590, 445, 140, 88.2) + I('telImg2', 'tel_decroche', 582, 452, 160, 78.6, ' opacity="0"') + '</g></g>' +
+  I('telImg', 'tel_pose', 590, 445, 140, 88.2) + I('telImg2', 'tel_decroche', 582, 452, 160, 78.6, ' opacity="0"') + '</g>' +
+  '<circle id="ecouteLed" cx="640" cy="505" r="4.5" fill="#ff3b30" class="pulse" opacity="0"/></g>' +
   '<g class="hs" data-k="mug"><rect x="948" y="458" width="90" height="82" fill="transparent"/>' + I('', 'tasse', 958, 470, 66, 58.2) + '</g>' +
   '</g>' +
   // ombre des coins, lumière et alarme
@@ -187,20 +188,21 @@
     // vie de la 18 : les trois voyants
     for (var i = 1; i <= 3; i++) { var on = s.vie >= i; attr('vie' + i, 'opacity', on ? 1 : 0); attr('vieGlow' + i, 'opacity', on ? 0.8 : 0); }
     // La silhouette se courbe avec sa vie ; la lumière de la 18 rougit quand le soupçon est élevé.
-    silhouette(poseVie(s.vie));
+    // Quand la 18 attend ton signal, elle reste la paume contre la vitre.
+    silhouette(s.items.indexOf('plan') >= 0 && s.vie > 0 ? 'paume' : poseVie(s.vie));
     attr('sil', 'opacity', s.vie > 0 && !info.silCachee ? 1 : 0);
     attr('glassTint', 'fill', s.vie > 0 && s.soupcon >= 3 ? '#7a1e10' : '#000');
     attr('glassTint', 'opacity', s.vie <= 0 ? 0.82 : s.soupcon >= 3 ? 0.3 : [0.82, 0.38, 0.18, 0][s.vie]);
     attr('hand', 'opacity', 0); attr('buee', 'opacity', 0); attr('silMove', 'transform', '');
     // caméra
     var blind = info.cameraAveugle, cut = has('cameraCoupee'), tournee = has('cameraTournee');
-    track = s.cycle >= 4 && !blind && !info.urgence;
+    track = s.cycle >= 3 && !blind && !info.urgence;
     camBase = tournee ? '' : 'scale(-1 1)';
     attr('camRot', 'transform', camBase);
     attr('camMask', 'opacity', blind && !cut && !tournee ? 1 : 0);
     attr('camImg', 'opacity', cut ? 0.75 : 1);
     attr('auxLed', 'fill', s.flags.aux === 'defaut' ? '#e3262b' : '#3ee08f'); attr('auxLed', 'class', s.flags.aux === 'defaut' ? 'pulse' : '');
-    var led = blind ? '#2a2e2d' : s.cycle < 4 ? '#3b3f3e' : ['#3ee08f', '#3ee08f', '#f2a33a', '#e3262b', '#e3262b'][s.soupcon];
+    var led = blind ? '#2a2e2d' : s.cycle < 3 ? '#3b3f3e' : ['#3ee08f', '#3ee08f', '#f2a33a', '#e3262b', '#e3262b'][s.soupcon];
     attr('camLed', 'fill', led); attr('camLed', 'class', !blind && s.soupcon >= 3 ? 'pulse' : '');
     // objets
     attr('phone', 'opacity', s.cycle >= 3 ? 1 : 0);
@@ -222,9 +224,11 @@
     attr('btnGlow', 'opacity', info.ordre ? 0.8 : 0); attr('btnGlow', 'class', info.ordre ? 'pulse' : '');
     door(info.porteOuverte);
     // lumière
-    var mode = info.urgence ? 'urgence' : (s.flags.compte && s.cycle >= 18) ? 'red' : s.cycle >= 15 ? 'cold' : 'normal';
+    var mode = info.urgence ? 'urgence' : (s.flags.compte && s.cycle >= 18) ? 'red' : s.cycle >= 16 ? 'cold' : 'normal';
     light(mode);
     attr('phoneInner', 'class', info.sonne ? 'ring' : '');
+    // Petit voyant rouge : la ligne est écoutée.
+    attr('ecouteLed', 'opacity', info.ecoute ? 1 : 0);
   }
 
   function light(mode) {
@@ -370,6 +374,7 @@
     silTourne: function () { poseTemp('tel', 2600); if (sujet !== 'A') { attr('silMove', 'transform', 'translate(40 0)'); later2(2200, function () { attr('silMove', 'transform', ''); }); } },
     silBuee: function () { attr('buee', 'opacity', 0.75); later2(3800, function () { attr('buee', 'opacity', 0); }); },
     compartiment: function () { attr('compImg', 'opacity', 0); attr('compFuse', 'opacity', 1); },
+    silSursaut: function () { harmLeger(); },
     silFige: function () { attr('hand', 'opacity', 0); attr('silMove', 'transform', ''); silhouette('debout'); },
     video: function () { video(5200); }
   };

@@ -6,7 +6,7 @@
   var E = window.BREngine, R = window.BRRoom, A = window.BRAudio;
   var $ = function (id) { return document.getElementById(id); };
   var FOUND_KEY = 'bouton-rouge-v2-fins', TUTO_KEY = 'bouton-rouge-v2-tuto', SESSION_KEY = 'bouton-rouge-v3-sessions';
-  var SAVE_KEY = 'bouton-rouge-v4-partie', REGLAGES_KEY = 'bouton-rouge-v4-reglages';
+  var SAVE_KEY = 'bouton-rouge-v5-partie', REGLAGES_KEY = 'bouton-rouge-v4-reglages';
   function lire(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
   function ecrire(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   // Mémoire des sessions précédentes (dans ce navigateur) : le Système s'en souvient.
@@ -16,11 +16,12 @@
   var POCHES = ['tournevis', 'fusible', 'code', 'mot16', 'badge', 'enregistrement', 'journal'];
   var POCHE_OBJET = { badge: 'badge', enregistrement: 'cassette' };
   // Indices (connaissances) montrés à la fin.
-  var INDICES = ['angleMort', 'operateur', 'mensonge', 'miroir', 'objectif', 'plan', 'verite'];
+  // Ce que le joueur a appris (montré dans l'Historique : faits observés seulement).
+  var SAVOIRS = ['trappe', 'angleMort', 'operateur', 'objectif', 'plan', 'sortieCachee', 'conduit', 'dossier', 'menaceVide', 'videoTruquee', 'simulation', 'protocole', 'relais', 'relaisReset', 'verite'];
 
   var s = null, t = null, run = 0, busy = true, paused = false, sel = null, tuto = false;
   var timeLeft = 0, timeTotal = 0, lastTick = 0, lastSec = -1, lastEcran = '', popDone = null, flashItems = [];
-  var hist = [], introSil = false, triple = 0;
+  var hist = [], introSil = false, confirmer = false, ringT = null;
 
   function ecranTxt(t) { return t.replace(/-\|/g, '-').replace(/\|/g, ' '); }
   // Une lettre affichée comme un vrai papier (recto, et verso si on l'a gardée).
@@ -40,7 +41,9 @@
   }
   function renderHist() {
     var box = $('histBox');
-    box.innerHTML = hist.map(function (h) { return '<p class="' + h.cls + '">' + esc(h.txt) + '</p>'; }).join('');
+    var sv = s ? SAVOIRS.filter(function (k) { return E.has(s, k); }) : [];
+    box.innerHTML = (sv.length ? '<p class="obj">Ce que tu sais : ' + sv.map(function (k) { return esc(E.OBJETS[k]); }).join(' · ') + '</p>' : '') +
+      hist.map(function (h) { return '<p class="' + h.cls + '">' + esc(h.txt) + '</p>'; }).join('');
     box.scrollTop = box.scrollHeight;
   }
   $('histBtn').onclick = function () {
@@ -71,10 +74,10 @@
   // ---------- texte tapé dans les popups ----------
   var typer = null, PAS = { lent: 1, normal: 2, rapide: 4 }, vitesse = 'normal';
   // La voix de la 18 murmure pendant que son texte se tape (plus grave ou plus aiguë selon qui elle est).
-  var HAUTEUR = { A: 1, B: 1.35, C: 1.7 };
+  // Toutes les voix passent par le même filtre (aucun second indice sonore selon la vérité).
   function taper(els, textes, fin, types) {
     var li = 0, ci = 0, iv = null, pas = PAS[vitesse] || 2;
-    function voix(i) { var k = types && types[i]; if (k === 'voix' || k === 'tel') A.murmure(Math.ceil(textes[i].length / pas) * 22, k === 'voix' || /^«/.test(textes[i]) ? HAUTEUR[s.truth] : 0.9, k === 'tel'); }
+    function voix(i) { var k = types && types[i]; if (k === 'voix' || k === 'tel') A.murmure(Math.ceil(textes[i].length / pas) * 22, 1, true); }
     function finir() { clearInterval(iv); typer = null; els.forEach(function (el, i) { el.textContent = textes[i]; }); if (fin) fin(); }
     els.forEach(function (el) { el.textContent = ''; });
     if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return finir();
@@ -124,7 +127,7 @@
     if (texte) h += '<p>' + esc(texte) + '</p>';
     list.forEach(function (x, i) {
       if (i || texte || titre) h += (i || texte ? '<div class="sep"></div>' : '') + '<div class="who"><span>' + esc(x.qui) + '</span></div>';
-      h += (x.id === 'H1' ? lettreHtml('mot16', false) : '<p>' + esc(x.texte) + '</p>') + '<div class="ab' + (x.B ? '' : ' one') + '">' + choiceBtn(x, 'A') + choiceBtn(x, 'B') + '</div>';
+      h += (x.id === 'H1' ? lettreHtml('mot16', false) : '<p>' + esc(x.texte) + '</p>') + '<div class="ab' + (x.B ? '' : ' one') + '">' + choiceBtn(x, 'A') + choiceBtn(x, 'B') + choiceBtn(x, 'C') + '</div>';
     });
     openPop(h, function () { sel = null; if (s && !s.fin) R.render(s, roomInfo()); });
   }
@@ -135,8 +138,23 @@
     A.init();
     if (b.dataset.go && typer) return typer.finir(); // premier toucher : tout afficher
     if (b.dataset.go || b.dataset.close) return closePop();
-    if (b.dataset.sit) { var a = { type: 'situation', id: b.dataset.sit, choix: b.dataset.c }; popDone = null; $('pop').hidden = true; act(a); }
+    if (b.dataset.ok) { confirmer = false; var a0 = JSON.parse(b.dataset.ok); popDone = null; $('pop').hidden = true; return act(a0); }
+    if (b.dataset.no) { confirmer = false; return closePop(); }
+    if (b.dataset.sit) {
+      var a = { type: 'situation', id: b.dataset.sit, choix: b.dataset.c }, k = forcedKind();
+      // Une action coûteuse pendant un ordre ou un appel : on prévient d'abord (le chrono s'arrête pendant la question).
+      if ((k === 'ordre' || k === 'appel') && t.forced.id !== a.id && !estGratuit(a.id)) {
+        confirmer = true;
+        $('card').innerHTML = '<div class="who"><span>' + (k === 'ordre' ? 'UN ORDRE EST EN COURS' : 'LE TÉLÉPHONE SONNE') + '</span></div><p>' + (k === 'ordre' ? 'Si tu fais ça maintenant, l\'ordre sera refusé.' : 'Si tu fais ça maintenant, tu laisses sonner le téléphone.') + '</p>' +
+          '<div class="ab"><button class="ch" data-ok=\'' + JSON.stringify(a) + '\'>Le faire quand même</button><button class="ch" data-no="1">Revenir</button></div>';
+        popDone = function () { confirmer = false; };
+        return;
+      }
+      popDone = null; $('pop').hidden = true; act(a);
+    }
   });
+
+  function estGratuit(id) { var ok = false; Object.keys(t.objets).forEach(function (o) { t.objets[o].forEach(function (x) { if (x.id === id && x.gratuit) ok = true; }); }); return ok; }
 
   // ---------- lecture des événements du moteur ----------
   async function play(events, my, auto) {
@@ -165,7 +183,7 @@
           break;
         case 'porte': A.sfx(e.open ? 'lock' : 'slam'); await wait(400, my); break;
         case 'son': A.sfx(e.n); if (e.n === 'alarm') R.alarm(2600); break;
-        case 'cycle': if (e.n === 6 || e.n === 7) R.render(s, roomInfo()); break;
+        case 'cycle': if (e.n === 5 || e.n === 6) R.render(s, roomInfo()); break;
         case 'anim':
           if (e.n === 'silArrive') introSil = false;
           R.anim(e.n);
@@ -179,36 +197,48 @@
   }
 
   // ---------- un moment de jeu ----------
-  function forcedKind() { return !t || !t.forced ? null : t.forced.ordre ? 'ordre' : t.forced.id === 'T1' ? 'T1' : 'T4'; }
+  function forcedKind() { return t ? t.forcedKind : null; }
+  function sonne() { return !busy && t && ((t.sonne && ringT) || (forcedKind() === 'appel' && sel !== 'phone')); }
   function roomInfo() {
     var k = forcedKind();
     return {
-      cameraAveugle: E.cameraAveugle(s), porteOuverte: E.porteOuverte(s), urgence: s.cycle === 6, silCachee: introSil,
-      ordre: !busy && k === 'ordre', sonne: !busy && (k === 'T1' || (k === 'T4' && sel !== 'phone')), decroche: sel === 'phone' && !$('pop').hidden
+      cameraAveugle: E.cameraAveugle(s), porteOuverte: E.porteOuverte(s), urgence: s.cycle === 5, silCachee: introSil,
+      ordre: !busy && k === 'ordre', sonne: sonne(), decroche: sel === 'phone' && !$('pop').hidden, ecoute: E.ecoute(s)
     };
   }
 
   function startCycle(my) {
     if (my !== run) return;
-    t = E.turn(s); busy = false; sel = null; triple = 0;
+    t = E.turn(s); busy = false; sel = null; confirmer = false;
     var k = forcedKind();
+    clearTimeout(ringT); ringT = null;
     if (k === 'ordre') R.ecran(t.forced.ecran, { color: '#ff8a7a' });
-    else if (k) { R.ecran(t.forced.ecran); A.ring(true); toast('Le téléphone sonne.'); addHist('Le téléphone sonne.'); }
+    else if (k === 'appel' || t.sonne) {
+      if (t.forced && t.forced.ecran) R.ecran(t.forced.ecran);
+      A.ring(true); toast('Le téléphone sonne.'); addHist('Le téléphone sonne.');
+      // Un appel libre (le premier) sonne trente secondes, puis se tait ; on pourra rappeler.
+      if (t.sonne) ringT = setTimeout(function () { ringT = null; A.ring(false); if (!busy) R.render(s, roomInfo()); }, E.DUREES.appel * 1000);
+    }
     else if (!lastEcran) R.ecran('TEST EN|COURS.');
     lastEcran = '';
     timeTotal = timeLeft = (t.duree || 0) * 1000; lastTick = performance.now(); lastSec = -1;
     if (tuto && s.cycle > 3) { tuto = false; try { localStorage.setItem(TUTO_KEY, '1'); } catch (e) {} }
     // Sauvegarde à chaque moment : « Continuer » reprend ici.
-    ecrire(SAVE_KEY, { v: 4, s: s, hist: hist.slice(-60) });
+    ecrire(SAVE_KEY, { v: 5, s: s, hist: hist.slice(-60) });
     refresh();
+    // Un moment imposé (proposition du Système, scène qui demande une décision) s'ouvre tout seul.
+    if (k === 'impose') { sel = t.forced.objet; objetPop('', '', [t.forced], false); }
   }
 
   function refresh() {
-    A.ambiance({ vie: s.vie, soupcon: s.soupcon, vent: s.cycle === 6 ? 'off' : s.cycle >= 15 ? 'faible' : 'normal', actif: !!t && !s.fin && !paused });
+    // Trois phases sonores : installation, surveillance accrue, confrontation finale (le silence gagne).
+    var phase = s.cycle < 8 ? 1 : s.cycle < 16 ? 2 : 3;
+    A.ambiance({ vie: s.vie, soupcon: s.soupcon, phase: phase, vent: s.cycle === 5 ? 'off' : phase === 3 ? 'faible' : 'normal', actif: !!t && !s.fin && !paused });
     R.render(s, roomInfo());
     renderBag(); updateTimer();
-    var k = forcedKind(), hint = !busy && t && tuto && s.cycle <= 3 ? (k === 'ordre' ? E.AIDES.ordre : k ? E.AIDES.appel : E.AIDES.libre) : '';
+    var k = forcedKind(), hint = !busy && t && tuto && s.cycle <= 3 ? (k === 'ordre' ? E.AIDES.ordre : (k === 'appel' || (t.sonne && ringT)) ? E.AIDES.appel : !k ? E.AIDES.libre : '') : '';
     $('hintcap').textContent = hint; $('hintcap').hidden = !hint;
+    $('waitBtn').hidden = !(t && !busy && t.peutAttendre && !s.fin);
   }
 
   // ---------- inventaire ----------
@@ -243,16 +273,12 @@
     var kind = forcedKind();
     var exit = t.sorties.filter(function (x) { return (x.via === 'porte' && k === 'door') || (x.via === 'trappe' && k === 'trappe' && !t.objets.trappe); })[0];
     if (exit) return act({ type: 'sortir', via: exit.via });
+    if (kind === 'impose') { sel = t.forced.objet; objetPop('', '', [t.forced], false); return; }
     if (k === 'btn') {
-      if (kind === 'ordre' && t.forced.triple) {
-        triple++; R.press(); A.sfx('clac'); R.ecran(triple + '/3', { color: '#ff8a7a' });
-        if (triple < 3) { R.harmLeger(); return; }
-      }
       if (!kind || kind === 'ordre') return act({ type: 'appuyer' });
       return toast('Le téléphone sonne.');
     }
-    if (kind === 'T1' && k === 'phone') return act({ type: 'situation', id: 'T1', choix: 'A' });
-    if (kind === 'T4' && k === 'phone') { sel = 'phone'; A.ring(false); A.sfx('pickup'); objetPop('', '', t.objets.phone, false); R.render(s, roomInfo()); return; }
+    if (k === 'phone' && (kind === 'appel' || (t.sonne && ringT))) { sel = 'phone'; A.ring(false); A.sfx('pickup'); objetPop('', '', t.objets.phone, kind === 'appel' ? false : true); R.render(s, roomInfo()); return; }
     if (t.objets[k]) { sel = k; objetPop(t.objets[k].length > 1 ? (TITRES[k] || '') : '', '', t.objets[k], true); if (k === 'phone') R.render(s, roomInfo()); return; }
     var txt = E.regarder(s, k);
     if (txt) objetPop(TITRES[k] || '', txt, null, true);
@@ -262,6 +288,7 @@
     if (busy || !s || s.fin || paused) return;
     var res;
     try { res = E.choose(s, a); } catch (err) { console.error(err); return; }
+    var avant = { c: s.cycle, f: E.forcedId(s) };
     busy = true; A.ring(false); sel = null; flashItems = [];
     if (!$('pop').hidden) { popDone = null; $('pop').hidden = true; }
     s = res.state;
@@ -271,6 +298,13 @@
     if (!ok) return;
     R.render(s, roomInfo()); renderBag();
     if (s.fin) return finale(my);
+    // Même moment, même ordre (B2 pression par pression, objet ramassé) : le chrono continue.
+    if (s.cycle === avant.c && E.forcedId(s) === avant.f) {
+      t = E.turn(s); busy = false; lastTick = performance.now();
+      if (t.sonne && ringT) A.ring(true);
+      ecrire(SAVE_KEY, { v: 5, s: s, hist: hist.slice(-60) });
+      return refresh();
+    }
     startCycle(my);
   }
 
@@ -289,16 +323,17 @@
   }
   setInterval(function () {
     var nowT = performance.now(), dt = nowT - lastTick; lastTick = nowT;
-    if (busy || paused || !s || s.fin || document.hidden || !t || !timeTotal) return;
+    if (busy || paused || confirmer || !s || s.fin || document.hidden || !t || !timeTotal) return;
     timeLeft -= dt; updateTimer();
     if (timeLeft <= 0) act({ type: 'temps' });
   }, 100);
   function setPaused(p) {
     paused = p; $('pauseBtn').textContent = p ? 'Reprendre' : 'Pause'; $('pauseBtn').setAttribute('aria-pressed', p); $('pausedLbl').hidden = !p;
     A.ambiance({ actif: !p && !!t && s && !s.fin });
-    if (p) A.ring(false); else if (!busy && (forcedKind() === 'T1' || (forcedKind() === 'T4' && sel !== 'phone'))) A.ring(true);
+    if (p) A.ring(false); else if (sonne()) A.ring(true);
   }
   $('pausedLbl').addEventListener('click', function () { setPaused(false); });
+  $('waitBtn').onclick = function () { A.init(); if (!busy && t && t.peutAttendre && $('pop').hidden) act({ type: 'attendre' }); };
 
   // ---------- fin ----------
   var SONS_FIN = { conforme: 'lock', employe: 'lock', marche: 'ring', seulDehors: 'thud', porteDerobee: 'thud', evasion: 'alarm', cooperation: 'lock', sauvetage: 'thud', tropTard: 'blink', complice: 'alarm', sujet18: 'thud', miroir: 'glitch', boucle: 'blink', isolement: 'slam', gardien: 'alarm', temoin: 'pickup', revolte: 'alarm', tempsEcoule: 'cry', curiosite: 'slam' };
@@ -318,26 +353,19 @@
   function endScreen() {
     var found = loadFound(); found[s.fin] = 1;
     try { localStorage.setItem(FOUND_KEY, JSON.stringify(found)); } catch (e) {}
-    ecrireMemoire({ sessions: s.memoire.session, dernier: { fin: s.fin, presses: s.stats.presses + s.stats.auto } });
-    var F = E.FINS[s.fin], st = s.stats;
+    ecrireMemoire({ sessions: s.memoire.session, dernier: { fin: s.fin, presses: s.stats.presses } });
+    var F = E.FINS[s.fin];
     var ids = E.FIN_IDS.slice().sort(function (a, b) { return (E.FINS[a].bonus ? 99 : E.FINS[a].n) - (E.FINS[b].bonus ? 99 : E.FINS[b].n); });
     var nb = ids.filter(function (k) { return found[k] && !E.FINS[k].bonus; }).length;
-    var rows = [['Pressions sur le bouton', st.presses], ['Ordres suivis', st.suivis], ['Ordres refusés', st.refus], ['Douleur infligée à la Chambre 18', st.blessures + ' fois']];
     var h = '<div class="k">' + (F.bonus ? 'FIN BONUS' : 'FIN ' + F.n + ' / 18') + '</div><h2>' + esc(F.titre) + '</h2>';
     if (F.crt !== '_') h += '<div class="crt">' + esc(F.crt) + '</div>';
     h += '<p>' + esc(texteFin(F)) + '</p>';
     h += '<p class="truth">' + (E.has(s, 'verite') ? esc(E.VERITES[s.truth].texte) : 'Ce que cachait la Chambre 18 : tu ne l\'as pas découvert.') + '</p>';
-    var inds = INDICES.filter(function (k) { return E.has(s, k); });
-    h += '<div class="k">DANS TES POCHES</div><div class="bag">' + POCHES.map(function (k) { return '<div class="slot">' + (possede(k) ? R.icone(k, codeTexte()) : '') + '</div>'; }).join('') + '</div>';
-    if (inds.length) h += '<div class="k">CE QUE TU AS COMPRIS</div><div class="fins">' + inds.map(function (k) { return '<span class="on">' + esc(E.OBJETS[k]) + '</span>'; }).join('') + '</div>';
-    h += '<div class="stats">' + rows.map(function (r) { return '<span>' + r[0] + '</span><span>' + r[1] + '</span>'; }).join('') + '</div>';
+    // Trois éléments au plus : un acte décisif, sa conséquence, une question encore ouverte.
+    h += '<ul class="bilan">' + E.bilan(s).map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul>';
     h += '<div class="k">FINS DÉCOUVERTES : ' + nb + ' / 18</div><div class="fins">' + ids.map(function (k) {
       return '<span class="' + (k === s.fin ? 'cur' : found[k] ? 'on' : '') + '">' + (found[k] ? esc(E.FINS[k].titre) : '???') + '</span>';
     }).join('') + '</div>';
-    // Un indice vers une fin pas encore découverte, pour donner envie de relancer.
-    var reste = ids.filter(function (k) { return !found[k] && k !== s.fin; });
-    if (reste.length) { var kx = reste[Math.floor(Math.random() * reste.length)]; h += '<p class="indice">Une autre fin t\'attendait si tu avais ' + esc(E.INDICES_FINS[kx]) + '</p>'; }
-    else h += '<p class="indice">Tu as tout vu. Vraiment ?</p>';
     h += '<div class="endbtns"><button class="enter" id="againBtn">Retourner dans la Chambre 17</button><button class="mbtn" id="menuBtn2">Menu</button></div>';
     $('endBox').innerHTML = h; $('endOv').hidden = false;
     $('againBtn').onclick = function () { $('endOv').hidden = true; start(); };
@@ -384,7 +412,9 @@
     // Écran noir, un souffle de ventilation, puis le relais (anim « lumiere »).
     R.blackout(true);
     if (!(await wait(1800, my))) return;
-    if (!(await play(E.intro(s), my, true))) return;
+    // Réglage « passer les passages déjà vus » : l'introduction, déjà vue, est sautée (elle ne contient aucun choix).
+    if (reglages.passer && s.memoire.session > 1) { E.intro(s); R.anim('lumiere'); A.sfx('lock'); R.ecran('Familiarisez-vous|avec votre poste.'); if (!(await wait(1200, my))) return; }
+    else if (!(await play(E.intro(s), my, true))) return;
     introSil = false;
     startCycle(my);
   }
@@ -435,8 +465,12 @@
   function majReglages() {
     Array.prototype.forEach.call(document.querySelectorAll('[data-vit]'), function (b) { b.setAttribute('aria-pressed', b.dataset.vit === reglages.vitesse); });
     $('sonSet').textContent = reglages.muet ? 'Non' : 'Oui'; $('sonSet').setAttribute('aria-pressed', !reglages.muet);
+    $('passSet').textContent = reglages.passer ? 'Oui' : 'Non'; $('passSet').setAttribute('aria-pressed', !!reglages.passer);
   }
   Array.prototype.forEach.call(document.querySelectorAll('[data-vit]'), function (b) { b.onclick = function () { reglages.vitesse = b.dataset.vit; ecrire(REGLAGES_KEY, reglages); appliquer(); majReglages(); }; });
+  $('passSet').onclick = function () { reglages.passer = !reglages.passer; ecrire(REGLAGES_KEY, reglages); majReglages(); };
+  // Remise à zéro explicite de la mémoire du Système (et des fins découvertes).
+  $('oubliSet').onclick = function () { ecrire(SESSION_KEY, null); ecrire(FOUND_KEY, null); this.textContent = 'Mémoire effacée'; };
   $('sonSet').onclick = function () { reglages.muet = !reglages.muet; ecrire(REGLAGES_KEY, reglages); appliquer(); majReglages(); };
   appliquer(); titre();
   document.addEventListener('visibilitychange', function () { if (document.hidden && s && !s.fin && !paused && $('intro').hidden) setPaused(true); });

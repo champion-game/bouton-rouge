@@ -50,14 +50,15 @@
     pickup: function () { var t = now(); noise(t, 0.05, 0.3, 'bandpass', 1500); osc('sine', 600, t + 0.05, 0.08, 0.05); },
     tick: function () { var t = now(); osc('square', 1200, t, 0.03, 0.04); },
     cycle: function () { var t = now(); osc('sine', 330, t, 0.25, 0.06); osc('sine', 220, t + 0.12, 0.3, 0.05); },
-    alarm: function () { startAlarm(2600); }
+    alarm: function () { startAlarm(2600); },
+    pas: function () { var t = now(); for (var i = 0; i < 5; i++) { osc('sine', 70, t + i * 0.5, 0.2, 0.14, 45); noise(t + i * 0.5, 0.08, 0.06, 'lowpass', 400); } }
   };
 
   function sfx(n) { if (SFX[n]) SFX[n](); }
 
   // ---------- ambiance qui évolue avec la partie ----------
   var humG = null, ventG = null, droneG = null;
-  var etat = { vie: 3, soupcon: 0, vent: 'normal', actif: false }, souffleT = null, eventT = null;
+  var etat = { vie: 3, soupcon: 0, vent: 'normal', actif: false, phase: 1 }, souffleT = null, eventT = null;
   function startAmbience() {
     if (!AC || hum) return; try {
       hum = AC.createOscillator(); humG = AC.createGain(); hum.frequency.value = 50; humG.gain.value = 0.025; hum.connect(humG); humG.connect(master); hum.start();
@@ -95,12 +96,14 @@
       eventT = null;
       if (!etat.actif || !AC) return;
       var t = now(), r = Math.random();
-      if (r < 0.35) { for (var i = 0; i < 4; i++) { osc('sine', 70, t + i * 0.55, 0.2, 0.12, 45); noise(t + i * 0.55, 0.08, 0.05, 'lowpass', 400); } }
+      // Surveillance accrue : le petit moteur de la caméra se fait entendre.
+      if (etat.phase === 2 && Math.random() < 0.4) { osc('sawtooth', 220, t, 0.6, 0.012, 260); osc('sawtooth', 260, t + 0.7, 0.5, 0.01, 210); }
+      else if (r < 0.35) { for (var i = 0; i < 4; i++) { osc('sine', 70, t + i * 0.55, 0.2, 0.12, 45); noise(t + i * 0.55, 0.08, 0.05, 'lowpass', 400); } }
       else if (r < 0.6) { noise(t, 0.5, 0.18, 'lowpass', 300); osc('sine', 48, t, 0.7, 0.18, 32); }
       else if (r < 0.8) { osc('triangle', 1900, t, 1.2, 0.025); osc('triangle', 2650, t + 0.01, 0.9, 0.015); }
       else { for (var j = 0; j < 3; j++) { osc('sine', 160, t + j * 0.35, 0.1, 0.1, 90); } }
       evenement();
-    }, 22000 + Math.random() * 20000);
+    }, (etat.phase === 3 ? 30000 : 18000) + Math.random() * 18000);
   }
 
   // Murmure synthétisé pendant que la voix de la 18 (ou une voix au téléphone) se tape : des syllabes sans mots.
