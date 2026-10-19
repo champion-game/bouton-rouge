@@ -32,6 +32,12 @@
     return '<clipPath id="' + id + '"><rect x="' + x.toFixed(1) + '" y="' + y + '" width="' + w.toFixed(1) + '" height="' + h + '"/></clipPath>' +
       I('', name, +(x - sx * k).toFixed(1), y, +(SW * k).toFixed(1), h, ' clip-path="url(#' + id + ')"' + (op ? ' opacity="' + op + '"' : ''));
   }
+  // Tuyau vertical (cylindre ombré) avec ses colliers, comme sur le modèle.
+  function tuyau(x, y1, y2, w) {
+    var t = '<rect x="' + x + '" y="' + y1 + '" width="' + w + '" height="' + (y2 - y1) + '" fill="url(#pipeG)"/>';
+    for (var y = y1 + 90; y < y2 - 40; y += 210) t += '<rect x="' + (x - 3) + '" y="' + y + '" width="' + (w + 6) + '" height="7" rx="1.5" fill="url(#pipeG)" stroke="#060808" stroke-width="1"/>';
+    return t;
+  }
   var bord = 80 * VT.k;
   var VITRE = tranche('vitre', 0, 80, 620, 738, VT.x, VT.y, bord, VT.h) + tranche('vitre', 80, 460, 620, 738, VT.x + bord, VT.y, VT.w - 2 * bord, VT.h, 0.62) +
     tranche('vitre', 540, 80, 620, 738, VT.x + VT.w - bord, VT.y, bord, VT.h);
@@ -52,6 +58,14 @@
   '<filter id="flou" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="2.6"/></filter>' +
   '<clipPath id="glassClip"><rect x="' + GL.x + '" y="' + GL.y + '" width="' + GL.w + '" height="' + GL.h + '"/></clipPath>' +
   '<clipPath id="screenClip"><rect x="' + SC.x + '" y="' + SC.y + '" width="' + SC.w + '" height="' + SC.h + '" rx="6"/></clipPath>' +
+  '<linearGradient id="pipeG" x1="0" x2="1"><stop offset="0" stop-color="#070909"/><stop offset=".3" stop-color="#4c5553"/><stop offset=".45" stop-color="#a7b0ad"/><stop offset=".62" stop-color="#3a4240"/><stop offset="1" stop-color="#050707"/></linearGradient>' +
+  '<linearGradient id="reflFade" gradientUnits="userSpaceOnUse" x1="0" y1="816" x2="0" y2="960"><stop offset="0" stop-color="#fff" stop-opacity=".34"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+  '<mask id="reflM" maskUnits="userSpaceOnUse" x="-3000" y="0" width="8000" height="3000"><rect x="-3000" y="816" width="8000" height="400" fill="url(#reflFade)"/></mask>' +
+  '<linearGradient id="reflFadeD" gradientUnits="userSpaceOnUse" x1="0" y1="701" x2="0" y2="800"><stop offset="0" stop-color="#fff" stop-opacity=".26"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+  '<mask id="reflD" maskUnits="userSpaceOnUse" x="-3000" y="0" width="8000" height="3000"><rect x="-3000" y="701" width="8000" height="300" fill="url(#reflFadeD)"/></mask>' +
+  '<radialGradient id="sheenG"><stop offset="0" stop-color="#e9f2ef" stop-opacity=".26"/><stop offset="1" stop-color="#e9f2ef" stop-opacity="0"/></radialGradient>' +
+  '<linearGradient id="glareG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".09"/><stop offset=".5" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+  '<linearGradient id="glassRG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
   '<pattern id="scan" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="2.5" fill="#000" opacity=".22"/></pattern>' +
   '</defs>' +
   '<g id="bg"></g>' +
@@ -63,7 +77,10 @@
   I('camMask', 'camera_drap', -92.6, -45.5, 117.3, 89.5, ' opacity="0"') +
   '</g></g></g>' +
   // porte et mot de 16 glissé dessous
-  '<g id="gDoor"><g id="door" class="hs" data-k="door">' +
+  '<g id="gDoor"><g style="pointer-events:none">' + tuyau(376, -20, SOL + 8, 14) + tuyau(397, -20, SOL + 8, 7) +
+  '<rect x="368" y="372" width="34" height="44" rx="2" fill="#262c2b" stroke="#0a0d0d" stroke-width="2"/><circle cx="385" cy="394" r="6" fill="#141818" stroke="#4c5553" stroke-width="1.5"/>' +
+  '<g mask="url(#reflD)"><use href="#door" transform="translate(0 1402) scale(1 -1)"/></g></g>' +
+  '<g id="door" class="hs" data-k="door">' +
   '<rect id="doorLight" x="60" y="90" width="240" height="600" fill="#f4fbf8" opacity="0" filter="url(#flou)"/>' +
   I('doorImg', 'porte_fermee', -15.7, 17.5, 377.9, 709.6) + '</g></g>' +
   '<g id="gNote"><g id="note" class="hs" data-k="note" opacity="0"><rect x="140" y="672" width="108" height="44" fill="transparent"/>' + I('', 'mot_plie', 150, 682, 88, 26.4) + '</g></g>' +
@@ -80,6 +97,8 @@
   '<g clip-path="url(#glassClip)">' +
   I('hand', 'main', GL.x + GL.w / 2 - 185, GL.y + 20, 370, 370, ' opacity="0" style="transition:opacity .5s ease"') +
   I('buee', 'fleche', GL.x + GL.w / 2 - 185, GL.y - 40, 370, 370, ' opacity="0" style="transition:opacity .8s ease"') +
+  '<polygon points="' + (GL.x + 40) + ',' + (GL.y + GL.h) + ' ' + (GL.x + 120) + ',' + (GL.y + GL.h) + ' ' + (GL.x + 250) + ',' + GL.y + ' ' + (GL.x + 170) + ',' + GL.y + '" fill="url(#glassRG)" style="pointer-events:none"/>' +
+  '<polygon points="' + (GL.x + 140) + ',' + (GL.y + GL.h) + ' ' + (GL.x + 160) + ',' + (GL.y + GL.h) + ' ' + (GL.x + 290) + ',' + GL.y + ' ' + (GL.x + 270) + ',' + GL.y + '" fill="url(#glassRG)" style="pointer-events:none"/>' +
   '<rect id="glassTint" x="' + GL.x + '" y="' + GL.y + '" width="' + GL.w + '" height="' + GL.h + '" fill="#000" opacity="0"/>' +
   '</g></g></g>' +
   // témoins CH. 18 — SIGNES VITAUX
@@ -87,7 +106,9 @@
   VIES.map(function (x, i) { return '<circle id="vieGlow' + (i + 1) + '" cx="' + x + '" cy="' + VIES_Y + '" r="20" fill="url(#ledG)" style="color:#3ee08f" opacity="0"/><circle id="vie' + (i + 1) + '" cx="' + x + '" cy="' + VIES_Y + '" r="9" fill="#3ee08f" opacity="0"/>'; }).join('') +
   '</g></g>' +
   // boîtier électrique de maintenance : ouvert, trois leviers (caméra, actionneur de la 18, auxiliaire)
-  '<g id="gBox"><g id="box" class="hs" data-k="box"><rect x="' + BX.x + '" y="' + BX.y + '" width="' + BX.w + '" height="' + BX.h + '" fill="transparent"/>' + I('boxImg', 'boitier_ferme', BX.x, BX.y, BX.w, BX.h) +
+  '<g id="gBox"><g style="pointer-events:none">' + tuyau(BX.x + 0.392 * BX.w, -20, BX.y + 4, 0.07 * BX.w) +
+  tuyau(BX.x + 0.335 * BX.w, BX.y + BX.h - 4, SOL + 8, 0.061 * BX.w) + tuyau(BX.x + 0.462 * BX.w, BX.y + BX.h - 4, SOL + 8, 0.061 * BX.w) + '</g>' +
+  '<g id="box" class="hs" data-k="box"><rect x="' + BX.x + '" y="' + BX.y + '" width="' + BX.w + '" height="' + BX.h + '" fill="transparent"/>' + I('boxImg', 'boitier_ferme', BX.x, BX.y, BX.w, BX.h) +
   '<g id="boxOpen" opacity="0" font-family="VT323, monospace" font-size="8" fill="#202421" text-anchor="middle">' +
   bt(0.361, 0.284, 'CAMÉRA A') + bt(0.361, 0.478, 'ACTIONNEUR') + bt(0.361, 0.503, 'CH.18') + bt(0.361, 0.692, 'AUX 24 V') +
   lev('levCam', SOCK[0]) + lev('levBtn', SOCK[1]) + lev('levAux', SOCK[2]) +
@@ -101,6 +122,10 @@
   '<g class="hs" data-k="monitor">' + I('', 'moniteur', 560, 92, 530, 274.5) + '</g>' +
   '<g class="hs" data-k="light">' + I('', 'lampe', 745, -130, 187.3, 206) +
   '<circle id="bulb" cx="838" cy="68" r="30" fill="url(#bulbG)" style="pointer-events:none"/></g>' +
+  // sol mouillé : reflet du bureau et éclat de la lampe
+  '<g style="pointer-events:none"><g mask="url(#reflM)"><use href="#desk" transform="translate(0 1632) scale(1 -1)"/></g>' +
+  '<g class="lit"><ellipse cx="836" cy="884" rx="300" ry="70" fill="url(#sheenG)"/><ellipse cx="836" cy="890" rx="70" ry="120" fill="url(#sheenG)"/></g></g>' +
+  '<g id="desk">' +
   // pieds du bureau : montant gauche et caisson droit, derrière les dessins
   '<g style="pointer-events:none" fill="#2f3534" stroke="#151918" stroke-width="2"><rect x="466" y="572" width="16" height="242"/><rect x="1004" y="572" width="206" height="244"/></g>' +
   '<g class="hs" data-k="bureau">' + I('socleImg', 'bureau_socle', 737.5, 562.5, 188.5, 254.6) + '</g>' +
@@ -115,8 +140,10 @@
   I('telImg', 'tel_pose', 506.2, 445.5, 161.5, 99.6) + I('telImg2', 'tel_decroche', 506.2, 445.5, 161.5, 99.6, ' opacity="0"') + '</g>' +
   '<circle id="ecouteLed" cx="640" cy="520" r="4.5" fill="#ff3b30" class="pulse" opacity="0"/></g>' +
   '<g class="hs" data-k="mug"><rect x="998" y="452" width="90" height="82" fill="transparent"/>' + I('', 'tasse', 1010, 468, 65.3, 58) + '</g>' +
-  '</g>' +
+  '</g></g>' +
   // ombre des coins, lumière et alarme
+  // carte d'ombre tirée de l'image de référence : seule la lampe éclaire vraiment la pièce
+  I('ombre', 'ombre', -400, -220, 2472, 1381, ' style="pointer-events:none"') +
   '<rect id="vig" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="url(#vigG)" style="pointer-events:none"/>' +
   '<rect id="tint" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="#ff1e1e" opacity="0" style="pointer-events:none"/>' +
   '<rect id="dark" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="#000" opacity="0" style="pointer-events:none"/>' +
@@ -126,6 +153,8 @@
   '<g id="scr" font-family="VT323, Courier New, monospace" fill="#bff5e4" text-anchor="middle"></g>' +
   '<g id="video" clip-path="url(#screenClip)" opacity="0"></g>' +
   '<rect x="' + SC.x + '" y="' + SC.y + '" width="' + SC.w + '" height="' + SC.h + '" rx="6" fill="url(#scan)"/>' +
+  '<g class="lit" clip-path="url(#screenClip)"><rect x="' + SC.x + '" y="' + SC.y + '" width="' + SC.w + '" height="' + SC.h + '" fill="url(#glareG)"/>' +
+  '<ellipse cx="' + SC.cx + '" cy="' + SC.y + '" rx="130" ry="18" fill="#fff3d6" opacity=".07"/></g>' +
   '</g>' +
   '<rect id="flash" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="#fff" opacity="0" style="pointer-events:none"/>' +
   '</svg>';
@@ -171,6 +200,7 @@
     ['gDoor', 'gNote'].forEach(function (id) { shift(id, dx - sp, dy); });
     ['gWin', 'gSig', 'gBox', 'gCam', 'gGrille'].forEach(function (id) { shift(id, dx + sp, dy); });
     svg.setAttribute('viewBox', '0 0 ' + W.toFixed(1) + ' ' + H.toFixed(1));
+    attr('ombre', 'x', dx - 400); attr('ombre', 'y', dy - 220);
     ['tint', 'dark', 'flash', 'vig'].forEach(function (id) { attr(id, 'width', W); attr(id, 'height', H); });
     // Mur, plinthe, sol, et les deux coins de la pièce en perspective.
     var c = 64, g = '<rect x="0" y="0" width="' + W + '" height="' + floorY + '" fill="url(#wallP)"/>' +
@@ -260,6 +290,7 @@
     attr('coneStop', 'stop-color', col); attr('bulbStop', 'stop-color', col);
     attr('bulb', 'opacity', off ? 0 : 1);
     attr('cone', 'opacity', off ? 0 : 0.5);
+    if (svg) svg.querySelectorAll('.lit').forEach(function (e) { e.setAttribute('opacity', off ? 0 : 1); });
     attr('dark', 'opacity', mode === 'off' ? 0.82 : mode === 'urgence' ? 0.66 : 0);
     // Lampe de secours orange pendant l'autotest.
     attr('tint', 'fill', mode === 'cold' ? '#3a7cff' : mode === 'urgence' ? '#ff8a1e' : '#ff1e1e');

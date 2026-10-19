@@ -124,3 +124,9 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - Silhouette de la 18 : une seule série pour A, B et C (consigne de l'artiste, choix d'Amine). Les séries homme / femme / enfant viendront plus tard : il suffira de les nommer `sil_A_*`, `sil_B_*`, `sil_C_*` et de passer `SIL_PAR_VERITE` à `true` dans `src/room.js`.
 - Boîtier ouvert : trois leviers (CAMÉRA A, ACTIONNEUR CH.18, AUX 24 V), baissés quand le circuit est coupé.
 - `porte_ouverte.png` était tronqué dans l'archive : reconstruit depuis le PSD `Chambre17_calques.psd`.
+
+
+## Version 5.2 (19/10) : lumière du modèle
+
+- La pièce n'est plus éclairée à plat : une carte d'ombre tirée de l'image de référence assombrit les coins et laisse la lampe éclairer le bureau et le sol. Réglable avec `tools/carte-lumiere.py`.
+- Sol mouillé : le bureau et la porte s'y reflètent, éclat de la lampe sous le bureau. Tuyaux le long de la porte et du boîtier. Reflets sur la vitre de la 18 et l'écran. Les éclats s'éteignent avec la lampe.
