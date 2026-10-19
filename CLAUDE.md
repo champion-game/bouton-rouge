@@ -3,7 +3,9 @@
 Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfermé dans la Chambre 17 avec un énorme bouton rouge. Chaque pression change la pièce, et blesse peut-être la personne de la Chambre 18. Le but : comprendre le système et décider d'obéir, de désobéir ou de s'échapper.
 
 - `docs/CONCEPT.md` : le concept d'origine écrit par Amine.
-- `docs/ARBORESCENCE_V2.md` : **la référence de conception de la v2** (5 fils, 20 cycles, jauges, 18 fins). Lis-le avant toute modification de règles.
+- `docs/V3_CANONIQUE.md` : **la référence de conception actuelle (V3)**, écrite par Amine. Lis-la avant toute modification de règles.
+- `docs/V3_DECISIONS.md` : ce qui a été tranché en codant la V3 (cycles et chronos jamais visibles, ordre ignoré = refus, solutions aux failles).
+- `docs/ARBORESCENCE_V2.md` : l'ancienne conception v2, gardée pour l'historique.
 - `docs/SCRIPT_NARRATIF.md` : **la référence des textes** (dialogues, phrases du Système et de la 18, fins), écrite par Amine. Les textes du jeu (`src/story.js`) en viennent.
 
 ## Contexte du créateur
@@ -23,10 +25,10 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 
 ## État actuel
 
-- `index.html` est la **v2** jouable : 20 cycles avec chrono réel, 5 fils, 23 situations, 18 fins + Curiosité. Code dans `src/`.
+- `index.html` est la **V3** jouable (version 3.0) : 20 cycles cachés, 5 fils, 23 situations + 7 actions (appels sortants, fusible, plan), 18 fins + Curiosité. Code dans `src/`.
 - `prototype-v1.html` garde le prototype v1 (histoire linéaire, 4 fins) pour comparaison.
 - Tests : `node tools/test-engine.js` (30 000 parties au hasard par défaut).
-- Les décisions prises pendant le code sont listées en bas de `docs/ARBORESCENCE_V2.md` (validées par Amine le 18/10).
+- Les décisions d'intégration de la V3 sont dans `docs/V3_DECISIONS.md`.
 
 ## Structure visée pour la v2
 
@@ -35,13 +37,13 @@ Jeu narratif court et psychologique, destiné à Steam (PC). Le joueur est enfer
 - `src/room.js` : le dessin SVG de la pièce et ses animations.
 - `src/audio.js` : les sons.
 - `src/game.js` : la boucle de jeu, le chrono, l'interface des choix, les écrans de fin.
-- `tools/test-engine.js` : tests Node. Joue des milliers de parties au hasard et vérifie : aucune erreur, chaque partie finit avant ou au cycle 20, chacune des 18 fins est atteignable, aucune situation n'est inatteignable.
+- `tools/test-engine.js` : tests Node. Joue des milliers de parties au hasard et vérifie : aucune erreur, chaque partie finit avant ou au cycle 20, chacune des 18 fins est atteignable, aucune situation n'est inatteignable, et les parcours voulus vers les fins rares fonctionnent.
 
 ## Règles de travail
 
 - **Propose avant de coder** : pour toute demande de changement, présente d'abord 2 ou 3 options courtes (avec ta recommandation) et attends l'accord d'Amine. Seules exceptions : corriger un bug évident, ou s'il dit explicitement « vas-y ».
 - Garde la séparation moteur / rendu : une règle de jeu va dans `engine.js` ou `story.js`, jamais dans `game.js`.
-- Mets à jour `docs/ARBORESCENCE_V2.md` quand une décision de conception change.
+- Mets à jour `docs/V3_DECISIONS.md` quand une décision de conception change.
 - Après chaque changement visible, teste le jeu en largeur téléphone et sur écran d'ordinateur, et vérifie qu'il n'y a aucune erreur dans la console.
 - Fais des commits petits, avec un message clair en français.
 - **Version** : à chaque push qui change le jeu, augmente le numéro dans `index.html` (texte « Version X.Y » de l'écran d'accueil et `?v=X.Y` des scripts), pour qu'Amine voie qu'il a la bonne version et que les scripts se rechargent.

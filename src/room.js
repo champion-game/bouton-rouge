@@ -49,13 +49,16 @@
   '<g id="win" class="hs" data-k="window">' +
   '<rect x="446" y="138" width="136" height="194" fill="#0f1414" stroke="#3b4846" stroke-width="4"/>' +
   '<rect id="glass" x="454" y="146" width="120" height="178" fill="#7d7150"/>' +
-  '<g id="sil" opacity=".82">' +
+  '<g id="silMove" style="transition:transform .6s ease"><g id="sil" opacity=".82" style="transition:opacity 1.2s ease">' +
   '<ellipse cx="514" cy="214" rx="18" ry="22" fill="#0b0e0e"/>' +
   '<path d="M470 324 Q472 262 514 250 Q556 262 558 324 Z" fill="#0b0e0e"/>' +
-  '</g>' +
+  '</g></g>' +
+  '<path id="hand" opacity="0" style="transition:opacity .5s ease" d="M488 236 q-4 -18 2 -20 q4 0 4 12 q1 -16 6 -16 q5 0 4 16 q2 -12 6 -11 q4 1 2 14 q3 -7 6 -5 q3 2 -2 14 q-6 14 -20 12 q-6 -2 -8 -16z" fill="#0b0e0e"/>' +
+  '<path id="buee" opacity="0" style="transition:opacity .8s ease" d="M480 280 L548 250 M548 250 l-14 -2 M548 250 l-6 12" stroke="#e8f0ec" stroke-width="3" fill="none" stroke-linecap="round"/>' +
   '<rect x="454" y="146" width="120" height="178" fill="#e8f0ec" opacity=".2"/>' +
   '<g stroke="#ffffff" stroke-width="1" opacity=".12"><line x1="460" y1="160" x2="500" y2="150"/><line x1="470" y1="300" x2="560" y2="280"/></g>' +
   '<text x="514" y="350" text-anchor="middle" font-family="' + STENCIL + '" font-weight="700" font-size="15" fill="#5d6a67" letter-spacing="2">CH. 18</text>' +
+  '<text x="514" y="366" text-anchor="middle" font-family="' + STENCIL + '" font-weight="700" font-size="11" fill="#4d5956" letter-spacing="1.5">SIGNES VITAUX</text>' +
   '</g>' +
   '<g id="vies"><rect x="482" y="112" width="64" height="18" rx="9" fill="#0d1110" stroke="#3b4846"/>' +
   '<circle id="vie1" cx="497" cy="121" r="5"/><circle id="vie2" cx="514" cy="121" r="5"/><circle id="vie3" cx="531" cy="121" r="5"/></g>' +
@@ -63,7 +66,8 @@
   '<g id="box" class="hs" data-k="box">' +
   '<rect x="458" y="366" width="114" height="84" rx="3" fill="#161d1c" stroke="#59645f" stroke-width="2"/>' +
   '<path d="M468 374 l8 0 l-6 10 l8 0 l-12 16 l4 -12 l-7 0z" fill="#f2c14e" opacity=".8"/>' +
-  '<text x="530" y="386" text-anchor="middle" font-family="' + STENCIL + '" font-weight="700" font-size="11" fill="#7f8d89" letter-spacing="2">COURANT</text>' +
+  '<text x="522" y="386" text-anchor="middle" font-family="' + STENCIL + '" font-weight="700" font-size="11" fill="#7f8d89" letter-spacing="2">COURANT</text>' +
+  '<circle id="auxLed" cx="560" cy="382" r="4" fill="#3ee08f"/>' +
   '<g id="boxOpen" opacity="0">' +
   '<rect x="484" y="396" width="20" height="40" rx="2" fill="#0b0f0e"/><rect id="levCam" x="486" y="399" width="16" height="16" rx="2" fill="#d4dcd9"/>' +
   '<rect x="526" y="396" width="20" height="40" rx="2" fill="#0b0f0e"/><rect id="levBtn" x="528" y="399" width="16" height="16" rx="2" fill="#d4dcd9"/>' +
@@ -196,15 +200,19 @@
     resetFx();
     var has = function (k) { return s.items.indexOf(k) >= 0; };
     // vie de la 18
-    for (var i = 1; i <= 3; i++) attr('vie' + i, 'fill', s.vie >= i ? '#f2c14e' : '#262c2b');
-    attr('glass', 'fill', GLASS[s.vie]);
-    attr('sil', 'opacity', s.vie > 0 ? 0.82 : 0);
-    attr('sil', 'transform', 'translate(0 ' + (3 - s.vie) * 8 + ')');
+    for (var i = 1; i <= 3; i++) attr('vie' + i, 'fill', s.vie >= i ? '#3ee08f' : '#262c2b');
+    // La lumière de la 18 rougit quand le soupçon est élevé ; la silhouette se courbe avec sa vie.
+    attr('glass', 'fill', s.vie > 0 && s.soupcon >= 3 ? '#8a5a46' : GLASS[s.vie]);
+    attr('sil', 'opacity', s.vie > 0 && !info.silCachee ? 0.82 : 0);
+    attr('sil', 'transform', s.vie === 1 ? 'translate(0 46) scale(1 .85)' : 'translate(0 ' + (3 - s.vie) * 8 + ')');
+    attr('hand', 'opacity', 0); attr('buee', 'opacity', 0); attr('silMove', 'transform', '');
     // caméra
-    var blind = info.cameraAveugle, cut = has('cameraCoupee');
-    track = s.cycle >= 4 && !blind;
-    attr('camMask', 'opacity', blind && !cut ? 1 : 0);
+    var blind = info.cameraAveugle, cut = has('cameraCoupee'), tournee = has('cameraTournee');
+    track = s.cycle >= 4 && !blind && !info.urgence;
+    attr('camMask', 'opacity', blind && !cut && !tournee ? 1 : 0);
     if (cut) attr('camRot', 'transform', 'rotate(-60)');
+    if (tournee) attr('camRot', 'transform', 'rotate(-150)');
+    attr('auxLed', 'fill', s.flags.aux === 'defaut' ? '#e3262b' : '#3ee08f'); attr('auxLed', 'class', s.flags.aux === 'defaut' ? 'pulse' : '');
     var led = blind ? '#3b3f3e' : s.cycle < 4 ? '#3b3f3e' : ['#3ee08f', '#3ee08f', '#f2a33a', '#e3262b', '#e3262b'][s.soupcon];
     attr('camLed', 'fill', led); attr('camLed', 'class', !blind && s.soupcon >= 3 ? 'pulse' : '');
     // objets
@@ -212,7 +220,7 @@
     attr('note', 'opacity', s.cycle >= 4 && !s.done.H1 ? 1 : 0);
     attr('drawerFront', 'transform', s.flags.tiroirOuvert ? 'translate(0 16)' : '');
     attr('grilleSlats', 'opacity', has('conduit') ? 0 : 1);
-    var known = has('trappe') || has('fusible') || s.done.P4;
+    var known = has('trappe') || (has('code') && has('code41')) || s.flags.fusibleInstalle || s.done.P4;
     attr('trappe', 'opacity', known ? 1 : 0);
     attr('trappeLid', 'fill', s.done.P4 === 'A' ? '#030404' : '#151b1a');
     attr('trappeRing', 'opacity', s.done.P4 === 'B' ? 0 : 1);
@@ -220,28 +228,28 @@
     attr('levCam', 'y', cut && s.done.P3 === 'A' ? 419 : 399);
     attr('levBtn', 'y', has('boutonDesactive') ? 419 : 399);
     // bouton
-    var off = has('boutonDesactive');
-    attr('btnS1', 'stop-color', off ? '#8a7a78' : '#ff6a58'); attr('btnS2', 'stop-color', off ? '#5a4040' : '#d4161c'); attr('btnS3', 'stop-color', off ? '#2a1c1c' : '#6e080c');
-    attr('btnGlow', 'opacity', info.ordre && !off ? 0.7 : 0);
+    attr('btnGlow', 'opacity', info.ordre ? 0.7 : 0);
     // porte
     var open = info.porteOuverte;
     attr('doorLed', 'fill', open ? '#3ee08f' : '#e3262b');
     attr('doorPanel', 'transform', open ? 'translate(32 0) scale(.25 1) translate(-32 0)' : '');
     attr('doorLight', 'opacity', open ? 0.85 : 0);
     // lumière
-    var mode = info.noir ? 'off' : (s.flags.compte && s.cycle >= 18) ? 'red' : s.cycle >= 15 ? 'cold' : 'normal';
+    var mode = info.urgence ? 'urgence' : (s.flags.compte && s.cycle >= 18) ? 'red' : s.cycle >= 15 ? 'cold' : 'normal';
     light(mode);
     // téléphone qui sonne
     attr('phoneInner', 'class', info.sonne ? 'ring' : '');
   }
 
   function light(mode) {
-    var col = { normal: '#fff3d6', cold: '#bfe3ff', red: '#ff3b30', off: '#000' }[mode] || '#fff3d6';
-    attr('coneStop', 'stop-color', col); attr('bulb', 'fill', mode === 'off' ? '#333' : col);
-    attr('cone', 'opacity', mode === 'off' ? 0 : 0.6);
-    attr('dark', 'opacity', mode === 'off' ? 0.82 : 0);
-    attr('tint', 'fill', mode === 'cold' ? '#3a7cff' : '#ff1e1e');
-    attr('tint', 'opacity', mode === 'cold' ? 0.06 : mode === 'red' ? 0.16 : 0);
+    var off = mode === 'off' || mode === 'urgence';
+    var col = { normal: '#fff3d6', cold: '#bfe3ff', red: '#ff3b30' }[mode] || '#000';
+    attr('coneStop', 'stop-color', col); attr('bulb', 'fill', off ? '#333' : col);
+    attr('cone', 'opacity', off ? 0 : 0.6);
+    attr('dark', 'opacity', mode === 'off' ? 0.82 : mode === 'urgence' ? 0.7 : 0);
+    // Lampe de secours orange pendant l'autotest.
+    attr('tint', 'fill', mode === 'cold' ? '#3a7cff' : mode === 'urgence' ? '#ff8a1e' : '#ff1e1e');
+    attr('tint', 'opacity', mode === 'cold' ? 0.06 : mode === 'red' ? 0.16 : mode === 'urgence' ? 0.22 : 0);
   }
 
   // ---------- écran du moniteur ----------
@@ -324,7 +332,25 @@
     attr('dome', 'transform', 'translate(0 9)');
     setTimeout(function () { attr('dome', 'transform', ''); }, 140);
   }
+  // Animations jouées par les événements « anim » du moteur.
+  function later2(ms, f) { setTimeout(f, ms); }
+  var ANIMS = {
+    lumiere: function () { blackout(false); if (reduce) return; attr('dark', 'opacity', 0.9); later2(120, function () { attr('dark', 'opacity', 0); }); later2(260, function () { attr('dark', 'opacity', 0.7); }); later2(420, function () { attr('dark', 'opacity', 0); }); },
+    camTourne: function () { attr('camRot', 'transform', 'rotate(10)'); later2(700, function () { attr('camRot', 'transform', 'rotate(40)'); }); },
+    vitreAllumee: function () { attr('glass', 'fill', '#a8996a'); later2(500, function () { attr('glass', 'fill', GLASS[3]); }); },
+    silArrive: function () { attr('sil', 'opacity', 0.82); },
+    silMain: function () { attr('hand', 'opacity', 1); later2(2600, function () { attr('hand', 'opacity', 0); }); },
+    silFrappe: function () { attr('hand', 'opacity', 1); var n = 0, iv = setInterval(function () { attr('silMove', 'transform', n % 2 ? '' : 'translate(-3 0)'); if (++n > 5) { clearInterval(iv); attr('silMove', 'transform', ''); } }, 140); later2(1600, function () { attr('hand', 'opacity', 0); }); },
+    silTourne: function () { attr('silMove', 'transform', 'translate(22 0)'); later2(1800, function () { attr('silMove', 'transform', ''); }); },
+    silBuee: function () { attr('buee', 'opacity', 0.55); later2(3500, function () { attr('buee', 'opacity', 0); }); },
+    silFige: function () { attr('hand', 'opacity', 0); attr('silMove', 'transform', ''); }
+  };
+  function anim(n) { if (ANIMS[n]) ANIMS[n](); }
+  // B2 : chaque pression partielle fait sursauter la silhouette, sans blessure.
+  function harmLeger() { attr('silMove', 'transform', 'translate(10 0)'); later2(250, function () { attr('silMove', 'transform', ''); }); }
+
   function harm(vieApres) {
+    attr('silMove', 'transform', 'translate(26 0)'); later2(900, function () { attr('silMove', 'transform', ''); });
     var n = 0, base = GLASS[vieApres];
     var iv = setInterval(function () { attr('glass', 'fill', n % 2 ? base : '#ff2424'); if (++n > 5) { clearInterval(iv); attr('glass', 'fill', base); } }, 120);
   }
@@ -339,12 +365,12 @@
   var ICONES = {
     tournevis: '<rect x="6" y="15" width="13" height="10" rx="3" fill="#e3262b"/><rect x="8" y="17" width="9" height="1.6" fill="#ff7a70" opacity=".6"/><rect x="19" y="18.5" width="13" height="3" fill="#b9c2bf"/><path d="M32 18.5 L36 19.5 L36 20.5 L32 21.5 Z" fill="#8b9592"/>',
     fusible: '<rect x="9" y="13" width="22" height="14" rx="2" fill="#d6d1c4"/><rect x="5" y="15" width="5" height="10" rx="1" fill="#9aa4a1"/><rect x="30" y="15" width="5" height="10" rx="1" fill="#9aa4a1"/><rect x="14" y="17" width="12" height="6" fill="#f2c14e" opacity=".85"/>',
-    code: '<path d="M8 7 h20 l5 5 v21 h-25 z" fill="#e7e2d2"/><path d="M28 7 v5 h5" fill="#c9c3b2"/><text x="20" y="25" text-anchor="middle" font-family="VT323, monospace" font-size="11" fill="#3a3a3a">7__2</text>',
+    code: '<path d="M8 7 h20 l5 5 v21 h-25 z" fill="#e7e2d2"/><path d="M28 7 v5 h5" fill="#c9c3b2"/><text x="20" y="25" text-anchor="middle" font-family="VT323, monospace" font-size="11" fill="#3a3a3a">@CODE@</text>',
     mot16: '<g transform="rotate(-8 20 20)"><rect x="7" y="10" width="26" height="20" fill="#e7e2d2"/><g stroke="#9a9484" stroke-width="1.2"><line x1="11" y1="16" x2="29" y2="16"/><line x1="11" y1="20" x2="27" y2="20"/><line x1="11" y1="24" x2="22" y2="24"/></g><text x="27" y="28" font-family="Archivo, sans-serif" font-size="6" font-weight="700" fill="#e3262b">16</text></g>',
     badge: '<rect x="17" y="4" width="6" height="7" rx="2" fill="#8b9592"/><rect x="9" y="9" width="22" height="27" rx="3" fill="#c4ccc9"/><rect x="13" y="13" width="14" height="11" fill="#2a3533"/><path d="M14 24 l3 -4 l2 3 l2 -5 l5 6 z" fill="#46534f"/><rect x="13" y="27" width="14" height="2" fill="#5d6a67"/><rect x="13" y="31" width="9" height="2" fill="#5d6a67"/>',
     enregistrement: '<rect x="4" y="10" width="32" height="21" rx="2" fill="#2c2c2c"/><rect x="8" y="13" width="24" height="8" fill="#e7e2d2"/><text x="20" y="20" text-anchor="middle" font-family="VT323, monospace" font-size="8" fill="#3a3a3a">17</text><circle cx="14" cy="25" r="2.6" fill="#d6d1c4"/><circle cx="26" cy="25" r="2.6" fill="#d6d1c4"/><path d="M11 31 l3 -3 h12 l3 3z" fill="#1d1d1d"/>'
   };
-  function icone(k) { return '<svg viewBox="0 0 40 40" aria-hidden="true">' + (ICONES[k] || '') + '</svg>'; }
+  function icone(k, code) { return '<svg viewBox="0 0 40 40" aria-hidden="true">' + (ICONES[k] || '').replace('@CODE@', code || '7__2') + '</svg>'; }
 
-  root.BRRoom = { layout: layout, icone: icone, mount: mount, render: render, fin: fin, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout };
+  root.BRRoom = { layout: layout, icone: icone, mount: mount, render: render, fin: fin, anim: anim, harmLeger: harmLeger, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

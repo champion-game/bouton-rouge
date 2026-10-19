@@ -14,7 +14,7 @@
 
   var s = null, t = null, run = 0, busy = true, paused = false, sel = null, tuto = false;
   var timeLeft = 0, timeTotal = 0, lastTick = 0, lastSec = -1, lastEcran = '', popDone = null, flashItems = [];
-  var hist = [];
+  var hist = [], introSil = false, triple = 0;
 
   function ecranTxt(t) { return t.replace(/-\|/g, '-').replace(/\|/g, ' '); }
   function esc(v) { return String(v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -56,8 +56,9 @@
     });
   }
   function choiceBtn(x, c) {
-    var o = x[c];
-    return '<button class="ch" data-sit="' + x.id + '" data-c="' + c + '"' + (o.ok ? '' : ' disabled') + '>' + esc(o.label) + (o.ok ? '' : '<small>' + esc(o.raison) + '</small>') + '</button>';
+    var o = x[c]; if (!o) return '';
+    var small = !o.ok ? o.raison : o.sous;
+    return '<button class="ch" data-sit="' + x.id + '" data-c="' + c + '"' + (o.ok ? '' : ' disabled') + '>' + esc(o.label) + (small ? '<small>' + esc(small) + '</small>' : '') + '</button>';
   }
   // Popup d'un objet : description, et les choix possibles.
   function objetPop(titre, texte, list, closable) {
@@ -66,8 +67,8 @@
     var h = '<div class="who"><span>' + esc(head) + '</span>' + (closable ? '<button class="x" data-close="1" aria-label="Fermer">×</button>' : '') + '</div>';
     if (texte) h += '<p>' + esc(texte) + '</p>';
     list.forEach(function (x, i) {
-      if (i || texte) h += '<div class="sep"></div><div class="who"><span>' + esc(x.qui) + '</span></div>';
-      h += '<p>' + esc(x.texte) + '</p><div class="ab">' + choiceBtn(x, 'A') + choiceBtn(x, 'B') + '</div>';
+      if (i || texte || titre) h += (i || texte ? '<div class="sep"></div>' : '') + '<div class="who"><span>' + esc(x.qui) + '</span></div>';
+      h += '<p>' + esc(x.texte) + '</p><div class="ab' + (x.B ? '' : ' one') + '">' + choiceBtn(x, 'A') + choiceBtn(x, 'B') + '</div>';
     });
     openPop(h, function () { sel = null; });
   }
@@ -94,7 +95,7 @@
         case 'cri': R.harm(e.vie); A.sfx('cry'); await wait(700, my); break;
         case 'soupcon': if (e.d > 0) { A.sfx('blink'); toast('La caméra t\'a vu.', 'ecr'); addHist('La caméra t\'a vu.', 'ecr'); } break;
         case 'objet':
-          if (POCHES.indexOf(e.k) >= 0) {
+          if (POCHES.indexOf(e.k) >= 0 || e.k === 'code41') {
             var txt = (e.gain ? '+ ' : '− ') + E.OBJETS[e.k];
             toast(txt, 'obj'); addHist(txt, 'obj'); if (e.gain) { A.sfx('paper'); flashItems.push(e.k); }
             await wait(400, my);
@@ -102,7 +103,12 @@
           break;
         case 'porte': A.sfx(e.open ? 'lock' : 'slam'); await wait(400, my); break;
         case 'son': A.sfx(e.n); if (e.n === 'alarm') R.alarm(2600); break;
-        case 'cycle': if (e.n === 6) { R.blackout(true); setTimeout(function () { R.blackout(false); }, 700); } break;
+        case 'cycle': if (e.n === 6 || e.n === 7) R.render(s, roomInfo()); break;
+        case 'anim':
+          if (e.n === 'silArrive') introSil = false;
+          R.anim(e.n);
+          if (e.n === 'silFrappe') A.sfx('knock'); else if (e.n === 'lumiere') A.sfx('lock'); else if (e.n === 'camTourne') A.sfx('blink');
+          await wait(e.n === 'lumiere' ? 900 : 500, my); break;
       }
     }
     // Popup seulement s'il y a autre chose que des phrases du moniteur (qui restent lisibles à l'écran).
@@ -115,14 +121,14 @@
   function roomInfo() {
     var k = forcedKind();
     return {
-      cameraAveugle: E.cameraAveugle(s), porteOuverte: E.porteOuverte(s), noir: s.cycle === 6 || s.flags.noirCycle === s.cycle,
+      cameraAveugle: E.cameraAveugle(s), porteOuverte: E.porteOuverte(s), urgence: s.cycle === 6, silCachee: introSil,
       ordre: !busy && k === 'ordre', sonne: !busy && (k === 'T1' || (k === 'T4' && sel !== 'phone'))
     };
   }
 
   function startCycle(my) {
     if (my !== run) return;
-    t = E.turn(s); busy = false; sel = null;
+    t = E.turn(s); busy = false; sel = null; triple = 0;
     var k = forcedKind();
     if (k === 'ordre') R.ecran(t.forced.ecran, { color: '#ff8a7a' });
     else if (k) { R.ecran(t.forced.ecran); A.ring(true); toast('Le téléphone sonne.'); addHist('Le téléphone sonne.'); }
@@ -141,10 +147,14 @@
   }
 
   // ---------- inventaire ----------
+  function possede(k) { return E.has(s, k) || (k === 'code' && E.has(s, 'code41')); }
+  function codeTexte() { var a = E.has(s, 'code'), b = E.has(s, 'code41'); return a && b ? '7412' : a ? '7__2' : '41'; }
+  function nomPoche(k) { return k === 'code' ? 'Code ' + codeTexte() : E.OBJETS[k]; }
   function renderBag() {
     $('bag').innerHTML = POCHES.map(function (k) {
-      if (!E.has(s, k)) return '<div class="slot"></div>';
-      return '<button class="slot' + (flashItems.indexOf(k) >= 0 ? ' flash' : '') + '" data-k="' + k + '" aria-label="' + esc(E.OBJETS[k]) + '" title="' + esc(E.OBJETS[k]) + '">' + R.icone(k) + '</button>';
+      if (!possede(k)) return '<div class="slot"></div>';
+      var nom = nomPoche(k);
+      return '<button class="slot' + (flashItems.indexOf(k) >= 0 || (k === 'code' && flashItems.indexOf('code41') >= 0) ? ' flash' : '') + '" data-k="' + k + '" aria-label="' + esc(nom) + '" title="' + esc(nom) + '">' + R.icone(k, codeTexte()) + '</button>';
     }).join('');
   }
   $('bag').addEventListener('click', function (e) {
@@ -152,8 +162,8 @@
     A.init();
     var k = b.dataset.k, o = POCHE_OBJET[k], list = !busy && t && !t.forced && o ? t.objets[o] : null;
     flashItems = flashItems.filter(function (x) { return x !== k; }); renderBag();
-    if (list && list.length) { sel = o; objetPop(E.OBJETS[k], '', list, true); }
-    else objetPop(E.OBJETS[k], E.DESCRIPTIONS[k], null, true);
+    if (list && list.length) { sel = o; objetPop(nomPoche(k), '', list, true); }
+    else objetPop(nomPoche(k), E.decrire(s, k), null, true);
   });
 
   // ---------- toucher un objet de la pièce ----------
@@ -165,13 +175,17 @@
     var exit = t.sorties.filter(function (x) { return (x.via === 'porte' && k === 'door') || (x.via === 'trappe' && k === 'trappe' && !t.objets.trappe); })[0];
     if (exit) return act({ type: 'sortir', via: exit.via });
     if (k === 'btn') {
+      if (kind === 'ordre' && t.forced.triple) {
+        triple++; R.press(); A.sfx('clac'); R.ecran(triple + '/3', { color: '#ff8a7a' });
+        if (triple < 3) { R.harmLeger(); return; }
+      }
       if (!kind || kind === 'ordre') return act({ type: 'appuyer' });
       return toast('Le téléphone sonne.');
     }
     if (kind === 'T1' && k === 'phone') return act({ type: 'situation', id: 'T1', choix: 'A' });
     if (kind === 'T4' && k === 'phone') { sel = 'phone'; A.ring(false); A.sfx('pickup'); R.render(s, roomInfo()); objetPop('', '', t.objets.phone, false); return; }
     if (kind) return toast('Pas maintenant.');
-    if (t.objets[k]) { sel = k; objetPop('', '', t.objets[k], true); return; }
+    if (t.objets[k]) { sel = k; objetPop(t.objets[k].length > 1 ? (TITRES[k] || '') : '', '', t.objets[k], true); return; }
     var txt = E.regarder(s, k);
     if (txt) objetPop(TITRES[k] || '', txt, null, true);
   }
@@ -241,8 +255,8 @@
     if (F.crt !== '_') h += '<div class="crt">' + esc(F.crt) + '</div>';
     h += '<p>' + esc(F.texte) + '</p>';
     h += '<p class="truth">' + (E.has(s, 'verite') ? esc(E.VERITES[s.truth].texte) : 'Ce que cachait la Chambre 18 : tu ne l\'as pas découvert.') + '</p>';
-    var objs = POCHES.filter(function (k) { return E.has(s, k); }), inds = INDICES.filter(function (k) { return E.has(s, k); });
-    h += '<div class="k">DANS TES POCHES</div><div class="bag">' + POCHES.map(function (k) { return '<div class="slot">' + (objs.indexOf(k) >= 0 ? R.icone(k) : '') + '</div>'; }).join('') + '</div>';
+    var inds = INDICES.filter(function (k) { return E.has(s, k); });
+    h += '<div class="k">DANS TES POCHES</div><div class="bag">' + POCHES.map(function (k) { return '<div class="slot">' + (possede(k) ? R.icone(k, codeTexte()) : '') + '</div>'; }).join('') + '</div>';
     if (inds.length) h += '<div class="k">CE QUE TU AS COMPRIS</div><div class="fins">' + inds.map(function (k) { return '<span class="on">' + esc(E.OBJETS[k]) + '</span>'; }).join('') + '</div>';
     h += '<div class="stats">' + rows.map(function (r) { return '<span>' + r[0] + '</span><span>' + r[1] + '</span>'; }).join('') + '</div>';
     h += '<div class="k">FINS DÉCOUVERTES : ' + nb + ' / 18</div><div class="fins">' + ids.map(function (k) {
@@ -264,7 +278,7 @@
     run++; var my = run;
     A.stopAll(); setPaused(false);
     if (!$('pop').hidden) { popDone = null; $('pop').hidden = true; }
-    s = E.newGame(); t = null; busy = true; sel = null; lastEcran = ''; hist = []; flashItems = [];
+    s = E.newGame(); t = null; busy = true; sel = null; lastEcran = ''; hist = []; flashItems = []; introSil = true;
     try { tuto = !localStorage.getItem(TUTO_KEY); } catch (e) { tuto = true; }
     $('histLast').textContent = '…'; $('histBox').innerHTML = ''; $('histBox').hidden = true;
     timeLeft = timeTotal = 0; refresh();
@@ -272,10 +286,8 @@
     // Démarrage : écran noir, le moniteur s'allume, puis la lumière avec le bruit sec d'un relais.
     R.blackout(true);
     if (!(await wait(600, my))) return;
-    var ev = E.intro(s);
-    if (!(await play(ev.slice(0, 3), my))) return;
-    R.blackout(false); A.sfx('lock');
-    if (!(await play(ev.slice(3), my))) return;
+    if (!(await play(E.intro(s), my))) return;
+    introSil = false;
     startCycle(my);
   }
 
