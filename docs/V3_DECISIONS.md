@@ -130,3 +130,9 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 
 - La pièce n'est plus éclairée à plat : une carte d'ombre tirée de l'image de référence assombrit les coins et laisse la lampe éclairer le bureau et le sol. Réglable avec `tools/carte-lumiere.py`.
 - Sol mouillé : le bureau et la porte s'y reflètent, éclat de la lampe sous le bureau. Tuyaux le long de la porte et du boîtier. Reflets sur la vitre de la 18 et l'écran. Les éclats s'éteignent avec la lampe.
+
+## Version 5.3 (19/10) : plus proche du modèle
+
+- Pièce plus sombre et plus contrastée, cône de lumière adouci, dessous de la lampe lumineux avec halo.
+- Bouton plus éclatant (lueur rouge sur le plateau), éclat de la lampe sur le bureau.
+- Vitre de la 18 embrumée avec un néon au plafond ; écran du moniteur noir ; léger grain sur toute l’image.

@@ -1,5 +1,5 @@
 # Carte d'ombre de la pièce (assets/img/ombre.webp), tirée de l'image de référence keyart.webp.
-# Usage : python3 tools/carte-lumiere.py 0.24 38 0.5   (ombre min, flou, contraste)
+# Usage : python3 tools/carte-lumiere.py 0.2 38 0.56  (ombre min, flou, contraste)
 import sys, numpy as np
 from PIL import Image
 def box(x,r,ax):

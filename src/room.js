@@ -66,6 +66,10 @@
   '<radialGradient id="sheenG"><stop offset="0" stop-color="#e9f2ef" stop-opacity=".26"/><stop offset="1" stop-color="#e9f2ef" stop-opacity="0"/></radialGradient>' +
   '<linearGradient id="glareG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".09"/><stop offset=".5" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
   '<linearGradient id="glassRG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+  '<pattern id="grainP" width="256" height="256" patternUnits="userSpaceOnUse">' + I('', 'grain', 0, 0, 256, 256) + '</pattern>' +
+  '<radialGradient id="specG"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".55" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>' +
+  '<radialGradient id="fogG" cx="50%" cy="8%" r="75%"><stop offset="0" stop-color="#f2f7f6" stop-opacity=".75"/><stop offset=".45" stop-color="#d9e3e1" stop-opacity=".28"/><stop offset="1" stop-color="#c9d4d2" stop-opacity=".12"/></radialGradient>' +
+  '<filter id="coneBlur" x="-20%" y="-5%" width="140%" height="110%"><feGaussianBlur stdDeviation="16"/></filter>' +
   '<pattern id="scan" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="2.5" fill="#000" opacity=".22"/></pattern>' +
   '</defs>' +
   '<g id="bg"></g>' +
@@ -93,6 +97,8 @@
   '<g clip-path="url(#glassClip)">' +
   I('', 'chambre18', GL.x, GL.y - 15, GL.w, GL.w, ' opacity=".9"') +
   '<g id="silMove" style="transition:transform .6s ease"><g id="sil" filter="url(#flou)" style="transition:opacity 1.2s ease">' + I('silImg', 'sil_debout', SIL.x, SIL.y, SIL.s, SIL.s) + '</g></g>' +
+  '<rect x="' + GL.x + '" y="' + GL.y + '" width="' + GL.w + '" height="' + GL.h + '" fill="url(#fogG)" style="pointer-events:none"/>' +
+  '<rect x="' + (GL.x + GL.w / 2 - 60) + '" y="' + (GL.y + 14) + '" width="120" height="7" rx="3" fill="#fff" opacity=".9" filter="url(#flou)" style="pointer-events:none"/>' +
   '</g>' + VITRE +
   '<g clip-path="url(#glassClip)">' +
   I('hand', 'main', GL.x + GL.w / 2 - 185, GL.y + 20, 370, 370, ' opacity="0" style="transition:opacity .5s ease"') +
@@ -117,11 +123,12 @@
   '</g></g>' +
   // le centre : lampe, moniteur, bureau, bouton
   '<g id="gCenter">' +
-  '<polygon id="cone" points="810,70 866,70 1140,850 530,850" fill="url(#coneG)" opacity=".55" style="pointer-events:none"/>' +
+  '<polygon id="cone" points="810,70 866,70 1140,850 530,850" fill="url(#coneG)" opacity=".55" filter="url(#coneBlur)" style="pointer-events:none"/>' +
   '<ellipse cx="836" cy="818" rx="340" ry="34" fill="url(#shadowG)" style="pointer-events:none"/>' +
   '<g class="hs" data-k="monitor">' + I('', 'moniteur', 560, 92, 530, 274.5) + '</g>' +
   '<g class="hs" data-k="light">' + I('', 'lampe', 745, -130, 187.3, 206) +
-  '<circle id="bulb" cx="838" cy="68" r="30" fill="url(#bulbG)" style="pointer-events:none"/></g>' +
+  '<circle id="bulb" cx="838" cy="68" r="30" fill="url(#bulbG)" style="pointer-events:none"/>' +
+  '<g class="lit" style="pointer-events:none"><circle cx="838" cy="70" r="240" fill="url(#bulbG)" opacity=".16"/><ellipse cx="838" cy="63" rx="74" ry="9" fill="url(#bulbG)"/><ellipse cx="838" cy="63" rx="52" ry="5" fill="#fffdf6" opacity=".9"/></g></g>' +
   // sol mouillé : reflet du bureau et éclat de la lampe
   '<g style="pointer-events:none"><g mask="url(#reflM)"><use href="#desk" transform="translate(0 1632) scale(1 -1)"/></g>' +
   '<g class="lit"><ellipse cx="836" cy="884" rx="300" ry="70" fill="url(#sheenG)"/><ellipse cx="836" cy="890" rx="70" ry="120" fill="url(#sheenG)"/></g></g>' +
@@ -133,9 +140,11 @@
   '<g id="drawer" class="hs" data-k="drawer">' + I('drawerImg', 'tiroir2_ferme', 464.5, 562.1, 251.6, 169.4) + '</g>' +
   I('', 'bureau_plateau', 457, 496, 756, 84, ' style="pointer-events:none"') +
   '<ellipse cx="836" cy="518" rx="270" ry="40" fill="url(#poolG)" style="pointer-events:none"/>' +
+  '<g style="pointer-events:none"><ellipse class="lit" cx="836" cy="508" rx="230" ry="20" fill="url(#specG)"/><ellipse cx="837" cy="522" rx="135" ry="26" fill="url(#glowG)" opacity=".4"/></g>' +
   '<ellipse id="btnGlow" cx="837" cy="495" rx="120" ry="60" fill="url(#glowG)" opacity="0" style="pointer-events:none"/>' +
   '<g id="btn" class="hs" data-k="btn" role="button" tabindex="0" aria-label="Appuyer sur le bouton rouge">' +
   I('btnImg', 'bouton', BTN.x, BTN.y, BTN.w, BTN.h) + I('btnImg2', 'bouton_enfonce', BTN.x, BTN.y, BTN.w, BTN.h, ' opacity="0"') + '</g>' +
+  '<ellipse cx="837" cy="470" rx="70" ry="30" fill="url(#glowG)" opacity=".3" style="pointer-events:none"/>' +
   '<g id="phone" class="hs" data-k="phone" opacity="0"><rect x="500" y="440" width="172" height="104" fill="transparent"/><g id="phoneInner">' +
   I('telImg', 'tel_pose', 506.2, 445.5, 161.5, 99.6) + I('telImg2', 'tel_decroche', 506.2, 445.5, 161.5, 99.6, ' opacity="0"') + '</g>' +
   '<circle id="ecouteLed" cx="640" cy="520" r="4.5" fill="#ff3b30" class="pulse" opacity="0"/></g>' +
@@ -145,11 +154,12 @@
   // carte d'ombre tirée de l'image de référence : seule la lampe éclaire vraiment la pièce
   I('ombre', 'ombre', -400, -220, 2472, 1381, ' style="pointer-events:none"') +
   '<rect id="vig" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="url(#vigG)" style="pointer-events:none"/>' +
+  '<rect id="grain" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="url(#grainP)" opacity=".05" style="pointer-events:none"/>' +
   '<rect id="tint" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="#ff1e1e" opacity="0" style="pointer-events:none"/>' +
   '<rect id="dark" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="#000" opacity="0" style="pointer-events:none"/>' +
   // écran (reste lisible dans le noir)
   '<g id="gCenter2" style="pointer-events:none">' +
-  '<rect id="screen" x="' + SC.x + '" y="' + SC.y + '" width="' + SC.w + '" height="' + SC.h + '" rx="6" fill="#061210"/>' +
+  '<rect id="screen" x="' + SC.x + '" y="' + SC.y + '" width="' + SC.w + '" height="' + SC.h + '" rx="6" fill="#020605"/>' +
   '<g id="scr" font-family="VT323, Courier New, monospace" fill="#bff5e4" text-anchor="middle"></g>' +
   '<g id="video" clip-path="url(#screenClip)" opacity="0"></g>' +
   '<rect x="' + SC.x + '" y="' + SC.y + '" width="' + SC.w + '" height="' + SC.h + '" rx="6" fill="url(#scan)"/>' +
@@ -201,12 +211,12 @@
     ['gWin', 'gSig', 'gBox', 'gCam', 'gGrille'].forEach(function (id) { shift(id, dx + sp, dy); });
     svg.setAttribute('viewBox', '0 0 ' + W.toFixed(1) + ' ' + H.toFixed(1));
     attr('ombre', 'x', dx - 400); attr('ombre', 'y', dy - 220);
-    ['tint', 'dark', 'flash', 'vig'].forEach(function (id) { attr(id, 'width', W); attr(id, 'height', H); });
+    ['tint', 'dark', 'flash', 'vig', 'grain'].forEach(function (id) { attr(id, 'width', W); attr(id, 'height', H); });
     // Mur, plinthe, sol, et les deux coins de la pièce en perspective.
     var c = 64, g = '<rect x="0" y="0" width="' + W + '" height="' + floorY + '" fill="url(#wallP)"/>' +
       '<rect x="0" y="0" width="' + W + '" height="' + floorY + '" fill="#0d1212" opacity=".5"/>' +
       // soubassement vert-gris, comme sur le modèle
-      '<rect x="0" y="' + (375 + dy) + '" width="' + W + '" height="' + (floorY - 375 - dy) + '" fill="#1f312c" opacity=".55"/>' +
+      '<rect x="0" y="' + (375 + dy) + '" width="' + W + '" height="' + (floorY - 375 - dy) + '" fill="#1b2725" opacity=".5"/>' +
       '<rect x="0" y="' + (373 + dy) + '" width="' + W + '" height="3" fill="#0a0f0e" opacity=".5"/>';
     g += '<rect x="0" y="' + floorY + '" width="' + W + '" height="' + (H - floorY) + '" fill="url(#floorP)"/>' +
       '<rect x="0" y="' + floorY + '" width="' + W + '" height="' + (H - floorY) + '" fill="#050707" opacity=".55"/>' +
@@ -376,7 +386,7 @@
   function resetFx() {
     fxTimers.forEach(clearTimeout); fxTimers = [];
     ['dark', 'flash', 'tint'].forEach(function (id) { var e = $(id); if (e) { e.style.transition = ''; e.style.opacity = ''; } });
-    attr('flash', 'fill', '#fff'); attr('screen', 'fill', '#061210');
+    attr('flash', 'fill', '#fff'); attr('screen', 'fill', '#020605');
   }
   function door(open) {
     src('doorImg', open ? 'porte_ouverte' : 'porte_fermee');
@@ -448,7 +458,7 @@
     if (reduce) { attr('tint', 'opacity', 0.15); setTimeout(function () { attr('tint', 'opacity', 0); }, ms); return; }
     var n = 0, iv = setInterval(function () { attr('tint', 'fill', '#ff1e1e'); attr('tint', 'opacity', n % 2 ? 0.05 : 0.22); if (++n * 250 > ms) { clearInterval(iv); attr('tint', 'opacity', 0); } }, 250);
   }
-  function blackout(on) { attr('dark', 'opacity', on ? 0.96 : 0); attr('cone', 'opacity', on ? 0 : 0.5); attr('bulb', 'opacity', on ? 0 : 1); }
+  function blackout(on) { attr('dark', 'opacity', on ? 0.96 : 0); attr('cone', 'opacity', on ? 0 : 0.5); attr('bulb', 'opacity', on ? 0 : 1); svg.querySelectorAll('.lit').forEach(function (e) { e.setAttribute('opacity', on ? 0 : 1); }); }
 
   // ---------- objets de l'inventaire (dessins de l'artiste) ----------
   var ICONES = { tournevis: 'tournevis', fusible: 'fusible', code: 'papier_carre', mot16: 'carte_pliee', badge: 'badge', enregistrement: 'cassette', journal: 'papier_lettre' };
