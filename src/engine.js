@@ -71,7 +71,9 @@
   }
   function libre(s, c) { return c < DERNIER && !forcedId(s, c) && s.flags.awayCycle !== c; }
   function kind(x) { return !x ? null : x.ordre ? 'ordre' : x.appel ? 'appel' : 'impose'; }
-  function duree(s) { var x = BY_ID[forcedId(s)]; var k = kind(x); return k === 'ordre' ? DUREES.ordre : k === 'appel' ? DUREES.appel : !x && coupure(s) ? DUREES.coupure : !x && seul(s) ? DUREES.seul : null; }
+  // Le premier appel (moment 3) sonne trente secondes : décrocher ou le laisser sonner, rien d'autre.
+  function sonneLibre(s) { return s.cycle === 3 && !s.done.T1 && !forcedId(s) && dispo18(s); }
+  function duree(s) { var x = BY_ID[forcedId(s)]; var k = kind(x); return k === 'ordre' ? DUREES.ordre : k === 'appel' || sonneLibre(s) ? DUREES.appel : !x && coupure(s) ? DUREES.coupure : !x && seul(s) ? DUREES.seul : null; }
   // La 18 ne donne plus signe de vie : il reste trois moments pour fuir, sinon le Système conclut.
   function seul(s) { return s.flags.mortA != null && s.cycle > s.flags.mortA; }
   function plusDeSignal(s, g) {
@@ -234,7 +236,7 @@
     var k = kind(BY_ID[fid]);
     return {
       cycle: s.cycle, duree: duree(s), forced: forced, forcedKind: k, objets: objets, sorties: sorties,
-      sonne: s.cycle === 3 && !s.done.T1 && !k,
+      sonne: sonneLibre(s),
       peutAppuyer: !k || (k === 'ordre'), peutAttendre: !k, b2: fid === 'B2' ? s.flags.b2 : 0, ecoute: ecoute(s)
     };
   }
@@ -299,12 +301,13 @@
       // Fin du chrono : un ordre non exécuté est un REFUS (jamais de pression automatique) ; un appel se tait.
       if (!forced && coupure(s)) { ev.push({ t: 'anim', n: 'lumiere' }); ev.push({ t: 'ecran', txt: 'RÉSEAU|RÉTABLI.' }); }
       else if (!forced && seul(s)) { verdict(s, ev); return { state: s, events: ev }; }
+      else if (sonneLibre(s)) { var gi = ctx(s, ev, null); gi.narr('Tu laisses le téléphone sonner. Il finit par se taire.'); gi.ecran('MERCI,|SUJET 17.'); }
       else if (!forced || !fk || fk === 'impose') throw new Error('Pas de chrono en cours.');
       else {
       var gf = ctx(s, ev, forced);
       if (fid === 'B2' && s.flags.b2 > 0) { s.done.B2 = 'partiel'; gf.narr('Tu t\'arrêtes là.'); S.B2_ARRET(gf); }
       else if (fk === 'ordre') { gf.ecran('RÉACTION|NON CONFORME.'); gf.narr('Tu n\'as pas appuyé.'); s.done[fid] = 'B'; forced.B.fx(gf); }
-      else { s.done[fid] = 'auto'; gf.narr('Le téléphone finit par se taire.'); }
+      else { s.done[fid] = 'auto'; gf.narr('Le téléphone finit par se taire.'); gf.ecran('MERCI,|SUJET 17.'); }
       }
     } else if (action.type === 'attendre') {
       if (fk) throw new Error('On ne peut pas attendre maintenant.');
@@ -321,7 +324,7 @@
     var o = BY_ID[fid], g = ctx(s, ev, o);
     if (o.ordre) {
       if (fid === 'B2' && s.flags.b2 > 0) { s.done.B2 = 'partiel'; S.B2_ARRET(g); return; }
-      g.ecran('ACTION NON|AUTORISÉE.'); g.ecran('ORDRE|REFUSÉ.'); g.narr('Tu laisses l\'ordre sans réponse.'); s.done[fid] = 'B'; o.B.fx(g);
+      g.ecran('RÉACTION|NON CONFORME.'); g.narr('Tu laisses l\'ordre sans réponse.'); s.done[fid] = 'B'; o.B.fx(g);
     } else if (o.appel) { s.done[fid] = 'auto'; g.narr('Tu laisses sonner. Le téléphone se tait.'); }
   }
 
@@ -353,6 +356,7 @@
     var fid = forcedId(s, c);
     if (s.flags.awayCycle !== c) {
       if (fid && BY_ID[fid].annonce) BY_ID[fid].annonce(ctx(s, ev, BY_ID[fid]));
+      else if (sonneLibre(s)) g.ecran('APPEL ENTRANT.|NE RÉPONDEZ PAS.');
       else if (!fid && c > 1 && c !== 5) ambiance(s, g);
     } else {
       // Deuxième moment aux archives : ce qui arrive là-haut suit les règles normales.

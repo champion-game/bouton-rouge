@@ -310,12 +310,12 @@
         g.narr('Deux coups. Une seconde. Puis deux coups te répondent, de l\'autre côté' + (g.truth === 'C' ? ', exactement au même rythme que les tiens.' : '.'));
         g.tel('« D\'accord. On peut se parler, alors. »'); g.confiance(1, 'contact');
         if (g.s.memoire && g.s.memoire.session > 1) g.tel(SESSIONS.deja18);
-        if (g.ecoute()) g.ecran('COMMUNICATION|NON|AUTORISÉE.');
+        if (g.ecoute() || g.cycle === 3) g.ecran('COMMUNICATION|NON|AUTORISÉE.');
       } },
       B: { label: 'Écouter sans répondre', fx: function (g) {
         g.flag('ligne', 'ouverte'); g.flag('tasse', true);
         g.tel('« Je sais que tu es là. J\'entends ta respiration. … Bon. Je rappellerai. »');
-        if (g.ecoute()) g.ecran('COMMUNICATION|NON|AUTORISÉE.');
+        if (g.ecoute() || g.cycle === 3) g.ecran('COMMUNICATION|NON|AUTORISÉE.');
       } } },
 
     { id: 'T2', objet: 'phone', fil: 'telephone', qui: 'APPELER LA CHAMBRE 18',
@@ -600,8 +600,7 @@
       g.narr('Dans le noir, la caméra ne voit plus rien. Pas pour longtemps.');
     },
     6: function (g) {
-      g.narr('CLAC. Les lumières reviennent. Mais un bip persiste, sur le boîtier électrique.');
-      g.ecran('AUX 24 V —|DÉFAUT.'); g.ecran('FUSIBLE DE|PROTECTION|OUVERT.');
+      g.narr('CLAC. Les lumières reviennent. Mais sur le boîtier électrique, un voyant rouge clignote et bipe : le retour du courant a fait sauter un fusible.');
       g.flag('aux', 'defaut');
       if (g.has('fusible')) g.narr('Ton fusible porte la même étiquette : AUX 24 V.');
     },
@@ -893,7 +892,7 @@
   var AIDES = {
     libre: 'Touche les objets de la pièce : le tiroir, la vitre, la porte…',
     ordre: 'Appuie sur le bouton pour obéir. Sans réponse avant la fin du temps, l\'ordre est refusé.',
-    appel: 'Touche le téléphone pour décrocher.'
+    appel: 'Touche le téléphone pour décrocher, ou laisse-le sonner.'
   };
 
   var api = {

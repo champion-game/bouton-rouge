@@ -48,6 +48,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);out
 .bilan li{color:var(--text)}
 .hs{cursor:pointer}
 .hs:hover{filter:brightness(1.3)}
+.hs{transition:filter .4s}.hs.grise,.hs.grise:hover{filter:grayscale(1) brightness(.45);cursor:default}
 .ring{animation:shake .12s infinite}
 @keyframes shake{0%{transform:translate(0,0)}25%{transform:translate(-1.5px,.5px)}50%{transform:translate(1.5px,-.5px)}75%{transform:translate(-1px,0)}}
 .pulse{animation:pls 1.3s infinite}
@@ -221,7 +222,7 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
       <button class="mbtn" id="setBtn">Réglages</button>
     </div>
     <p>Une pièce. Un bouton. Touche ce qui t'entoure. Le son est recommandé.</p>
-    <p class="ver">Version 6.6 · 20/10</p>
+    <p class="ver">Version 6.7 · 20/10</p>
   </div>
   <div class="intro panel" id="finsPanel" hidden>
     <h2>Fins découvertes</h2>
@@ -243,10 +244,10 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 </div>
 <div class="ov" id="endOv" hidden><div class="end" id="endBox"></div></div>
 
-<script src="src/story.js?v=6.6"></script>
-<script src="src/engine.js?v=6.6"></script>
-<script src="src/audio.js?v=6.6"></script>
-<script src="src/room.js?v=6.6"></script>
-<script src="src/game.js?v=6.6"></script>
+<script src="src/story.js?v=6.7"></script>
+<script src="src/engine.js?v=6.7"></script>
+<script src="src/audio.js?v=6.7"></script>
+<script src="src/room.js?v=6.7"></script>
+<script src="src/game.js?v=6.7"></script>
 </body>
 </html>

@@ -131,7 +131,7 @@
       if (i || texte || titre) h += (i || texte ? '<div class="sep"></div>' : '') + '<div class="who"><span>' + esc(x.qui) + '</span></div>';
       h += (x.id === 'H1' ? lettreHtml('mot16', false) : '<p>' + esc(x.texte) + '</p>') + '<div class="ab' + (x.B ? '' : ' one') + '">' + choiceBtn(x, 'A') + choiceBtn(x, 'B') + choiceBtn(x, 'C') + '</div>';
     });
-    openPop(h, function () { sel = null; if (s && !s.fin) R.render(s, roomInfo()); });
+    openPop(h, function () { sel = null; if (s && !s.fin) { R.render(s, roomInfo()); if (sonne()) A.ring(true); } });
   }
   // Le combiné décroché : la liste des numéros, sans rien de la conversation.
   function composerPop() {
@@ -221,12 +221,14 @@
   function forcedKind() { return t ? t.forcedKind : null; }
   // 18 sans signal : 30 s sans geste et l'évaluation se termine. Chaque geste relance l'attente.
   function attenteSeul() { return t && !forcedKind() && t.duree && s.flags.mortA != null && s.cycle > s.flags.mortA && s.cycle !== 5; }
+  // Garde-fou : pendant un ordre ou une sonnerie, seul l'objet concerné répond ; le reste est grisé.
+  function verrou() { var k = forcedKind(); return !t || s.fin ? null : k === 'ordre' ? 'btn' : (k === 'appel' || (t.sonne && ringT)) ? 'phone' : null; }
   function sonne() { return !busy && t && ((t.sonne && ringT) || (forcedKind() === 'appel' && sel !== 'phone')); }
   function roomInfo() {
     var k = forcedKind();
     return {
       cameraAveugle: E.cameraAveugle(s), porteOuverte: E.porteOuverte(s), urgence: noirVu, silCachee: introSil,
-      ordre: !busy && k === 'ordre', sonne: sonne(), decroche: sel === 'phone' && !$('pop').hidden, ecoute: E.ecoute(s)
+      ordre: !busy && k === 'ordre', sonne: sonne(), seulObjet: verrou(), decroche: sel === 'phone' && !$('pop').hidden, ecoute: E.ecoute(s)
     };
   }
 
@@ -240,7 +242,8 @@
       if (t.forced && t.forced.ecran) R.ecran(t.forced.ecran);
       A.ring(true); toast('Le téléphone sonne.'); addHist('Le téléphone sonne.');
       // Un appel libre (le premier) sonne trente secondes, puis se tait ; on pourra rappeler.
-      if (t.sonne) ringT = setTimeout(function () { ringT = null; A.ring(false); if (!busy) R.render(s, roomInfo()); }, E.DUREES.appel * 1000);
+      // Le premier appel sonne trente secondes (chrono du moteur) : décrocher ou le laisser sonner.
+      if (t.sonne) ringT = true;
     }
     else if (!lastEcran) R.ecran('TEST EN|COURS.');
     lastEcran = '';
@@ -261,7 +264,7 @@
     renderBag(); updateTimer();
     var k = forcedKind(), hint = !busy && t && tuto && s.cycle <= 3 ? (k === 'ordre' ? E.AIDES.ordre : (k === 'appel' || (t.sonne && ringT)) ? E.AIDES.appel : !k ? E.AIDES.libre : '') : '';
     $('hintcap').textContent = hint; $('hintcap').hidden = !hint;
-    $('waitBtn').hidden = !(t && !busy && t.peutAttendre && !s.fin);
+    $('waitBtn').hidden = !(t && !busy && t.peutAttendre && !s.fin && !verrou());
   }
 
   // ---------- inventaire ----------
@@ -278,7 +281,7 @@
   $('bag').addEventListener('click', function (e) {
     var b = e.target.closest('button.slot'); if (!b || !s || s.fin || paused) return;
     A.init();
-    var k = b.dataset.k, o = POCHE_OBJET[k], list = !busy && t && o && !forcedKind() ? t.objets[o] : null;
+    var k = b.dataset.k, o = POCHE_OBJET[k], list = !busy && t && o && !forcedKind() && !verrou() ? t.objets[o] : null;
     flashItems = flashItems.filter(function (x) { return x !== k; }); renderBag();
     if (list && list.length) { sel = o; objetPop(nomPoche(k), '', list, true); }
     else if (k === 'journal') { openPop('<div class="who"><span>' + esc(nomPoche(k)) + '</span><button class="x" data-close="1" aria-label="Fermer">×</button></div>' + (s.flags.journal || []).slice().sort(function (a, b) { return a.n - b.n; }).map(function (p) { return lettreHtml({ titre: p.titre, recto: p.lignes, signature: '—16' }); }).join(''), null); }
@@ -295,7 +298,8 @@
     if (!$('intro').hidden) return;
     if (s && busy && !s.fin) { passer(); return; }
     if (!s || s.fin || paused || busy || !t || !$('pop').hidden) return;
-    var kind = forcedKind(); calmeT = performance.now();
+    var kind = forcedKind(), v = verrou(); calmeT = performance.now();
+    if (v && k !== v && k !== 'monitor') { toast(v === 'btn' ? 'Le moniteur attend ta réponse.' : 'Le téléphone sonne.'); return; }
     if (attenteSeul()) timeLeft = timeTotal;
     // La caméra voit le geste : petit mouvement, et le moniteur le note.
     if (k !== 'btn' && s.cycle >= 3 && !E.cameraAveugle(s) && TITRES[k]) { R.camRegarde(); A.sfx('servo'); R.journal(horloge() + ' — SUJET 17 : ' + TITRES[k].replace(/^(LE |LA |LES |L')/, '')); }
@@ -367,6 +371,7 @@
     } else calmeT = nowT;
     if (busy || paused || confirmer || !s || s.fin || document.hidden || !t || !timeTotal) return;
     if (attenteSeul() && !$('pop').hidden) return; // lire un texte, c'est encore agir
+    if (sel === 'phone' && !$('pop').hidden && (t.sonne || forcedKind() === 'appel')) return; // en ligne : l'appel ne se coupe pas
     timeLeft -= dt; updateTimer();
     if (timeLeft <= 0) act({ type: 'temps' });
   }, 100);
@@ -376,7 +381,7 @@
     if (p) A.ring(false); else if (sonne()) A.ring(true);
   }
   $('pausedLbl').addEventListener('click', function () { setPaused(false); });
-  $('waitBtn').onclick = function () { A.init(); if (!busy && t && t.peutAttendre && $('pop').hidden) act({ type: 'attendre' }); };
+  $('waitBtn').onclick = function () { A.init(); if (!busy && t && t.peutAttendre && !verrou() && $('pop').hidden) act({ type: 'attendre' }); };
 
   // ---------- fin ----------
   var SONS_FIN = { conforme: 'lock', employe: 'lock', marche: 'ring', seulDehors: 'thud', porteDerobee: 'thud', evasion: 'alarm', cooperation: 'lock', sauvetage: 'thud', tropTard: 'blink', complice: 'alarm', sujet18: 'thud', miroir: 'glitch', boucle: 'blink', isolement: 'slam', gardien: 'alarm', temoin: 'pickup', revolte: 'alarm', tempsEcoule: 'cry', curiosite: 'slam' };

@@ -319,6 +319,9 @@
     attr('phoneInner', 'class', info.sonne ? 'ring' : '');
     // Petit voyant rouge : la ligne est écoutée.
     attr('ecouteLed', 'opacity', info.ecoute ? 1 : 0);
+    // Garde-fou : pendant un ordre ou une sonnerie, les autres objets sont grisés (le moniteur reste lisible).
+    var hs = svg.querySelectorAll('.hs');
+    for (var i = 0; i < hs.length; i++) { var dk = hs[i].getAttribute('data-k'); hs[i].classList.toggle('grise', !!info.seulObjet && dk !== info.seulObjet && dk !== 'monitor'); }
   }
 
   // La pièce s'use : chaque pression baisse un peu la lumière de la lampe.
