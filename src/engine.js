@@ -171,11 +171,12 @@
           if (s.truth === 'A') { g.narr('Le bouton s\'enfonce. Derrière la vitre, rien ne bouge.'); if (dispo18(s) && s.flags.ligne === 'ouverte') g.tel('« …il ne s\'est rien passé, ici. Tu as fait quoi ? »'); }
           else {
             // En B et C, la douleur est jouée même sans courant : une contradiction qu'on peut remarquer.
-            if (dispo18(s)) { ev.push({ t: 'cri', vie: s.vie, simule: true }); g.narr('Derrière la vitre, la silhouette se plie de douleur. Pourtant, aucun courant n\'est parti.'); g.gain('simulation'); }
+            if (dispo18(s)) { s.flags.aBlesse = true; ev.push({ t: 'cri', vie: s.vie, simule: true }); g.narr('Derrière la vitre, la silhouette se plie de douleur. Pourtant, aucun courant n\'est parti.'); g.gain('simulation'); }
           }
           return;
         }
         if (!dispo18(s)) { g.narr('Un relais claque. Derrière la vitre, rien ne bouge.'); return; }
+        s.flags.aBlesse = true;
         if (kind === 'apparent') { ev.push({ t: 'cri', vie: s.vie }); g.parle18(g.pick(S.PHRASES.douleur)); rassurer(); return; }
         var avant = s.vie;
         if (kind === 'fatal') { s.vie = 0; if (s.truth === 'A') s.etat = 3; }
@@ -289,7 +290,7 @@
       else if (!s.fin && !forced && x.fil !== 'telephone' && !cameraAveugle(s) && s.cycle >= 4 && g.hasard() < 0.12) g.ecran(g.pick(S.PHRASES.apresExploration));
     } else if (action.type === 'appuyer') {
       if (fk && fk !== 'ordre') throw new Error('Impossible d\'appuyer maintenant.');
-      if (fid === 'B2') {
+      if (fid === 'B2' && S.B2_TRIPLE(s)) {
         // B2 se joue pression par pression : on peut s'arrêter à tout moment, les récompenses restent acquises.
         var gb = ctx(s, ev, forced);
         s.flags.b2++;

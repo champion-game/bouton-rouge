@@ -240,3 +240,6 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 
 ## 7.8
 - **Caméra du joueur** : au premier lancement, un écran demande l'accord (Autoriser / Jouer sans), modifiable dans Réglages. À la 2e pression de B2, si l'accord est donné, l'image réelle s'affiche 4,5 s sur le moniteur (« EN DIRECT — NOUS VOUS OBSERVONS »). Jamais de demande en pleine partie : si le navigateur a oublié l'accord, on passe. Rien n'est enregistré ni envoyé. Version PC (Electron) : accorder la caméra via le gestionnaire de permissions.
+
+## 7.9
+- **B2 dépend du passé** : tant que le joueur n'a jamais vu la 18 souffrir par sa pression (`flags.aBlesse`), B2 est un simple « APPUYEZ. » (comme B1, sans récompense). Une fois la conséquence connue, B2 devient le test de détermination : « VOUS CONNAISSEZ LE PRIX. APPUYEZ TROIS FOIS. » avec dossier, caméra et code.

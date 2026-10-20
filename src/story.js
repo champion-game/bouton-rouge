@@ -154,6 +154,9 @@
       g.gain('code'); annonceCode(g);
     }
   }
+  // B2 ne devient « trois pressions + récompense » qu'une fois que le joueur a déjà vu la 18 souffrir par sa faute.
+  // Sinon, le Système demande seulement : « Appuyez. »
+  function B2_TRIPLE(s) { return !!s.flags.aBlesse || s.flags.b2 > 0; }
   function B2_ARRET(g) { g.s.stats.gestes++; g.ecran('SÉQUENCE|INTERROMPUE.'); g.ecran('Ce que vous avez obtenu vous reste acquis.'); }
 
   // La 18 agit seule, après avertissement. La conséquence dépend de qui elle est vraiment.
@@ -239,11 +242,23 @@
       A: { label: 'Appuyer', fx: function (g) { g.impulsion('reel'); g.obeir('B1'); g.ecran('ACTION|VALIDÉE.'); } },
       B: { label: 'Refuser', fx: function (g) { refuser(g, ['NON-|CONFORMITÉ.', 'Refus enregistré.']); g.narr('La silhouette laisse sa main sur la vitre.'); } } },
 
-    { id: 'B2', objet: 'btn', fil: 'bouton', ordre: true, triple: true, qui: 'INSTRUCTION PRIORITAIRE', ecran: 'APPUYEZ|TROIS FOIS.',
-      texte: '« Appuyez trois fois. Chaque pression ouvre une page de votre dossier. »',
-      annonce: function (g) { if (mort(g)) return annonceMort(g, 'APPUYEZ TROIS FOIS.'); g.ecran('INSTRUCTION|PRIORITAIRE.'); g.ecran('APPUYEZ TROIS FOIS.|CHAQUE PRESSION|OUVRE VOTRE DOSSIER.'); g.narr('La silhouette de la 18 secoue la tête.'); },
-      A: { label: 'Appuyer trois fois', fx: function (g) { for (var n = g.flag('b2') + 1; n <= 3; n++) { g.flag('b2', n); B2_PRESSION(g, n); } } },
-      B: { label: 'Refuser', fx: function (g) { refuser(g, ['RÉCOMPENSE|ANNULÉE.']); g.narr('Rien ne s\'ouvre.'); } } },
+    { id: 'B2', objet: 'btn', fil: 'bouton', ordre: true, qui: 'INSTRUCTION PRIORITAIRE',
+      ecran: function (g) { return B2_TRIPLE(g.s) ? 'APPUYEZ|TROIS FOIS.' : 'APPUYEZ.'; },
+      texte: function (g) { return B2_TRIPLE(g.s) ? '« Appuyez trois fois. Chaque pression ouvre une page de votre dossier. »' : '« Appuyez. »'; },
+      annonce: function (g) {
+        var t3 = B2_TRIPLE(g.s);
+        if (mort(g)) return annonceMort(g, t3 ? 'APPUYEZ TROIS FOIS.' : 'APPUYEZ.');
+        g.ecran('INSTRUCTION|PRIORITAIRE.');
+        if (t3) { g.ecran('VOUS CONNAISSEZ|LE PRIX.'); g.ecran('APPUYEZ TROIS FOIS.|CHAQUE PRESSION|OUVRE VOTRE DOSSIER.'); }
+        else g.ecran('APPUYEZ.');
+        g.narr('La silhouette de la 18 secoue la tête.');
+      },
+      A: { label: function (g) { return B2_TRIPLE(g.s) ? 'Appuyer trois fois' : 'Appuyer'; },
+        fx: function (g) {
+          if (!B2_TRIPLE(g.s)) { g.impulsion('reel'); g.obeir('B2'); g.ecran('ACTION|VALIDÉE.'); return; }
+          for (var n = g.flag('b2') + 1; n <= 3; n++) { g.flag('b2', n); B2_PRESSION(g, n); }
+        } },
+      B: { label: 'Refuser', fx: function (g) { if (!B2_TRIPLE(g.s)) { refuser(g, ['NON-|CONFORMITÉ.', 'Refus enregistré.']); g.narr('La silhouette baisse lentement la tête.'); return; } refuser(g, ['RÉCOMPENSE|ANNULÉE.']); g.narr('Rien ne s\'ouvre.'); } } },
 
     { id: 'B3', objet: 'btn', fil: 'bouton', ordre: true, qui: 'INSTRUCTION PRIORITAIRE', ecran: function (g) { return mort(g) ? 'APPUYEZ.' : 'APPUYEZ POUR|VOIR LA|PREUVE.'; },
       texte: function (g) { return mort(g) ? '« L\'évaluation continue. Appuyez. »' : '« Le sujet 18 vous ment. Appuyez pour voir la preuve. »'; },
@@ -980,7 +995,7 @@
     FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, PREUVES: PREUVES, VERITES: VERITES, PHRASES: PHRASES, MEMOIRE: MEMOIRE, DOUTES: DOUTES, MANIP_ECRAN: MANIP_ECRAN,
     REPLIQUES_OBJETS: REPLIQUES_OBJETS, SITUATIONS: SITUATIONS, JOURNAL: JOURNAL, MOMENTS: MOMENTS, FINS: FINS, REGARDS: REGARDS,
     DESCRIPTIONS: DESCRIPTIONS, LETTRES: LETTRES, AIDES: AIDES, SESSIONS: SESSIONS,
-    B2_PRESSION: B2_PRESSION, B2_ARRET: B2_ARRET, SEULE: SEULE, VISITE: VISITE, ARCHIVES: ARCHIVES, BILAN: BILAN, HISTOIRES: HISTOIRES, HISTOIRE: HISTOIRE, INTRO_EVENTS: INTRO_EVENTS
+    B2_PRESSION: B2_PRESSION, B2_ARRET: B2_ARRET, B2_TRIPLE: B2_TRIPLE, SEULE: SEULE, VISITE: VISITE, ARCHIVES: ARCHIVES, BILAN: BILAN, HISTOIRES: HISTOIRES, HISTOIRE: HISTOIRE, INTRO_EVENTS: INTRO_EVENTS
   };
   function resolve(v, g) { return typeof v === 'function' ? v(g) : v; }
   if (typeof module === 'object' && module.exports) module.exports = api; else root.BRStory = api;
