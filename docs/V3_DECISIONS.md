@@ -252,3 +252,9 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - **Carnet** sur le bureau (dessin provisoire en SVG, à remplacer par `carnet.webp`) : gratuit, il liste ce que le joueur a appris (codes, numéros, promesse, plan, preuves, pages de 16). Jamais de jauge ni de numéro de moment.
 - **Réactions de la 18** quand on touche la vitre (une fois par moment) : recule juste après une douleur, pose sa paume si promesse / plan / confiance ≥ 3, se détourne si le joueur obéit sans lien avec elle, sinon s'approche.
 - **Fin bonus « Les mains propres »** : verdict sans aucune pression ni aucune action choisie (les ordres refusés et les choix imposés comme M16 ne comptent pas, `stats.libres`). Passe avant « Sujet conforme » et « Le Temps est écoulé ».
+
+## 8.1 — Fins alignées sur le brief V2 (étape 1)
+- Chaque fin donne une réponse certaine, sans affirmer ce qui n'est pas établi : « Trop tard » = transfert (plus de mort supposée), « Le marché » = reçu d'autorisation, « Conforme » / « Employé » = rapport « volontaire » sans les menaces.
+- C : la voix vient de l'admission (plus « session précédente »). B : les cris étaient simulés, sa fille est retenue.
+- Aucune fin ne cite une silhouette d'une autre vérité (« la femme de la 18 » retirée de « L'employé du mois »).
+- Bilan neutre : « La Chambre 18 a crié N fois » (vrai dans les trois vérités).
