@@ -54,7 +54,13 @@
     pas: function () { var t = now(); for (var i = 0; i < 5; i++) { osc('sine', 70, t + i * 0.5, 0.2, 0.14, 45); noise(t + i * 0.5, 0.08, 0.06, 'lowpass', 400); } }
   };
 
-  function sfx(n) { if (SFX[n]) SFX[n](); }
+  // Battement sourd (k de 0 à 1 : plus fort quand le temps de l'ordre s'écoule), moteur de caméra, grésillement de lampe.
+  SFX.coeur = function (k) { k = k || 0; var t = now(); osc('sine', 58, t, 0.13, 0.22 + 0.4 * k, 38); osc('sine', 52, t + 0.2, 0.15, 0.16 + 0.3 * k, 34); };
+  SFX.servo = function () { var t = now(); osc('sawtooth', 220, t, 0.22, 0.025, 330); noise(t, 0.22, 0.04, 'bandpass', 2400); };
+  SFX.gresil = function () { var t = now(); for (var i = 0; i < 5; i++) noise(t + i * 0.05 + Math.random() * 0.03, 0.03, 0.12, 'highpass', 4000); };
+  function sfx(n, a) { if (SFX[n]) SFX[n](a); }
+  // Pression pendant un ordre : la ventilation et le bourdonnement montent ; null = retour à l'ambiance.
+  function tension(k) { if (!AC) return; if (k == null) return ambiance({}); rampe(ventG, 0.05 + 0.13 * k); rampe(droneG, 0.012 + 0.06 * k); }
 
   // ---------- ambiance qui évolue avec la partie ----------
   var humG = null, ventG = null, droneG = null;
@@ -136,5 +142,5 @@
   function stopAll() { ringOn = false; alarmOn = false; }
   function setMuted(m) { muted = m; if (master) master.gain.value = m ? 0 : 0.8; }
 
-  root.BRAudio = { murmure: murmure, ambiance: ambiance, init: init, sfx: sfx, startAmbience: startAmbience, ring: ring, stopAll: stopAll, setMuted: setMuted, isMuted: function () { return muted; } };
+  root.BRAudio = { tension: tension, murmure: murmure, ambiance: ambiance, init: init, sfx: sfx, startAmbience: startAmbience, ring: ring, stopAll: stopAll, setMuted: setMuted, isMuted: function () { return muted; } };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

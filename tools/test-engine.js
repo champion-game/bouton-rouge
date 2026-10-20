@@ -50,7 +50,9 @@ function jouer(truth, steps, avant) {
     if (p[0] === 'press') a = { type: 'appuyer' }; else if (p[0] === 'temps') a = { type: 'temps' }; else if (p[0] === 'wait') a = { type: 'attendre' };
     else if (p[0] === 'porte' || p[0] === 'trappe') a = { type: 'sortir', via: p[0] };
     else a = { type: 'situation', id: p[0], choix: p[1] || 'A' };
-    var res = E.choose(st, a); note(res); st = res.state;
+    var c0 = st.cycle, n0 = st.stats.actions, res = E.choose(st, a); note(res); st = res.state;
+    // Coupure : agir ne fait plus revenir le courant ; les parcours attendent ensuite la fin des 10 s.
+    if (a.type === 'situation' && c0 === 5 && st.cycle === 5 && !st.fin && st.stats.actions > n0 && !E.forcedId(st)) { res = E.choose(st, { type: 'temps' }); note(res); st = res.state; }
   }
   return st;
 }

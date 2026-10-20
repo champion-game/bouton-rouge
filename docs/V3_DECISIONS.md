@@ -169,3 +169,12 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - **Forcer le tiroir et le compartiment** exige que la caméra ne voie pas : coupure (moment 5, « Dans le noir, la caméra ne voit plus rien »), veste, caméra coupée ou tournée, ou angle mort (sous le bureau). Sinon : « La caméra te regarde. Il faudrait qu'elle ne voie rien. » Le compartiment donne directement le fusible.
 - **La 18 ne parle qu'avec la ligne ouverte** (`parle18` dans `engine.js`) : sans contact, à travers la vitre, un cri étouffé sans mots. Indices sans ligne : seulement ce qui se voit (rien en vérité A). En face à face (conduit, porte), sa voix n'arrive plus « au téléphone ».
 - Le toast « Un papier glisse sous la porte » au moment 4 est retiré : le mot de 16 arrive au moment 5, comme le dit le texte.
+
+## Ressenti (20/10, version 6.3) — décisions d'Amine
+
+- **Ordres sans chrono visible** : le moniteur affiche seulement l'ordre. Les 30 s restent, mais invisibles : ventilation, bourdonnement et battement sourd montent. À la fin : « RÉACTION NON CONFORME », l'ordre compte comme refusé.
+- **Pas de confirmation** : toucher autre chose pendant un ordre ou un appel est permis ; agir ailleurs = refus immédiat (« ACTION NON AUTORISÉE. ORDRE REFUSÉ. ») ou appel laissé sonner.
+- **Coupure (moment 5)** : événement à part. « ALIMENTATION INSTABLE », la lampe clignote, puis le noir (veilleuse orange). Le moniteur compte 10 s jusqu'au retour du réseau. Caméra aveugle ; agir dans le noir ne fait plus revenir le courant. Le mot de 16 glisse sous la porte au moment 4 (avant, son texte arrivait avec la coupure).
+- **Trappe toujours visible**, verrouillée ; étiquette « DÉVERROUILLAGE — AUX 24 V » (indice du fusible). Le boîtier en défaut dit « AUX 24 V — HORS SERVICE ».
+- **Impression** : le moniteur note chaque geste vu (« 14:03:12 — SUJET 17 : TIROIR »), la caméra réagit (moteur, voyant), la 18 frappe à la vitre après 25 s sans geste (une fois par moment), la lumière baisse un peu à chaque pression et la lampe grésille.
+- Bouton « Attendre » gardé pendant les tests.

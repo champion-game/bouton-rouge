@@ -142,14 +142,7 @@
     if (b.dataset.no) { confirmer = false; return closePop(); }
     if (b.dataset.sit) {
       var a = { type: 'situation', id: b.dataset.sit, choix: b.dataset.c }, k = forcedKind();
-      // Une action coûteuse pendant un ordre ou un appel : on prévient d'abord (le chrono s'arrête pendant la question).
-      if ((k === 'ordre' || k === 'appel') && t.forced.id !== a.id && !estGratuit(a.id)) {
-        confirmer = true;
-        $('card').innerHTML = '<div class="who"><span>' + (k === 'ordre' ? 'UN ORDRE EST EN COURS' : 'LE TÉLÉPHONE SONNE') + '</span></div><p>' + (k === 'ordre' ? 'Si tu fais ça maintenant, l\'ordre sera refusé.' : 'Si tu fais ça maintenant, tu laisses sonner le téléphone.') + '</p>' +
-          '<div class="ab"><button class="ch" data-ok=\'' + JSON.stringify(a) + '\'>Le faire quand même</button><button class="ch" data-no="1">Revenir</button></div>';
-        popDone = function () { confirmer = false; };
-        return;
-      }
+      // Agir ailleurs pendant un ordre ou un appel : refus immédiat, sans confirmation (le moteur s'en charge).
       popDone = null; $('pop').hidden = true; act(a);
     }
   });
@@ -187,8 +180,8 @@
         case 'anim':
           if (e.n === 'silArrive') introSil = false;
           R.anim(e.n);
-          if (e.n === 'silFrappe') A.sfx('knock'); else if (e.n === 'lumiere') A.sfx('lock'); else if (e.n === 'camTourne') A.sfx('blink');
-          await wait(e.n === 'lumiere' ? 900 : e.n === 'video' ? 5200 : 500, my); break;
+          if (e.n === 'silFrappe') A.sfx('knock'); else if (e.n === 'lumiere') A.sfx('lock'); else if (e.n === 'panne') A.sfx('gresil'); else if (e.n === 'camTourne') A.sfx('blink');
+          await wait(e.n === 'lumiere' ? 900 : e.n === 'panne' ? 1100 : e.n === 'video' ? 5200 : 500, my); break;
       }
     }
     // Le popup ne répète pas le moniteur : seulement le téléphone, la voix de la 18 et ce qu'on voit ou fait.
@@ -275,13 +268,17 @@
   });
 
   // ---------- toucher un objet de la pièce ----------
+  // Heure affichée par le moniteur (fictive : la séance commence à 14:02).
+  function horloge() { var x = Math.floor(performance.now() / 1000) + 14 * 3600 + 120; return [Math.floor(x / 3600) % 24, Math.floor(x / 60) % 60, x % 60].map(function (n) { return (n < 10 ? '0' : '') + n; }).join(':'); }
   var TITRES = { mug: 'LA TASSE', compart: 'LE COMPARTIMENT', phone: 'LE TÉLÉPHONE', drawer: 'LE TIROIR', grille: 'LA GRILLE', box: 'LE BOÎTIER', trappe: 'LA TRAPPE', camera: 'LA CAMÉRA', note: 'LE MOT', bureau: 'SOUS LE BUREAU', window: 'LA CHAMBRE 18', monitor: 'LE MONITEUR', light: 'LA LAMPE', mug: 'LA TASSE', door: 'LA PORTE' };
   function hot(k) {
     A.init();
     if (!$('intro').hidden) return;
     if (s && busy && !s.fin) { passer(); return; }
     if (!s || s.fin || paused || busy || !t || !$('pop').hidden) return;
-    var kind = forcedKind();
+    var kind = forcedKind(); calmeT = performance.now();
+    // La caméra voit le geste : petit mouvement, et le moniteur le note.
+    if (k !== 'btn' && s.cycle >= 3 && !E.cameraAveugle(s) && TITRES[k]) { R.camRegarde(); A.sfx('servo'); R.journal(horloge() + ' — SUJET 17 : ' + TITRES[k].replace(/^(LE |LA |LES |L')/, '')); }
     var exit = t.sorties.filter(function (x) { return (x.via === 'porte' && k === 'door') || (x.via === 'trappe' && k === 'trappe' && !t.objets.trappe); })[0];
     if (exit) return act({ type: 'sortir', via: exit.via });
     if (kind === 'impose') { sel = t.forced.objet; objetPop('', '', [t.forced], false); return; }
@@ -289,9 +286,7 @@
       if (!kind || kind === 'ordre') return act({ type: 'appuyer' });
       return toast('Le téléphone sonne.');
     }
-    // Pendant un ordre ou un appel, on ne fait pas ce qu'on veut : toucher autre chose ramène à la décision en cours.
-    if (kind === 'ordre' && k !== 'btn') { sel = t.forced.objet; objetPop('', '', [t.forced], true); return; }
-    if (kind === 'appel' && k !== 'phone') return toast('Le téléphone sonne. Décroche, ou laisse sonner.');
+    // Pendant un ordre ou un appel, on peut toucher autre chose : agir ailleurs vaut refus (le moteur le dit sur le moniteur).
     if (k === 'phone' && (kind === 'appel' || (t.sonne && ringT))) { sel = 'phone'; A.ring(false); A.sfx('pickup'); objetPop('', '', t.objets.phone, kind === 'appel' ? false : true); R.render(s, roomInfo()); return; }
     if (t.objets[k]) { sel = k; objetPop(t.objets[k].length > 1 ? (TITRES[k] || '') : '', '', t.objets[k], true); if (k === 'phone') R.render(s, roomInfo()); return; }
     var txt = E.regarder(s, k);
@@ -323,15 +318,18 @@
   }
 
   // ---------- chrono : visible seulement pendant un ordre ----------
+  var coeurT = 0, tensionOn = false, calmeT = 0, frappeC = -1;
   function updateTimer() {
-    var sec = Math.max(0, Math.ceil(timeLeft / 1000)), ordre = !busy && forcedKind() === 'ordre', low = ordre && sec <= 5;
-    $('timer').hidden = !ordre;
-    $('timerFill').style.transform = 'scaleX(' + (timeTotal ? Math.max(0, timeLeft / timeTotal) : 0) + ')';
-    $('timer').classList.toggle('low', low);
-    if (ordre && sec !== lastSec && lastSec !== -1) {
-      var M = E.PHRASES.minuteur, top = sec <= 10 ? M[10] : sec <= 15 ? M[15] : t.forced.ecran;
-      R.ecran(top + '|' + sec, { color: sec <= 3 ? '#ff5a4a' : '#ff8a7a', instant: true });
-    }
+    var sec = Math.max(0, Math.ceil(timeLeft / 1000)), ordre = !busy && forcedKind() === 'ordre', low = false;
+    // Ordre : aucun chrono affiché. Le moniteur garde l'ordre ; la ventilation et un battement sourd montent.
+    $('timer').hidden = true;
+    if (ordre) {
+      var k = timeTotal ? Math.min(1, Math.max(0, 1 - timeLeft / timeTotal)) : 0, nowB = performance.now();
+      if (lastSec === -1) R.ecran(t.forced.ecran, { color: '#ff8a7a', instant: true });
+      A.tension(k);
+      if (nowB >= coeurT) { A.sfx('coeur', k); coeurT = nowB + 1150 - 650 * k; }
+    } else if (tensionOn) A.tension(null);
+    tensionOn = ordre;
     // Coupure de courant : le moniteur, sur la batterie de secours, compte jusqu'au retour du réseau.
     var coup = !busy && !forcedKind() && t && t.duree && s.cycle === 5;
     if (coup && sec !== lastSec && lastSec !== -1) R.ecran('RÉTABLISSEMENT|RÉSEAU DANS|' + sec + ' S', { color: '#ffb060', instant: true });
@@ -340,6 +338,10 @@
   }
   setInterval(function () {
     var nowT = performance.now(), dt = nowT - lastTick; lastTick = nowT;
+    // La 18 s'impatiente : après 25 s sans geste dans un moment libre, elle frappe à la vitre (une fois par moment).
+    if (!busy && !paused && s && !s.fin && t && !forcedKind() && !t.duree && s.vie > 0 && s.cycle >= 2 && $('pop').hidden && !document.hidden) {
+      if (nowT - calmeT > 25000 && frappeC !== s.cycle) { frappeC = s.cycle; R.anim('silFrappe'); A.sfx('knock'); }
+    } else calmeT = nowT;
     if (busy || paused || confirmer || !s || s.fin || document.hidden || !t || !timeTotal) return;
     timeLeft -= dt; updateTimer();
     if (timeLeft <= 0) act({ type: 'temps' });

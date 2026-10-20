@@ -107,8 +107,8 @@
   '<g id="gNote"><g id="note" class="hs" data-k="note" opacity="0"><rect x="140" y="672" width="108" height="44" fill="transparent"/><g id="noteSlide">' + I('', 'mot_plie', 150, 682, 88, 26.4) + '</g></g></g>' +
   // grille d'aération
   '<g id="gGrille"><g id="grille" class="hs" data-k="grille">' + I('grilleImg', 'grille', 1282.4, 518.9, 178.2, 92.3) + '</g></g>' +
-  // trappe au sol, devant le bureau (apparaît quand on la connaît)
-  '<g id="gTrappe"><g id="trappe" class="hs" data-k="trappe" opacity="0">' + I('trappeImg', 'trappe_fermee', 584.1, 636, 502.4, 456.8) + '</g></g>' +
+  // trappe au sol, devant le bureau : toujours visible, verrouillée tant qu'on n'a pas le moyen de l'ouvrir
+  '<g id="gTrappe"><g id="trappe" class="hs" data-k="trappe">' + I('trappeImg', 'trappe_fermee', 584.1, 636, 502.4, 456.8) + '</g></g>' +
   // vitre de la Chambre 18 : la pièce floue, la silhouette, puis le verre dépoli (partiellement transparent)
   '<g id="gWin">' + ombre(1116, 70, 1475, 385) + '<g id="win" class="hs" data-k="window">' +
   '<g clip-path="url(#glassClip)">' +
@@ -180,6 +180,7 @@
   '<rect id="screen" x="' + SC.x + '" y="' + SC.y + '" width="' + SC.w + '" height="' + SC.h + '" rx="6" fill="#020605"/>' +
   '<g id="scr" font-family="VT323, Courier New, monospace" fill="#bff5e4" text-anchor="middle"></g>' +
   '<g id="video" clip-path="url(#screenClip)" opacity="0"></g>' +
+  '<text id="journal" x="' + (SC.x + 10) + '" y="' + (SC.y + SC.h - 9) + '" font-family="VT323, monospace" font-size="15" fill="#7fd9bc" style="opacity:0"></text>' +
   '<rect x="' + SC.x + '" y="' + SC.y + '" width="' + SC.w + '" height="' + SC.h + '" rx="6" fill="url(#scan)"/>' +
   '<g class="lit" clip-path="url(#screenClip)"><rect x="' + SC.x + '" y="' + SC.y + '" width="' + SC.w + '" height="' + SC.h + '" fill="url(#glareG)"/>' +
   '<ellipse cx="' + SC.cx + '" cy="' + SC.y + '" rx="130" ry="18" fill="#fff3d6" opacity=".07"/></g>' +
@@ -299,8 +300,6 @@
     src('drawerImg', tir);
     src('compImg', !s.flags.compartiment ? 'compart_ferme' : s.flags.compartiment === 'ouvert' ? 'compart_fusible' : 'compart_vide');
     src('grilleImg', has('conduit') ? 'grille_ouverte' : 'grille');
-    var known = has('trappe') || (has('code') && has('code41')) || s.flags.fusibleInstalle || s.done.P4;
-    attr('trappe', 'opacity', known ? 1 : 0);
     src('trappeImg', s.done.P4 === 'A' ? 'trappe_ouverte' : s.done.P4 === 'B' ? 'trappe_preparee' : 'trappe_fermee');
     var ouvert = !!s.done.P3;
     src('boxImg', ouvert ? 'boitier_ouvert' : 'boitier_ferme'); attr('boxOpen', 'opacity', ouvert ? 1 : 0); attr('auxLed', 'opacity', ouvert ? 0 : 1);
@@ -314,6 +313,7 @@
     attr('btnGlow', 'opacity', info.ordre ? 0.8 : 0); attr('btnGlow', 'class', info.ordre ? 'pulse' : '');
     door(info.porteOuverte);
     // lumière
+    usure = s.stats.presses || 0;
     var mode = info.urgence ? 'urgence' : (s.flags.compte && s.cycle >= 18) ? 'red' : s.cycle >= 16 ? 'cold' : 'normal';
     light(mode);
     attr('phoneInner', 'class', info.sonne ? 'ring' : '');
@@ -321,17 +321,19 @@
     attr('ecouteLed', 'opacity', info.ecoute ? 1 : 0);
   }
 
+  // La pièce s'use : chaque pression baisse un peu la lumière de la lampe.
+  var usure = 0;
   function light(mode) {
     var off = mode === 'off' || mode === 'urgence';
     var col = { normal: '#fff3d6', cold: '#bfe3ff', red: '#ff3b30' }[mode] || '#000';
     attr('coneStop', 'stop-color', col); attr('bulbStop', 'stop-color', col);
     attr('bulb', 'opacity', off ? 0 : 1);
-    attr('cone', 'opacity', off ? 0 : 0.5);
+    attr('cone', 'opacity', off ? 0 : 0.5 - Math.min(0.2, usure * 0.025));
     if (svg) svg.querySelectorAll('.lit').forEach(function (e) { e.setAttribute('opacity', off ? 0 : 1); });
-    attr('dark', 'opacity', mode === 'off' ? 0.82 : mode === 'urgence' ? 0.66 : 0);
-    // Lampe de secours orange pendant l'autotest.
+    attr('dark', 'opacity', mode === 'off' ? 0.82 : mode === 'urgence' ? 0.86 : Math.min(0.14, usure * 0.018));
+    // Veilleuse orange pendant la coupure.
     attr('tint', 'fill', mode === 'cold' ? '#3a7cff' : mode === 'urgence' ? '#ff8a1e' : '#ff1e1e');
-    attr('tint', 'opacity', mode === 'cold' ? 0.07 : mode === 'red' ? 0.16 : mode === 'urgence' ? 0.22 : 0);
+    attr('tint', 'opacity', mode === 'cold' ? 0.07 : mode === 'red' ? 0.16 : mode === 'urgence' ? 0.12 : 0);
   }
 
   // ---------- écran du moniteur ----------
@@ -450,12 +452,30 @@
   function press() {
     attr('btnImg', 'opacity', 0); attr('btnImg2', 'opacity', 1);
     setTimeout(function () { attr('btnImg', 'opacity', 1); attr('btnImg2', 'opacity', 0); }, 150);
+    // La lampe grésille un instant après la pression.
+    if (!reduce) { later2(350, function () { attr('bulb', 'opacity', 0.3); }); later2(420, function () { attr('bulb', 'opacity', 1); }); later2(500, function () { attr('bulb', 'opacity', 0.5); }); later2(560, function () { attr('bulb', 'opacity', 1); }); }
+  }
+  // Le moniteur note chaque geste vu par la caméra, en petit, en bas de l'écran.
+  var journalT = null;
+  function journal(txt) {
+    var e = $('journal'); if (!e) return;
+    e.textContent = txt; e.style.transition = ''; e.style.opacity = 0.85;
+    clearTimeout(journalT); journalT = setTimeout(function () { e.style.transition = 'opacity 1.5s ease'; e.style.opacity = 0; }, 3500);
+  }
+  // La caméra réagit quand on touche un objet : petit mouvement, voyant qui clignote.
+  function camRegarde() {
+    if (reduce) return;
+    attr('camRot', 'transform', camBase + ' rotate(-6)'); later2(300, function () { attr('camRot', 'transform', camBase); });
+    var led = $('camLed'), f = led && led.getAttribute('fill'); if (!led) return;
+    attr('camLed', 'fill', '#ff3b30'); later2(250, function () { attr('camLed', 'fill', f); });
   }
   function later2(ms, f) { setTimeout(f, ms); }
   // Une pose de la silhouette pendant un moment, puis retour à la pose qui suit sa vie.
   function poseTemp(p, ms) { silhouette(p); later2(ms, function () { silhouette(poseVie(vieCourante)); }); }
   // Animations jouées par les événements « anim » du moteur.
   var ANIMS = {
+    // Coupure : « alimentation instable », la lampe clignote, puis le noir.
+    panne: function () { blackout(false); var seq = [0.85, 0.1, 0.92, 0.3, 0.95, 0.5, 0.96]; seq.forEach(function (o, i) { later2(i * (reduce ? 0 : 110), function () { attr('dark', 'opacity', o); }); }); },
     lumiere: function () { blackout(false); if (reduce) return; attr('dark', 'opacity', 0.9); later2(120, function () { attr('dark', 'opacity', 0); }); later2(260, function () { attr('dark', 'opacity', 0.7); }); later2(420, function () { attr('dark', 'opacity', 0); }); },
     camTourne: function () { attr('camRot', 'transform', camBase + ' rotate(-10)'); later2(700, function () { attr('camRot', 'transform', camBase + ' rotate(8)'); }); later2(1400, function () { attr('camRot', 'transform', camBase); }); },
     vitreAllumee: function () { attr('glassTint', 'opacity', 0.7); later2(300, function () { attr('glassTint', 'opacity', 0.3); }); later2(600, function () { attr('glassTint', 'opacity', 0); }); },
@@ -498,6 +518,6 @@
 
   root.BRRoom = {
     get VITESSE() { return VIT[vitesse]; }, setVitesse: function (v) { if (VIT[v]) vitesse = v; },
-    ecranFinir: ecranFinir, layout: layout, icone: icone, mount: mount, render: render, fin: fin, anim: anim, harmLeger: harmLeger, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout
+    journal: journal, camRegarde: camRegarde, ecranFinir: ecranFinir, layout: layout, icone: icone, mount: mount, render: render, fin: fin, anim: anim, harmLeger: harmLeger, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

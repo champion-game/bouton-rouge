@@ -32,7 +32,7 @@ HTML/CSS/JS sans framework ni build (`index.html` suffit). Pièce en SVG vue de 
 
 ## État actuel
 
-- Version **6.1** : 20 moments (12 libres, 8 imposés), 6 ordres, appels, archives, 18 fins + Curiosité. Pack graphique v1 placé d'après le modèle d'Amine.
+- Version **6.3** : 20 moments (12 libres, 8 imposés), 6 ordres, appels, archives, 18 fins + Curiosité. Pack graphique v1 placé d'après le modèle d'Amine.
 - Silhouette de la 18 selon la vérité : victime = homme, complice = femme, illusion = enfant (`SIL_PAR_VERITE` dans `room.js`). Pack pièce V2 : seuls bouton (plus net), téléphone (recalé) et trappe préparée ont changé ; dessous du bureau = image d'Amine `bureau_fond.webp` (sans plateau), derrière tiroir, pied, compartiment et plateau.
 - Rendu 5.5 : mur de fond `mur_fond.webp` reconstruit d'après le modèle (`tools/fond-mur.py`), profondeur (sol en perspective `sol()`, murs latéraux, ombres portées `ombre()`, liserés de lampe `lisere()`), carte d'ombre `ombre.webp` tirée de `keyart.webp` (`tools/carte-lumiere.py 0.2 38 0.56`), lampe lumineuse, vitre embrumée, grain `grain.webp`, sol mouillé (reflet du bureau et de la porte), tuyaux, reflets vitre et écran (classe `lit`, éteints avec la lampe).
 - Fins 6.1 : chaque fin = mini-histoire de 4 planches (`HISTOIRES` dans `story.js`), illustrations attendues dans `assets/img/fins/` (liste `docs/ILLUSTRATIONS_FINS.md`), image provisoire tant qu'elles manquent.
@@ -42,7 +42,7 @@ HTML/CSS/JS sans framework ni build (`index.html` suffit). Pièce en SVG vue de 
 
 - **Propose avant de coder** : 2 ou 3 options courtes avec recommandation, puis attends l'accord. Exceptions : bug évident, ou « vas-y ».
 - Séparation moteur / rendu : une règle de jeu va dans `engine.js` ou `story.js`, jamais dans `game.js`.
-- Le joueur agit en touchant les objets, pas via des menus. Jamais de numéro de cycle affiché. Pas de halo sur les objets utiles. Seul chrono visible : celui des ordres.
+- Le joueur agit en touchant les objets, pas via des menus. Jamais de numéro de cycle affiché. Pas de halo sur les objets utiles. Aucun chrono visible (ordres : 30 s invisibles, pression sonore ; seule la coupure affiche ses 10 s).
 - Ne change ni les durées du chrono ni l'équilibrage des jauges sans accord.
 - **Économiser les tokens** : Edit ciblé, lecture partielle (grep, plages de lignes), pas de capture ni d'image sauf demande ou problème visuel, une seule vérification rapide par changement, réponses courtes, conseiller une nouvelle conversation quand un sujet est fini.
 - Après un changement visible : un test rapide (téléphone paysage + ordinateur, console sans erreur). Amine teste lui-même les versions consolidées.

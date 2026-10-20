@@ -586,10 +586,11 @@
   }
   var MOMENTS = {
     3: function (g) { g.narr('La caméra fait un grand mouvement, puis se met à te suivre.'); if (!g.done('T1')) { g.anim('silTourne'); g.narr('DRIIIIING. Le téléphone sonne. Derrière la vitre, la silhouette se tourne vers quelque chose hors champ.'); } },
+    4: function (g) { g.narr('Scrrrr… une feuille pliée glisse sous la porte.'); },
     5: function (g) {
-      g.narr('Scrrrr… une feuille pliée glisse sous la porte.');
-      g.narr('CLAC. Tout s\'éteint. Une lampe de secours orange s\'allume.');
-      g.ecran('AUTOTEST|ALIMENTATION.'); g.ecran('CAMÉRA :|HORS LIGNE.');
+      g.ecran('ALIMENTATION|INSTABLE.'); g.anim('panne');
+      g.narr('La lampe grésille, clignote… CLAC. Le noir. Seule une veilleuse orange, au ras du sol.');
+      g.ecran('CAMÉRA :|HORS LIGNE.');
       g.narr('Dans le noir, la caméra ne voit plus rien. Pas pour longtemps.');
     },
     6: function (g) {
@@ -861,8 +862,8 @@
     drawer: function (g) { return g.flag('tiroirOuvert') ? 'Le tiroir est vide.' : 'Le tiroir est verrouillé.'; },
     compart: function (g) { return g.flag('compartiment') === 'vide' ? 'Le compartiment est vide.' : 'Une petite plaque, au bas du socle. Vissée.'; },
     grille: function (g) { return g.has('conduit') ? 'Le conduit. Un courant d\'air.' : 'Une grille d\'aération. Quatre vis.'; },
-    box: function (g) { if (g.flag('aux') === 'defaut') return 'AUX 24 V — DÉFAUT. FUSIBLE DE PROTECTION OUVERT.'; return g.done('P3') ? 'Le boîtier est ouvert. Un circuit est coupé.' : 'Un boîtier électrique de maintenance, vissé.'; },
-    trappe: function (g) { return g.has('sortieCachee') ? 'La sortie dérobée est prête. La goupille est retirée.' : 'Une plaque dans le sol.'; },
+    box: function (g) { if (g.flag('aux') === 'defaut') return 'Un voyant rouge clignote : AUX 24 V — HORS SERVICE. Le fusible de protection a grillé.'; return g.done('P3') ? 'Le boîtier est ouvert. Un circuit est coupé.' : 'Un boîtier électrique de maintenance, vissé.'; },
+    trappe: function (g) { return g.has('sortieCachee') ? 'La sortie dérobée est prête. La goupille est retirée.' : 'Une plaque dans le sol, verrouillée. Une petite étiquette : « DÉVERROUILLAGE — AUX 24 V ».'; },
     camera: function (g) { return g.cycle < 3 ? 'La caméra enregistre. Elle ne bouge pas encore.' : g.aveugle() ? 'La caméra ne voit plus la pièce.' : 'La caméra te suit.'; },
     note: 'Le mot de 16 : « ILS MENTENT. »',
     bureau: function (g) { return g.done('H2') ? 'Les gravures de 16, sous le plateau.' : 'Le dessous du bureau. Du métal froid.'; },

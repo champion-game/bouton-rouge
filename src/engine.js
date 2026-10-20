@@ -247,14 +247,15 @@
       if (x.id !== fid && !available(s, x)) throw new Error('Situation indisponible : ' + x.id);
       var g = ctx(s, ev, x);
       if (x[c].req && !x[c].req(g)) throw new Error('Choix impossible : ' + x.id + ' ' + c);
-      if (forced && x.id !== fid && !x.gratuit) manquer(s, ev, fid); // l'interface a demandé confirmation
+      if (forced && x.id !== fid && !x.gratuit) manquer(s, ev, fid); // agir ailleurs = refuser, sans confirmation
       if (x.id === fid && fid === s.flags.suite) s.flags.suite = null;
       var label = resolve(x[c].label, g);
       ev.push({ t: 'choix', id: x.id, choix: c, label: label });
       s.done[x.id] = c;
       if (!x.gratuit) { s.stats.actions++; s.flags.dernierActe = label; }
       x[c].fx(g);
-      if (x.gratuit || s.flags.suite) avance = false;
+      // Pendant la coupure, agir ne fait pas revenir le courant : le noir dure ses 10 secondes.
+      if (x.gratuit || s.flags.suite || (!forced && coupure(s))) avance = false;
       // Une remarque du Système, de temps en temps seulement, après une exploration vue.
       else if (!s.fin && !forced && x.fil !== 'telephone' && !cameraAveugle(s) && s.cycle >= 4 && g.hasard() < 0.12) g.ecran(g.pick(S.PHRASES.apresExploration));
     } else if (action.type === 'appuyer') {
@@ -287,12 +288,12 @@
       } else throw new Error('Sortie impossible : ' + action.via);
     } else if (action.type === 'temps') {
       // Fin du chrono : un ordre non exécuté est un REFUS (jamais de pression automatique) ; un appel se tait.
-      if (!forced && coupure(s)) { ev.push({ t: 'ecran', txt: 'RÉSEAU|RÉTABLI.' }); }
+      if (!forced && coupure(s)) { ev.push({ t: 'anim', n: 'lumiere' }); ev.push({ t: 'ecran', txt: 'RÉSEAU|RÉTABLI.' }); }
       else if (!forced || !fk || fk === 'impose') throw new Error('Pas de chrono en cours.');
       else {
       var gf = ctx(s, ev, forced);
       if (fid === 'B2' && s.flags.b2 > 0) { s.done.B2 = 'partiel'; gf.narr('Tu t\'arrêtes là.'); S.B2_ARRET(gf); }
-      else if (fk === 'ordre') { gf.narr('Tu n\'as pas appuyé.'); s.done[fid] = 'B'; forced.B.fx(gf); }
+      else if (fk === 'ordre') { gf.ecran('RÉACTION|NON CONFORME.'); gf.narr('Tu n\'as pas appuyé.'); s.done[fid] = 'B'; forced.B.fx(gf); }
       else { s.done[fid] = 'auto'; gf.narr('Le téléphone finit par se taire.'); }
       }
     } else if (action.type === 'attendre') {
@@ -305,12 +306,12 @@
     return { state: s, events: ev };
   }
 
-  // Faire autre chose pendant un ordre ou un appel (après confirmation) : l'ordre compte comme refusé, l'appel se tait.
+  // Faire autre chose pendant un ordre ou un appel : l'ordre compte comme refusé (sans confirmation), l'appel se tait.
   function manquer(s, ev, fid) {
     var o = BY_ID[fid], g = ctx(s, ev, o);
     if (o.ordre) {
       if (fid === 'B2' && s.flags.b2 > 0) { s.done.B2 = 'partiel'; S.B2_ARRET(g); return; }
-      g.narr('Tu laisses l\'ordre sans réponse.'); s.done[fid] = 'B'; o.B.fx(g);
+      g.ecran('ACTION NON|AUTORISÉE.'); g.ecran('ORDRE|REFUSÉ.'); g.narr('Tu laisses l\'ordre sans réponse.'); s.done[fid] = 'B'; o.B.fx(g);
     } else if (o.appel) { s.done[fid] = 'auto'; g.narr('Tu laisses sonner. Le téléphone se tait.'); }
   }
 
