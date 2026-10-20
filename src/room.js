@@ -119,6 +119,9 @@
   '<filter id="solF" x="-5%" y="-10%" width="110%" height="120%"><feGaussianBlur stdDeviation="3.5"/></filter>' +
   '<filter id="scrGlow" x="-10%" y="-40%" width="120%" height="180%"><feGaussianBlur stdDeviation="2.4" result="b"/><feComponentTransfer in="b" result="h"><feFuncA type="linear" slope=".5"/></feComponentTransfer><feMerge><feMergeNode in="h"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
   '<linearGradient id="neonReflG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ff3e3" stop-opacity=".6"/><stop offset=".5" stop-color="#8ff3e3" stop-opacity=".25"/><stop offset="1" stop-color="#8ff3e3" stop-opacity=".05"/></linearGradient>' +
+  '<filter id="rimF" x="-5%" y="-5%" width="110%" height="110%"><feOffset in="SourceAlpha" dx="2.5" dy="2.5" result="o"/><feComposite in="SourceAlpha" in2="o" operator="out" result="r"/><feGaussianBlur in="r" stdDeviation=".6" result="b"/><feFlood flood-color="#bff9f0"/><feComposite in2="b" operator="in"/></filter>' +
+  '<linearGradient id="boxReflG" gradientUnits="userSpaceOnUse" x1="1520" y1="225" x2="1600" y2="420"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient>' +
+  '<mask id="boxReflM" maskUnits="userSpaceOnUse" x="1400" y="150" width="400" height="400"><rect x="1400" y="150" width="400" height="400" fill="url(#boxReflG)"/></mask>' +
   '<filter id="neonReflF" x="-60%" y="-10%" width="220%" height="120%"><feGaussianBlur stdDeviation="15"/></filter>' +
   '<pattern id="scan" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="2.5" fill="#000" opacity=".12"/></pattern>' +
   '</defs>' +
@@ -186,7 +189,7 @@
   '<g style="pointer-events:none"><g mask="url(#reflM)" filter="url(#solF)"><use href="#desk" transform="translate(0 1305.6) scale(1 -.6)"/></g>' +
   '<g class="lit" opacity=".6"><ellipse cx="836" cy="884" rx="300" ry="70" fill="url(#sheenG)"/><ellipse cx="836" cy="890" rx="70" ry="120" fill="url(#sheenG)"/></g></g>' +
   '<g style="pointer-events:none">' + [[473, 542], [746, 933], [991, 1205]].map(function (p) { return pied(p[0], p[1]); }).join('') +
-  '<ellipse id="btnFloor" cx="837" cy="880" rx="70" ry="46" fill="url(#glowG)" opacity=".06"/></g>' +
+  '<ellipse id="btnFloor" cx="837" cy="880" rx="70" ry="46" fill="url(#glowG)" opacity="0"/></g>' +
   '<g id="desk">' +
   // bureau modulaire (pack 20/10, canevas 2000 × 1000 réduit d'un bloc à 0,4725) : fond, pied gravé, tiroir, compartiment, plateau
   I('', 'bureau3_fond', 471.2, 566.9, 713.5, 241, ' style="pointer-events:none"') +
@@ -226,7 +229,8 @@
   '<ellipse cx="1295" cy="47" rx="175" ry="26" fill="url(#neonG)"/>' +
   '<rect x="1172" y="43" width="246" height="7" rx="3.5" fill="url(#neonTubeG)"/>' +
   '' +
-  '<rect x="1518" y="208" width="2" height="190" fill="url(#neonLiseV)" opacity=".35"/>' +
+  // Reflet du néon sur le boîtier : liseré tiré du dessin lui-même (bords haut et gauche, tournés vers le néon), qu'il soit ouvert ou fermé.
+  '<g mask="url(#boxReflM)"><use href="#boxImg" filter="url(#rimF)" opacity=".45" style="pointer-events:none"/></g>' +
   '<ellipse cx="1295" cy="830" rx="46" ry="150" fill="url(#neonSpillG)" opacity=".9"/>' +
   '</g></g></g>' +
   '<rect id="vig" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="url(#vigG)" style="pointer-events:none"/>' +
@@ -377,7 +381,7 @@
     src('levAux', s.flags.aux === 'defaut' ? 'levier_bas' : 'levier_haut');
     // bouton
     attr('btnGlow', 'opacity', info.ordre ? 0.8 : 0); attr('btnGlow', 'class', info.ordre ? 'pulse' : '');
-    attr('btnFloor', 'opacity', info.ordre ? 0.3 : 0.06); attr('btnFloor', 'class', info.ordre ? 'pulse' : '');
+    attr('btnFloor', 'opacity', info.ordre ? 0.3 : 0); attr('btnFloor', 'class', info.ordre ? 'pulse' : '');
     nerfs = s.soupcon || 0; neon();
     door(info.porteOuverte);
     // lumière
