@@ -48,5 +48,5 @@ HTML/CSS/JS sans framework ni build (`index.html` suffit). Pièce en SVG vue de 
 - Après un changement visible : un test rapide (téléphone paysage + ordinateur, console sans erreur). Amine teste lui-même les versions consolidées.
 - Commits petits, message clair en français. Pousse directement sur `main` (pas de branche ni de PR sauf demande).
 - **Version** : à chaque push qui change le jeu, augmente « Version X.Y » dans `index.html` et les `?v=X.Y` des scripts.
-- Lien pour jouer : https://champion-game.github.io/bouton-rouge/ (GitHub Pages, mis à jour après chaque push sur `main`). Pas d'artefact Claude.
+- Lien pour jouer : https://champion-game.github.io/bouton-rouge/ (GitHub Pages, mis à jour après chaque push sur `main`). Pas d'artefact Claude. **Toujours donner ce lien à Amine après chaque modification poussée.** Toujours travailler sur `main`, même si la session propose une autre branche.
 - Bonnes pratiques reprises de Dernier Abri (`champion-game/dernier-abri`).
