@@ -221,8 +221,9 @@
   function forcedKind() { return t ? t.forcedKind : null; }
   // 18 sans signal : 30 s sans geste et l'évaluation se termine. Chaque geste relance l'attente.
   function attenteSeul() { return t && !forcedKind() && t.duree && s.flags.mortA != null && s.cycle > s.flags.mortA && s.cycle !== 5; }
-  // Garde-fou : pendant un ordre ou une sonnerie, seul l'objet concerné répond ; le reste est grisé.
-  function verrou() { var k = forcedKind(); return !t || s.fin ? null : k === 'ordre' ? 'btn' : (k === 'appel' || (t.sonne && ringT)) ? 'phone' : null; }
+  // Garde-fou : pendant une séquence (textes, animations), tout est grisé ; pendant une sonnerie, seul le téléphone répond.
+  // Pendant un ordre, tout reste permis : agir ailleurs ou laisser passer le temps = désobéir.
+  function verrou() { var k = forcedKind(); return !t || s.fin ? null : busy ? '*' : (k === 'appel' || (t.sonne && ringT)) ? 'phone' : null; }
   function sonne() { return !busy && t && ((t.sonne && ringT) || (forcedKind() === 'appel' && sel !== 'phone')); }
   function roomInfo() {
     var k = forcedKind();
@@ -299,7 +300,7 @@
     if (s && busy && !s.fin) { passer(); return; }
     if (!s || s.fin || paused || busy || !t || !$('pop').hidden) return;
     var kind = forcedKind(), v = verrou(); calmeT = performance.now();
-    if (v && k !== v && k !== 'monitor') { toast(v === 'btn' ? 'Le moniteur attend ta réponse.' : 'Le téléphone sonne.'); return; }
+    if (v && k !== v && k !== 'monitor') { toast('Le téléphone sonne.'); return; }
     if (attenteSeul()) timeLeft = timeTotal;
     // La caméra voit le geste : petit mouvement, et le moniteur le note.
     if (k !== 'btn' && s.cycle >= 3 && !E.cameraAveugle(s) && TITRES[k]) { R.camRegarde(); A.sfx('servo'); R.journal(horloge() + ' — SUJET 17 : ' + TITRES[k].replace(/^(LE |LA |LES |L')/, '')); }
