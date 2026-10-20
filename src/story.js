@@ -431,7 +431,7 @@
           g.narr('Tu retires le fusible grillé et tu insères le nouveau. CLAC. Le voyant passe du rouge au vert.');
           g.lose('fusible'); g.flag('aux', 'ok'); g.flag('fusibleInstalle', true); g.ecran('BUS AUXILIAIRE|RÉTABLI.');
           g.manip('fusible');
-          g.narr('CLONK, dans le sol. Quelque chose vient de se déverrouiller.');
+          g.narr('CLAC, sous la trappe : le verrou électrique s\'ouvre. Il était branché sur ce circuit.');
         } } },
 
     { id: 'PLAN', objet: 'box', fil: 'piece', qui: 'LE SIGNAL CONVENU', seul: true,
@@ -450,12 +450,12 @@
 
     { id: 'P4', objet: 'trappe', fil: 'piece', qui: 'LA TRAPPE',
       quand: function (g) { return trappeConnue(g) && !g.has('sortieCachee') && g.done('P4') !== 'A'; },
-      texte: function (g) { return trappeOuvrable(g) ? 'Une plaque dans le sol, une poignée affleurante. ' + mecanisme(g) : 'Une plaque dans le sol. Verrouillée.'; },
+      texte: function (g) { return trappeOuvrable(g) ? 'Une plaque dans le sol, une poignée affleurante. ' + mecanisme(g) : 'Une plaque dans le sol. Un verrou électrique, hors tension : le voyant à côté est éteint.'; },
       A: { label: 'Descendre aux archives', double: true,
         req: function (g) { return trappeOuvrable(g) && g.libreSuivant(); },
-        raison: function (g) { return !trappeOuvrable(g) ? 'Le verrou est fermé : il faudrait le verrou manuel, le code ou le courant.' : 'Un ordre arrive bientôt : en descendant maintenant, tu le manquerais. Attends un peu.'; },
+        raison: function (g) { return !trappeOuvrable(g) ? 'Le verrou électrique est hors tension : il faudrait le verrou manuel, le code ou rétablir le courant.' : 'Un ordre arrive bientôt : en descendant maintenant, tu le manquerais. Attends un peu.'; },
         fx: function (g) { g.flag('awayCycle', g.cycle + 1); g.narr('Tu descends. Là-haut, la pièce continue sans toi.'); if (g.manip('trappe') || g.vu()) g.ecran('SUJET 17|NON VISIBLE.'); } },
-      B: { label: 'Préparer une sortie dérobée', req: function (g) { return trappeOuvrable(g); }, raison: 'Le verrou est fermé : il faudrait le verrou manuel, le code ou le courant.',
+      B: { label: 'Préparer une sortie dérobée', req: function (g) { return trappeOuvrable(g); }, raison: 'Le verrou électrique est hors tension : il faudrait le verrou manuel, le code ou rétablir le courant.',
         fx: function (g) { g.narr('Tu inspectes le mécanisme latéral : la trappe donne sur un vide technique, derrière la porte sécurisée. Tu retires une goupille.'); g.gain('sortieCachee'); g.manip('sortie'); } } },
 
     { id: 'P5', objet: 'grille', fil: 'piece', qui: 'LE CONDUIT',
@@ -869,7 +869,7 @@
     compart: function (g) { return g.flag('compartiment') === 'vide' ? 'Le compartiment est vide.' : 'Une petite plaque, au bas du socle. Vissée.'; },
     grille: function (g) { return g.has('conduit') ? 'Le conduit. Un courant d\'air.' : 'Une grille d\'aération. Quatre vis.'; },
     box: function (g) { if (g.flag('aux') === 'defaut') return 'Un voyant rouge clignote : AUX 24 V — HORS SERVICE. Le fusible de protection a grillé.'; return g.done('P3') ? 'Le boîtier est ouvert. Un circuit est coupé.' : 'Un boîtier électrique de maintenance, vissé.'; },
-    trappe: function (g) { return g.has('sortieCachee') ? 'La sortie dérobée est prête. La goupille est retirée.' : 'Une plaque dans le sol, verrouillée. Une petite étiquette : « DÉVERROUILLAGE — AUX 24 V ».'; },
+    trappe: function (g) { return g.has('sortieCachee') ? 'La sortie dérobée est prête. La goupille est retirée.' : (g.flag('fusibleInstalle') ? 'Une plaque dans le sol. Le voyant du verrou électrique est vert : il est ouvert.' : 'Une plaque dans le sol, verrouillée. Un verrou électrique, voyant éteint, et une petite étiquette : « ALIMENTATION — AUX 24 V ».'); },
     camera: function (g) { return g.cycle < 3 ? 'La caméra enregistre. Elle ne bouge pas encore.' : g.aveugle() ? 'La caméra ne voit plus la pièce.' : 'La caméra te suit.'; },
     note: 'Le mot de 16 : « ILS MENTENT. »',
     bureau: function (g) { return g.done('H2') ? 'Les gravures de 16, sous le plateau.' : 'Le dessous du bureau. Du métal froid.'; },

@@ -175,7 +175,7 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - **Ordres sans chrono visible** : le moniteur affiche seulement l'ordre. Les 30 s restent, mais invisibles : ventilation, bourdonnement et battement sourd montent. À la fin : « RÉACTION NON CONFORME », l'ordre compte comme refusé.
 - **Pas de confirmation** : toucher autre chose pendant un ordre ou un appel est permis ; agir ailleurs = refus immédiat (« ACTION NON AUTORISÉE. ORDRE REFUSÉ. ») ou appel laissé sonner.
 - **Coupure (moment 5)** : événement à part. « ALIMENTATION INSTABLE », la lampe clignote, puis le noir (veilleuse orange). Le moniteur compte 10 s jusqu'au retour du réseau. Caméra aveugle ; agir dans le noir ne fait plus revenir le courant. Le mot de 16 glisse sous la porte au moment 4 (avant, son texte arrivait avec la coupure).
-- **Trappe toujours visible**, verrouillée ; étiquette « DÉVERROUILLAGE — AUX 24 V » (indice du fusible). Le boîtier en défaut dit « AUX 24 V — HORS SERVICE ».
+- **Trappe toujours visible**, fermée par un verrou électrique hors tension (voyant éteint, étiquette « ALIMENTATION — AUX 24 V ») ; le fusible rétablit le courant et le verrou s'ouvre (CLAC sous la trappe, voyant vert) — v6.5. Le boîtier en défaut dit « AUX 24 V — HORS SERVICE ».
 - **Impression** : le moniteur note chaque geste vu (« 14:03:12 — SUJET 17 : TIROIR »), la caméra réagit (moteur, voyant), la 18 frappe à la vitre après 25 s sans geste (une fois par moment), la lumière baisse un peu à chaque pression et la lampe grésille.
 - Bouton « Attendre » gardé pendant les tests.
 
