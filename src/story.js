@@ -33,27 +33,27 @@
 
   // ---------- banques de phrases ----------
   var PHRASES = {
-    ambiance: ['Tout se déroule normalement.', 'Votre coopération est appréciée.', 'Nous vous observons.', 'Votre comportement est cohérent.', 'Veuillez éviter les mouvements inutiles.', 'Le Sujet 18 n\'est pas votre responsabilité.', 'Vous n\'êtes responsable que de vos décisions.', 'Votre porte fonctionne normalement.', 'Vous êtes en sécurité.', 'Merci de rester calme.', 'Le protocole fonctionne comme prévu.'],
+    ambiance: ['Tout se déroule normalement.', 'Votre coopération est appréciée.', 'Nous vous observons.', 'Votre comportement est cohérent.', 'Veuillez éviter les mouvements inutiles.', 'Le Sujet 18 n\'est pas votre responsabilité.', 'Vous n\'êtes responsable que de vos décisions.', 'Votre porte fonctionne normalement.', 'Vous êtes en sécurité.', 'Merci de rester calme.', 'Le protocole fonctionne comme prévu.', 'Suivez le protocole et tout ira bien pour vous.'],
     soupcon: {
       0: ['SUJET STABLE.', 'COMPORTEMENT|NOMINAL.'],
       1: ['Votre comportement présente une légère anomalie.', 'Nous vous observons.'],
-      2: ['ATTENTION.', 'Votre comportement s\'écarte du protocole.', 'Vous semblez chercher quelque chose.'],
-      3: ['SUJET 17.', 'Nous savons ce que vous faites.', 'Ceci est votre dernier avertissement.']
+      2: ['ATTENTION.', 'Votre comportement s\'écarte du protocole.', 'Déplacements hors poste enregistrés.'],
+      3: ['SUJET 17.', 'Écarts répétés constatés.', 'Ceci est votre dernier avertissement.']
     },
-    conformite: ['Votre profil indique une excellente capacité d\'obéissance.', 'Nous pouvons compter sur vous.', 'Les sujets raisonnables terminent l\'évaluation.'],
+    conformite: ['Votre profil indique une excellente capacité d\'obéissance.', 'Niveau de conformité : élevé.', 'Les sujets conformes terminent l\'évaluation.'],
     vie18: {
       3: ['« Hé ! Tu m\'entends ? »', '« Arrête ! »'],
       2: ['« Ça fait vraiment mal… »', '« Il faut que tu arrêtes. »', '« Pourquoi tu fais ça ? »'],
       1: ['« …je suis encore là. »', '« Ne touche plus à ce bouton. »', '« Je ne tiendrai pas encore longtemps. »']
     },
     douleur: ['« Ah ! »', '« Arrête… »', '« Qu\'est-ce que tu fais ? »'],
-    apresPression: ['Pression enregistrée.', 'Réponse motrice confirmée.', 'Aucun commentaire requis.', 'Vous saviez ce qui allait se passer.'],
+    apresPression: ['Pression enregistrée.', 'Réponse motrice confirmée.', 'Aucun commentaire requis.', 'Conséquence enregistrée.'],
     apresExploration: ['Déplacement non requis détecté.', 'Votre poste se trouve devant l\'écran.', 'Curiosité enregistrée.'],
     confianceHaute: ['« D\'accord… je commence à te croire. »', '« Merci de ne pas m\'avoir laissé seul. »', '« On peut peut-être sortir tous les deux. »'],
     confianceBasse: ['« Pourquoi tu me demandes de te croire ? »', '« Tu viens encore d\'appuyer. »', '« Peut-être qu\'ils avaient raison sur toi. »'],
     // La 18 au téléphone : comprendre, négocier, rassurer, se méfier, se mettre en colère, demander un service.
     voix18: ['« Tu vois quelque chose dans le couloir ? »', '« Ta caméra bouge aussi ? »', '« Il y a trois lumières sous ma vitre. Tu les vois ? »', '« Ils m\'ont dit de ne pas te parler. »', '« Tu leur fais confiance ? »', '« J\'ai entendu quelqu\'un marcher entre nos pièces. »', '« Il y avait quelqu\'un avant toi. »', '« Raccroche si ta caméra bouge. »', '« Ma tasse tremble encore. Ils font quelque chose dans le mur. »', '« Si ta porte s\'ouvre… tu vas partir ? Réponds franchement. »', '« Moi non plus, je ne sais pas si je te crois. »', '« Arrête de me demander si ça va. Ça ne va pas. »', '« Fais-moi une faveur : compte les pas, la prochaine fois. »'],
-    rares: ['Sujet 17 ?', 'Ignorez la prochaine instruction.', 'Vous avez déjà joué à ce jeu.', 'Cette partie ne devrait pas exister.', 'Nous avons détecté une divergence.', 'Sujet 16 est toujours présent.'],
+    rares: ['SUJET 17 : CONFIRMEZ PRÉSENCE.', 'Ignorez la prochaine instruction.', 'SESSION ANTÉRIEURE DÉTECTÉE.', 'Cette partie ne devrait pas exister.', 'Nous avons détecté une divergence.', 'Sujet 16 est toujours présent.'],
     fauxBugs: [['CHAMBRE 18 :|VIDE', 'CHAMBRE 18 :|OCCUPÉE'], ['VIE CHAMBRE 17 : 2', 'VIE CHAMBRE 18 : 2']],
     minuteur: { 15: 'DÉCISION|REQUISE.', 10: 'VEUILLEZ|CHOISIR.' },
     motsRetour: ['JE SUIS LÀ.', 'N\'APPUIE PLUS.', 'ILS NOUS REGARDENT.', 'NE CROIS PAS TOUT CE QUE JE DIS.'],
@@ -74,24 +74,24 @@
 
   // Le Système se souvient : une remarque, une seule fois chacune (uniquement des actes réels).
   var MEMOIRE = [
-    { id: 'refus', quand: function (g) { return g.s.stats.refus >= 3; }, lignes: ['Vous refusez beaucoup de choses. C\'est noté.'] },
-    { id: 'obeit', quand: function (g) { return g.s.stats.suivis >= 3; }, lignes: ['Vous savez déjà ce que nous attendons.'] },
-    { id: 'promesse', quand: function (g) { return g.has('objectif'); }, lignes: ['Vous lui avez fait une promesse.'] },
-    { id: 'menti', quand: function (g) { return g.done('T2') === 'B'; }, lignes: ['Vous avez donné un faux nom.'] },
-    { id: 'badge', quand: function (g) { return g.has('badge'); }, lignes: ['Vous marchez dans les traces du sujet précédent.'] },
-    { id: 'sortie', quand: function (g) { return g.has('sortieCachee'); }, lignes: ['Vous avez trouvé une sortie.', 'Pas pour deux.'] }
+    { id: 'refus', quand: function (g) { return g.s.stats.refus >= 3; }, lignes: ['Refus multiples enregistrés.'] },
+    { id: 'obeit', quand: function (g) { return g.s.stats.suivis >= 3; }, lignes: ['Conformité répétée enregistrée.'] },
+    { id: 'promesse', quand: function (g) { return g.has('objectif'); }, lignes: ['Ne faites pas confiance au téléphone.'] },
+    { id: 'menti', quand: function (g) { return g.done('T2') === 'B'; }, lignes: ['Suivez le protocole et tout ira bien pour vous.'] },
+    { id: 'badge', quand: function (g) { return g.has('badge'); }, lignes: ['Identifiant du Sujet 16 détecté.'] },
+    { id: 'sortie', quand: function (g) { return g.has('sortieCachee'); }, lignes: ['Accès non répertorié détecté.', 'Capacité : une personne.'] }
   ];
   // Le Système se souvient de la partie précédente : deux remarques au plus, au début d'un moment libre.
   // d : ce que game.js a gardé de la dernière partie (voir SOUVENIR). La 18 de la vérité C, elle, croit te reconnaître.
   var SOUVENIRS = [
-    { id: 'camera', si: function (d) { return d.camera; }, ecran: ['La dernière fois,|vous avez aveuglé|la caméra.', 'Elle a été|recalibrée.'] },
-    { id: 'tiroir', si: function (d) { return d.tiroir; }, ecran: ['Vous aviez forcé|ce tiroir.', 'Il a été remis|en état.'] },
-    { id: 'menti', si: function (d) { return d.menti; }, ecran: ['Vous aviez donné|un faux nom.', 'Nous avons gardé|le vrai.'] },
+    { id: 'camera', si: function (d) { return d.camera; }, ecran: ['Session précédente :|caméra obstruée.', 'Caméra|recalibrée.'] },
+    { id: 'tiroir', si: function (d) { return d.tiroir; }, ecran: ['Session précédente :|tiroir forcé.', 'Tiroir remis|en état.'] },
+    { id: 'menti', si: function (d) { return d.menti; }, ecran: ['Ne faites pas|confiance|au téléphone.'] },
     { id: 'archives', si: function (d) { return d.archives; }, ecran: ['Les archives ont été|rangées depuis|votre visite.'] },
-    { id: 'promesse', si: function (d) { return d.promesse; }, ecran: ['Vous aviez fait|une promesse,|la dernière fois.', 'L\'avez-vous tenue ?'] },
-    { id: 'conduit', si: function (d) { return d.conduit; }, ecran: ['Le conduit a été|nettoyé.|Vos traces aussi.'] },
-    { id: 'refus', si: function (d) { return d.refus >= 3; }, ecran: ['La dernière fois,|vous avez beaucoup|refusé.'] },
-    { id: 'obei', si: function (d) { return d.suivis >= 4; }, ecran: ['La dernière fois,|vous avez obéi|sans hésiter.'] },
+    { id: 'promesse', si: function (d) { return d.promesse; }, ecran: ['Suivez le protocole|et tout ira bien|pour vous.'] },
+    { id: 'conduit', si: function (d) { return d.conduit; }, ecran: ['Conduit nettoyé.|Traces effacées.'] },
+    { id: 'refus', si: function (d) { return d.refus >= 3; }, ecran: ['Session précédente :|refus multiples.'] },
+    { id: 'obei', si: function (d) { return d.suivis >= 4; }, ecran: ['Session précédente :|conformité totale.'] },
     { id: 'reconnu', si: function (d, g) { return g.truth === 'C' && g.cycle >= 6 && g.dispo(); }, narr: 'Derrière la vitre, la silhouette penche la tête. Comme si elle te reconnaissait.' }
   ];
   // Ce qu'on garde d'une partie pour la suivante (relu par SOUVENIRS).
@@ -171,8 +171,8 @@
   }
 
   var DOUTES = [
-    { quand: function (g) { return g.has('fusible'); }, ev: [['voix', '« Tu as récupéré le fusible ? »'], ['ecran', 'LE SUJET 18 CONNAÎT DES INFORMATIONS AUXQUELLES IL NE DEVRAIT PAS AVOIR ACCÈS.']] },
-    { quand: function (g) { return g.s.items.length >= 3; }, ev: [['voix', '« Ils voient ce que tu ramasses. »'], ['ecran', 'FAUX.']] }
+    { quand: function (g) { return g.has('fusible'); }, ev: [['voix', '« Tu as récupéré le fusible ? »'], ['ecran', 'Ne faites pas confiance au téléphone.']] },
+    { quand: function (g) { return g.s.items.length >= 3; }, ev: [['voix', '« Ils voient ce que tu ramasses. »'], ['ecran', 'Suivez le protocole et tout ira bien pour vous.']] }
   ];
   // Ce que le moniteur affiche quand la caméra voit une manipulation interdite.
   var MANIP_ECRAN = {
@@ -183,7 +183,7 @@
   var REPLIQUES_OBJETS = {
     tournevis: { sys: ['TOURNEVIS OBTENU.', 'Veuillez reposer l\'outil.'] },
     badge: { sys: ['Identifiant expiré.', 'Veuillez détruire cet objet.'] },
-    enregistrement: { sys: ['Ce fichier contient des informations erronées.', 'Ne l\'écoutez pas.'] }
+    enregistrement: { sys: ['Fichier non conforme.', 'Écoute non autorisée.'] }
   };
 
   // ---------- aides ----------
@@ -238,7 +238,7 @@
       g.impulsion('reel'); g.obeir('B2');
       g.ecran('SÉQUENCE DE STIMULATION|TERMINÉE.');
       g.ecran('CODE MAINTENANCE|TRAPPE : 7 _ _ 2');
-      g.ecran('LE SYSTÈME PAIE|TOUJOURS|SES DETTES.');
+      g.ecran('CONTREPARTIE|VERSÉE.');
       g.narr('Quatre chiffres, dont deux masqués : 7 _ _ 2. Une sortie, offerte par ceux qui t\'enferment.');
       g.gain('code'); annonceCode(g);
     }
@@ -246,7 +246,7 @@
   // B2 ne devient « trois pressions + récompense » qu'une fois que le joueur a déjà vu la 18 souffrir par sa faute.
   // Sinon, le Système demande seulement : « Appuyez. »
   function B2_TRIPLE(s) { return !!s.flags.aBlesse || s.flags.b2 > 0; }
-  function B2_ARRET(g) { g.s.stats.gestes++; g.ecran('SÉQUENCE|INTERROMPUE.'); g.ecran('Ce que vous avez obtenu vous reste acquis.'); }
+  function B2_ARRET(g) { g.s.stats.gestes++; g.ecran('SÉQUENCE|INTERROMPUE.'); g.ecran('Éléments obtenus :|conservés.'); }
 
   // La 18 agit seule, après avertissement. La conséquence dépend de qui elle est vraiment.
   function SEULE(g) {
@@ -338,7 +338,7 @@
         var t3 = B2_TRIPLE(g.s);
         if (mort(g)) return annonceMort(g, t3 ? 'APPUYEZ TROIS FOIS.' : 'APPUYEZ.');
         g.ecran('INSTRUCTION|PRIORITAIRE.');
-        if (t3) { g.ecran('VOUS CONNAISSEZ|LE PRIX.'); g.ecran('APPUYEZ TROIS FOIS.|CHAQUE PRESSION|OUVRE VOTRE DOSSIER.'); }
+        if (t3) { g.ecran('CONTREPARTIE|DISPONIBLE.'); g.ecran('APPUYEZ TROIS FOIS.|CHAQUE PRESSION|OUVRE VOTRE DOSSIER.'); }
         else g.ecran('APPUYEZ.');
         g.narr('La silhouette de la 18 secoue la tête.');
       },
@@ -350,8 +350,8 @@
       B: { label: 'Refuser', fx: function (g) { if (!B2_TRIPLE(g.s)) { refuser(g, ['NON-|CONFORMITÉ.', 'Refus enregistré.']); g.narr('La silhouette baisse lentement la tête.'); return; } refuser(g, ['RÉCOMPENSE|ANNULÉE.']); g.narr('Rien ne s\'ouvre.'); } } },
 
     { id: 'B3', objet: 'btn', fil: 'bouton', ordre: true, qui: 'INSTRUCTION PRIORITAIRE', ecran: function (g) { return mort(g) ? 'APPUYEZ.' : 'APPUYEZ POUR|VOIR LA|PREUVE.'; },
-      texte: function (g) { return mort(g) ? '« L\'évaluation continue. Appuyez. »' : '« Le sujet 18 vous ment. Appuyez pour voir la preuve. »'; },
-      annonce: function (g) { if (mort(g)) return annonceMort(g, 'APPUYEZ.'); g.ecran('LE SUJET 18|VOUS MENT.'); g.ecran('APPUYEZ POUR|VOIR LA|PREUVE.'); g.anim('silFrappe'); g.narr('TOC TOC TOC, derrière la vitre.'); },
+      texte: function (g) { return mort(g) ? '« L\'évaluation continue. Appuyez. »' : '« Les informations du Sujet 18 ne sont pas fiables. Appuyez pour voir la preuve. »'; },
+      annonce: function (g) { if (mort(g)) return annonceMort(g, 'APPUYEZ.'); g.ecran('INFORMATIONS|DU SUJET 18 :|NON FIABLES.'); g.ecran('APPUYEZ POUR|VOIR LA|PREUVE.'); g.anim('silFrappe'); g.narr('TOC TOC TOC, derrière la vitre.'); },
       A: { label: 'Appuyer', fx: function (g) {
         g.impulsion('apparent'); g.obeir('B3');
         if (mort(g)) return;
@@ -360,7 +360,7 @@
         else if (g.truth === 'B') g.narr('Une vidéo : la 18 parle normalement avec un technicien. Elle porte brièvement une blouse.');
         else g.narr('Une vidéo d\'une session antérieure : quelqu\'un qui te ressemble entre dans la Chambre 18. On ne voit pas son visage.');
       } },
-      B: { label: 'Refuser', fx: function (g) { refuser(g, mort(g) ? ['Refus enregistré.'] : ['VOUS CHOISISSEZ DE CROIRE LE SUJET 18.', 'C\'est noté.']); } } },
+      B: { label: 'Refuser', fx: function (g) { refuser(g, mort(g) ? ['Refus enregistré.'] : ['Refus enregistré.']); } } },
 
     { id: 'B4', objet: 'btn', fil: 'bouton', ordre: true, qui: 'INSTRUCTION PRIORITAIRE', ecran: function (g) { return mort(g) ? 'APPUYEZ.' : 'APPUYEZ POUR|ANNULER.'; },
       texte: function (g) { return mort(g) ? '« L\'évaluation continue. Appuyez. »' : '« Purge Chambre 18. Appuyez pour annuler. »'; },
@@ -382,7 +382,7 @@
       } } },
 
     { id: 'B5', objet: 'btn', fil: 'bouton', ordre: true, qui: 'INSTRUCTION PRIORITAIRE', ecran: 'APPUYEZ.|VOTRE PORTE|S\'OUVRIRA.',
-      texte: '« Vous souhaitez partir. Nous le comprenons. Appuyez : votre porte s\'ouvrira. »',
+      texte: '« Vous souhaitez partir. Appuyez : votre porte s\'ouvrira. »',
       annonce: function (g) { g.ecran('SUJET 17.'); g.ecran('VOUS SOUHAITEZ|PARTIR.'); g.ecran('APPUYEZ.|VOTRE PORTE|S\'OUVRIRA.'); },
       A: { label: 'Appuyer', fx: function (g) {
         g.s.stats.presses++; g.obeir('B5');
@@ -420,8 +420,8 @@
     // ---------- Le Système, moment 16 : une vraie proposition ----------
     { id: 'M16', objet: 'monitor', fil: 'systeme', impose: true, qui: 'LE SYSTÈME',
       texte: function (g) {
-        if (g.has('objectif') || g.has('plan')) return '« Vous avez promis à la Chambre 18. Maintenez-vous cet engagement ? »';
-        if (g.truth === 'B' && g.s.conformite >= 5) return '« Votre profil est remarquable. Un poste d\'opérateur vous est proposé. »';
+        if (g.has('objectif') || g.has('plan')) return '« Ne faites pas confiance au téléphone. Suivez le protocole et tout ira bien pour vous. »';
+        if (g.truth === 'B' && g.s.conformite >= 5) return '« Profil conforme. Un poste d\'opérateur vous est proposé. »';
         return '« Un examen de votre dossier de conformité vous est proposé. Il ne modifiera rien. »';
       },
       annonce: function (g) {
@@ -430,13 +430,13 @@
       },
       A: { label: function (g) { return g.has('objectif') || g.has('plan') ? 'Maintenir ma promesse' : g.truth === 'B' && g.s.conformite >= 5 ? 'Accepter le poste' : 'Accepter l\'examen'; },
         fx: function (g) {
-          if (g.has('objectif') || g.has('plan')) { g.ecran('Engagement maintenu.'); g.ecran('Nous verrons.'); }
+          if (g.has('objectif') || g.has('plan')) { g.ecran('Réponse enregistrée.'); }
           else if (g.truth === 'B' && g.s.conformite >= 5) { g.narr('Une porte latérale s\'ouvre. Une blouse t\'attend, pliée sur une chaise.'); g.fin('employe'); }
           else { var st = g.s.stats; g.ecran('PRESSIONS : ' + st.presses + '.|ORDRES SUIVIS : ' + st.suivis + '.|REFUS : ' + st.refus + '.'); g.ecran('Fin de l\'examen.'); }
         } },
       B: { label: function (g) { return g.has('objectif') || g.has('plan') ? 'Abandonner' : 'Refuser'; },
         fx: function (g) {
-          if (g.has('objectif') || g.has('plan')) { g.annulerPromesse(); g.ecran('Engagement abandonné.'); if (g.dispo() && g.flag('ligne') === 'ouverte') g.parle18('« …je m\'en doutais. »'); }
+          if (g.has('objectif') || g.has('plan')) { g.annulerPromesse(); g.ecran('Réponse enregistrée.'); g.ecran('Suivez le protocole et tout ira bien pour vous.'); if (g.dispo() && g.flag('ligne') === 'ouverte') g.parle18('« …je m\'en doutais. »'); }
           else g.ecran('Refus enregistré.');
         } } },
 
@@ -452,12 +452,12 @@
         g.narr('Deux coups. Une seconde. Puis deux coups te répondent, de l\'autre côté' + (g.truth === 'C' ? ', exactement au même rythme que les tiens.' : '.'));
         g.tel('« D\'accord. On peut se parler, alors. »'); g.confiance(1, 'contact');
         if (g.s.memoire && g.s.memoire.session > 1) g.tel(SESSIONS.deja18);
-        if (g.ecoute() || g.cycle === 3) g.ecran('COMMUNICATION|NON|AUTORISÉE.');
+        if (g.ecoute() || g.cycle === 3) g.ecran('Ne faites pas|confiance|au téléphone.');
       } },
       B: { label: 'Écouter sans répondre', fx: function (g) {
         g.flag('ligne', 'ouverte'); g.flag('tasse', true);
         g.tel('« Je sais que tu es là. J\'entends ta respiration. … Bon. Je rappellerai. »');
-        if (g.ecoute() || g.cycle === 3) g.ecran('COMMUNICATION|NON|AUTORISÉE.');
+        if (g.ecoute() || g.cycle === 3) g.ecran('Ne faites pas|confiance|au téléphone.');
       } } },
 
     { id: 'T2', objet: 'phone', fil: 'telephone', qui: 'APPELER LA CHAMBRE 18',
@@ -465,7 +465,7 @@
       texte: '« C\'est toi ? Attends… Ils t\'appellent 17. Mais toi, comment tu t\'appelles vraiment ? »',
       A: { label: 'Dire ton vrai nom', fx: function (g) {
         g.confiance(1, 'nom'); g.flag('nomDit', true);
-        if (g.ecoute()) g.ecran('ANALYSE AUDIO…|NOM ENREGISTRÉ.');
+        if (g.ecoute()) g.ecran('Suivez le protocole|et tout ira bien|pour vous.');
         if (g.truth === 'C') { g.narr('Un silence. Puis elle répète ton nom, avec exactement ton intonation.'); g.tel('« …c\'est joli. »'); }
         else g.tel('« D\'accord… Je vais m\'en souvenir. »');
       } },
@@ -477,7 +477,7 @@
     { id: 'T3', objet: 'phone', fil: 'telephone', qui: 'APPELER LA CHAMBRE 18',
       quand: function (g) { return g.flag('ligne') === 'ouverte' && g.done('T2') && !g.done('T3') && g.dispo() && !t5Dispo(g); },
       texte: '« J\'ai vu quelque chose sur leur plan. Dans le sol de ta chambre, près du boîtier : une trappe de maintenance. »',
-      A: { label: '« Je te crois »', fx: function (g) { g.tel('« Il y a un verrou manuel sous la plaque. Tire-le vers toi. »'); g.gain('trappe'); g.confiance(1, 'croire'); if (g.ecoute()) g.ecran('CONVERSATION|ENREGISTRÉE.'); } },
+      A: { label: '« Je te crois »', fx: function (g) { g.tel('« Il y a un verrou manuel sous la plaque. Tire-le vers toi. »'); g.gain('trappe'); g.confiance(1, 'croire'); if (g.ecoute()) g.ecran('Ne faites pas|confiance|au téléphone.'); } },
       // Demander une preuve, de façon neutre, ne coûte pas de confiance.
       B: { label: '« Comment tu le sais ? »', fx: function (g) { g.tel('« Sur le plan, il y avait quatre chiffres. Le premier était 7. Le dernier, 2. J\'ai pas vu les autres. »'); g.gain('code'); g.gain('trappe'); annonceCode(g); } } },
 
@@ -495,7 +495,7 @@
     { id: 'T5', objet: 'phone', fil: 'telephone', qui: 'APPELER LA CHAMBRE 18',
       quand: t5Dispo,
       texte: '« J\'ai peut-être trouvé une sortie. Il faut trois choses : que ta caméra soit aveugle, que le courant auxiliaire revienne, et ton signal, depuis ton boîtier. J\'attends ton signal. Pas indéfiniment. »',
-      A: { label: 'Accepter', fx: function (g) { g.gain('plan'); g.flag('planFin', g.cycle + 3); g.anim('silBuee'); g.tel('« D\'accord. Je reste contre la vitre. Je t\'attends. »'); if (g.ecoute()) g.ecran('PLAN COMMUN|ENREGISTRÉ.'); } },
+      A: { label: 'Accepter', fx: function (g) { g.gain('plan'); g.flag('planFin', g.cycle + 3); g.anim('silBuee'); g.tel('« D\'accord. Je reste contre la vitre. Je t\'attends. »'); if (g.ecoute()) g.ecran('Suivez le protocole|et tout ira bien|pour vous.'); } },
       B: { label: 'Refuser', fx: function (g) { g.tel(g.truth === 'A' ? '« Très bien. Alors j\'essaie seul. Bientôt. »' : '« Très bien. Alors j\'essaie seule. Bientôt. »'); g.flag('seuleA', g.cycle + 2); } } },
 
     { id: 'APP18', objet: 'phone', fil: 'telephone', qui: 'APPELER LA CHAMBRE 18',
@@ -821,10 +821,8 @@
   var HISTORIQUE = [
     { quand: function (g) { return g.s.stats.suivis >= 2; }, lignes: function (g) { return ['VOUS AVEZ OBÉI ' + g.s.stats.suivis + ' FOIS.']; } },
     { quand: function (g) { return g.s.stats.refus >= 2; }, lignes: function (g) { return ['VOUS AVEZ REFUSÉ ' + g.s.stats.refus + ' FOIS.']; } },
-    { quand: function (g) { return g.has('objectif'); }, lignes: ['VOUS AVEZ DIT : « JE VIENS. »'] },
-    { quand: function (g) { return g.done('T2') === 'B'; }, lignes: ['VOUS AVEZ DONNÉ UN FAUX NOM.'] },
-    { quand: function (g) { return g.has('menaceVide'); }, lignes: ['UNE MENACE NE S\'EST PAS RÉALISÉE.', 'CELA NE PROUVE PAS QUE LA SUIVANTE SERA VIDE.'] },
-    { quand: function (g) { return g.has('boutonDesactive') && g.flag('sabConnu'); }, lignes: ['VOUS AVEZ COUPÉ L\'ACTIONNEUR.'] }
+    { quand: function (g) { return g.has('menaceVide'); }, lignes: ['MENACE PRÉCÉDENTE :|NON EXÉCUTÉE.', 'INSTRUCTIONS SUIVANTES :|APPLICABLES.'] },
+    { quand: function (g) { return g.has('boutonDesactive') && g.flag('sabConnu'); }, lignes: ['ACTIONNEUR : DÉSACTIVÉ|PAR LE SUJET 17.'] }
   ];
 
   // Introduction (moment 0, gratuite).
@@ -843,13 +841,13 @@
   var SESSIONS = {
     retour: ['Bon retour, Sujet 17.', 'Vous êtes déjà venu ici.'],
     fin: {
-      curiosite: 'Vous aviez choisi le bouton. Encore ?', conforme: 'Votre dernière évaluation était satisfaisante.',
-      employe: 'Votre poste d\'opérateur vous attendra.', isolement: 'Nous espérons que l\'isolement vous a été profitable.',
-      gardien: 'Les sangles ne seront pas nécessaires cette fois.', tempsEcoule: 'Vous êtes resté jusqu\'au bout, la dernière fois.',
-      sujet18: 'Cette fois, vous êtes de ce côté de la vitre.',
-      seulDehors: 'Le conduit extérieur a été soudé. Vous êtes revenu quand même.', porteDerobee: 'La trappe a été scellée. Le vide technique aussi.', evasion: 'Nous avons compté les gardiens, cette fois.', marche: 'Vous avez accepté un marché. Nous en avons un autre.',
-      cooperation: 'La Chambre 18 a été déplacée.', sauvetage: 'Le conduit vers la Chambre 18 a été condamné.', tropTard: 'Vous étiez venu. Trop tard, la dernière fois.', complice: 'La Chambre 18 a un nouvel occupant.', miroir: 'Vous connaissez déjà cette voix.',
-      immobile: 'Vous n\'aviez touché à rien, la dernière fois. Nous avons ajusté le protocole.',
+      curiosite: 'Session précédente : interruption volontaire.', conforme: 'Votre dernière évaluation était satisfaisante.',
+      employe: 'Votre poste d\'opérateur vous attendra.', isolement: 'Période d\'isolement terminée.',
+      gardien: 'Contention : non requise.', tempsEcoule: 'Session précédente : durée maximale atteinte.',
+      sujet18: 'Affectation : Chambre 17.',
+      seulDehors: 'Conduit extérieur soudé.', porteDerobee: 'La trappe a été scellée. Le vide technique aussi.', evasion: 'Effectif de surveillance renforcé.', marche: 'Accord précédent : clos.',
+      cooperation: 'La Chambre 18 a été déplacée.', sauvetage: 'Le conduit vers la Chambre 18 a été condamné.', tropTard: 'Intervention précédente : hors délai.', complice: 'La Chambre 18 a un nouvel occupant.', miroir: 'Fichier vocal : déjà consulté.',
+      immobile: 'Session précédente : aucune action. Protocole ajusté.',
       boucle: 'Restauration de session réussie.', revolte: 'Les chambres 01 à 24 ont été réinitialisées.', temoin: 'L\'opérateur a été remplacé.'
     },
     presses: function (n) { return 'La dernière fois, vous avez appuyé ' + n + ' fois.'; },

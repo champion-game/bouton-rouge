@@ -351,7 +351,7 @@
 
   function advance(s, ev) {
     // Soupçon maximal : la décision accordée est passée, l'intervention arrive.
-    if (s.flags.intervention && s.cycle >= s.flags.intervention) { var g = ctx(s, ev, null); g.son('alarm'); g.ecran('Sujet 17.'); g.ecran('Vous avez été averti.'); g.fin('isolement'); return; }
+    if (s.flags.intervention && s.cycle >= s.flags.intervention) { var g = ctx(s, ev, null); g.son('alarm'); g.ecran('Sujet 17.'); g.ecran('Avertissements épuisés.'); g.fin('isolement'); return; }
     // Fin de la coupure : le réseau revient (l'interface coupe ici pour laisser finir le compte à rebours).
     if (coupure(s)) { ev.push({ t: 'anim', n: 'lumiere' }); ev.push({ t: 'ecran', txt: 'RÉSEAU|RÉTABLI.' }); }
     if (s.cycle === 3 && !s.done.T1) { s.flags.t1Manque = true; ev.push({ t: 'narr', txt: 'APPEL MANQUÉ — CH.18' }); }

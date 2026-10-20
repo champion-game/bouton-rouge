@@ -263,3 +263,5 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - Une planche par fin change selon la preuve la plus forte (`NIVEAUX()` dans `story.js`) : `preuve` (la bande emportée) > `inst` (dossier ou vidéo truquée vus) > `reel` (vérité A établie) / `joue` (vérité B/C établie, ou douleur jouée sans courant). Sans rien : texte de base.
 - Savoir n'est pas prouver : bande confisquée = plus de `preuve`, il reste le récit.
 - Fins concernées : Conforme, Employé, Marché, Seul dehors, Porte dérobée, Évasion, Témoin. « L'Évasion » ne dit plus « tu ne sauras jamais » quand le joueur sait.
+
+- 8.3 : le Système parle sur un ton de procès-verbal, sans émotion ni ironie. Il ne cite jamais le contenu des appels ; il dit seulement « Ne faites pas confiance au téléphone. » ou « Suivez le protocole et tout ira bien pour vous. » Exception gardée : « INFORMATION REÇUE DU SUJET 18 » (indice vérité B).
