@@ -185,3 +185,9 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - **La 18 hors téléphone** : ses phrases spontanées passent en bandeau « À travers la cloison : … », jamais en popup. Ses questions (`voix18`) ne viennent qu'au téléphone.
 - **Téléphone en deux temps** : décrocher → « Qui appeler ? » (liste des numéros) → la conversation et ses réponses. Un simple numéro se compose directement.
 - **Moniteur** : chaque manipulation interdite vue par la caméra s'affiche (« TRAPPE DÉVERROUILLÉE : ACTION NON AUTORISÉE. », `MANIP_ECRAN` dans `story.js`). Hors caméra, rien.
+
+## 18 sans signal (20/10, version 6.6) — décision d'Amine
+
+- Quand la 18 tombe à 0 : « AUCUN SIGNAL REÇU. L'ÉVALUATION CONTINUE. », puis **plus aucun ordre d'appuyer** (les propositions B5 et M16 restent).
+- Il reste **3 moments** pour fuir ; au 4e, le verdict tombe (« Évaluation terminée. »).
+- **30 s sans geste** pendant ces moments (chrono invisible, relancé à chaque geste, en pause pendant la lecture d'un popup) : verdict immédiat.

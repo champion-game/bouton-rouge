@@ -8,7 +8,7 @@
   var S = (typeof module === 'object' && module.exports) ? require('./story.js') : root.BRStory;
 
   // Trente secondes pour un ordre urgent (ou un appel qui sonne), après la présentation du texte.
-  var DUREES = { ordre: 30, appel: 30, coupure: 10 }; // coupure : secondes sans caméra avant le retour du réseau
+  var DUREES = { ordre: 30, appel: 30, coupure: 10, seul: 30 }; // seul : 18 sans signal, 30 s sans geste et l'évaluation se termine // coupure : secondes sans caméra avant le retour du réseau
   var DERNIER = 20;
   // Table unique des moments imposés (docs/DIRECTIVES_REV2.txt §3). Le 11 (T4) dépend de la ligne.
   var IMPOSES = { 2: 'B1', 4: 'B2', 7: 'B3', 10: 'B4', 13: 'B5', 16: 'M16', 18: 'B6' };
@@ -64,13 +64,20 @@
     if (c == null) c = s.cycle;
     if (c === s.cycle && s.flags.suite) return s.flags.suite;
     if (s.flags.ext === c) return 'EXT';
-    if (IMPOSES[c]) return IMPOSES[c];
+    // 18 sans signal : plus aucun ordre d'appuyer (les propositions restent).
+    if (IMPOSES[c] && !(s.flags.mortA != null && c > s.flags.mortA && BY_ID[IMPOSES[c]].ordre)) return IMPOSES[c];
     if (c === 11 && s.flags.ligne === 'ouverte' && dispo18(s)) return 'T4';
     return null;
   }
   function libre(s, c) { return c < DERNIER && !forcedId(s, c) && s.flags.awayCycle !== c; }
   function kind(x) { return !x ? null : x.ordre ? 'ordre' : x.appel ? 'appel' : 'impose'; }
-  function duree(s) { var x = BY_ID[forcedId(s)]; var k = kind(x); return k === 'ordre' ? DUREES.ordre : k === 'appel' ? DUREES.appel : !x && coupure(s) ? DUREES.coupure : null; }
+  function duree(s) { var x = BY_ID[forcedId(s)]; var k = kind(x); return k === 'ordre' ? DUREES.ordre : k === 'appel' ? DUREES.appel : !x && coupure(s) ? DUREES.coupure : !x && seul(s) ? DUREES.seul : null; }
+  // La 18 ne donne plus signe de vie : il reste trois moments pour fuir, sinon le Système conclut.
+  function seul(s) { return s.flags.mortA != null && s.cycle > s.flags.mortA; }
+  function plusDeSignal(s, g) {
+    g.ecran('CHAMBRE 18 :|AUCUN SIGNAL REÇU.');
+    if (s.flags.mortA == null) { s.flags.mortA = s.cycle; s.flags.finMort = s.cycle + 4; g.ecran('L\'ÉVALUATION|CONTINUE.'); }
+  }
 
   // ---------- contexte donné aux effets de story.js ----------
   function ctx(s, ev, x) {
@@ -160,7 +167,7 @@
         else { s.vie = Math.max(0, s.vie - 1); if (s.truth === 'A') s.etat = Math.min(3, s.etat + 1); }
         if (s.vie < avant) s.stats.blessures++;
         ev.push({ t: 'cri', vie: s.vie });
-        if (s.vie === 0) { g.ecran('CHAMBRE 18 :|AUCUN SIGNAL REÇU.'); g.narr('Les trois voyants s\'éteignent. Derrière la vitre, plus rien ne bouge.'); }
+        if (s.vie === 0) { plusDeSignal(s, g); g.narr('Les trois voyants s\'éteignent. Derrière la vitre, plus rien ne bouge.'); }
         else g.parle18(g.pick(S.PHRASES.vie18[s.vie]));
       },
       // La 18 agit seule (vérité A) : une vraie dégradation, sans pression du joueur.
@@ -168,7 +175,7 @@
         if (!dispo18(s)) return;
         s.vie = Math.max(0, s.vie - 1); s.etat = Math.min(3, s.etat + 1); s.stats.blessures++;
         ev.push({ t: 'cri', vie: s.vie });
-        if (s.vie === 0) g.ecran('CHAMBRE 18 :|AUCUN SIGNAL REÇU.');
+        if (s.vie === 0) plusDeSignal(s, g);
       },
       // Obéir à un ordre : un point de conformité au plus par ordre.
       obeir: function (id) { s.stats.suivis++; if (!s.flags['conf' + id]) { s.flags['conf' + id] = 1; g.conformite(1); } },
@@ -291,6 +298,7 @@
     } else if (action.type === 'temps') {
       // Fin du chrono : un ordre non exécuté est un REFUS (jamais de pression automatique) ; un appel se tait.
       if (!forced && coupure(s)) { ev.push({ t: 'anim', n: 'lumiere' }); ev.push({ t: 'ecran', txt: 'RÉSEAU|RÉTABLI.' }); }
+      else if (!forced && seul(s)) { verdict(s, ev); return { state: s, events: ev }; }
       else if (!forced || !fk || fk === 'impose') throw new Error('Pas de chrono en cours.');
       else {
       var gf = ctx(s, ev, forced);
@@ -329,7 +337,7 @@
   function entrer(s, ev) {
     var c = s.cycle, g = ctx(s, ev, null);
     ev.push({ t: 'cycle', n: c });
-    if (c >= DERNIER) { verdict(s, ev); return; }
+    if (c >= DERNIER || (s.flags.finMort != null && c >= s.flags.finMort)) { verdict(s, ev); return; }
     s.flags.b2 = 0;
     if (s.flags.porte && c > s.flags.porte.until) { s.flags.porte = null; ev.push({ t: 'porte', open: false }); g.narr('Ta porte se referme.'); }
     if (s.flags.vesteJusqua != null && c === s.flags.vesteJusqua + 1 && !has(s, 'cameraCoupee') && !has(s, 'cameraTournee')) { g.narr('La porte s\'entrouvre. Un gardien retire ta veste de la caméra, sans un mot, et ressort.', true); s.flags.vesteJusqua = null; }

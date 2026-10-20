@@ -219,6 +219,8 @@
 
   // ---------- un moment de jeu ----------
   function forcedKind() { return t ? t.forcedKind : null; }
+  // 18 sans signal : 30 s sans geste et l'évaluation se termine. Chaque geste relance l'attente.
+  function attenteSeul() { return t && !forcedKind() && t.duree && s.flags.mortA != null && s.cycle > s.flags.mortA && s.cycle !== 5; }
   function sonne() { return !busy && t && ((t.sonne && ringT) || (forcedKind() === 'appel' && sel !== 'phone')); }
   function roomInfo() {
     var k = forcedKind();
@@ -294,6 +296,7 @@
     if (s && busy && !s.fin) { passer(); return; }
     if (!s || s.fin || paused || busy || !t || !$('pop').hidden) return;
     var kind = forcedKind(); calmeT = performance.now();
+    if (attenteSeul()) timeLeft = timeTotal;
     // La caméra voit le geste : petit mouvement, et le moniteur le note.
     if (k !== 'btn' && s.cycle >= 3 && !E.cameraAveugle(s) && TITRES[k]) { R.camRegarde(); A.sfx('servo'); R.journal(horloge() + ' — SUJET 17 : ' + TITRES[k].replace(/^(LE |LA |LES |L')/, '')); }
     var exit = t.sorties.filter(function (x) { return (x.via === 'porte' && k === 'door') || (x.via === 'trappe' && k === 'trappe' && !t.objets.trappe); })[0];
@@ -329,6 +332,7 @@
     // Même moment, même ordre (B2 pression par pression, objet ramassé) : le chrono continue.
     if (s.cycle === avant.c && E.forcedId(s) === avant.f) {
       t = E.turn(s); busy = false; lastTick = performance.now();
+      if (attenteSeul()) timeLeft = timeTotal;
       if (t.sonne && ringT) A.ring(true);
       ecrire(SAVE_KEY, { v: 5, s: s, hist: hist.slice(-60) });
       return refresh();
@@ -362,6 +366,7 @@
       if (nowT - calmeT > 25000 && frappeC !== s.cycle) { frappeC = s.cycle; R.anim('silFrappe'); A.sfx('knock'); }
     } else calmeT = nowT;
     if (busy || paused || confirmer || !s || s.fin || document.hidden || !t || !timeTotal) return;
+    if (attenteSeul() && !$('pop').hidden) return; // lire un texte, c'est encore agir
     timeLeft -= dt; updateTimer();
     if (timeLeft <= 0) act({ type: 'temps' });
   }, 100);
