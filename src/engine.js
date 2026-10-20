@@ -8,7 +8,7 @@
   var S = (typeof module === 'object' && module.exports) ? require('./story.js') : root.BRStory;
 
   // Trente secondes pour un ordre urgent (ou un appel qui sonne), après la présentation du texte.
-  var DUREES = { ordre: 30, appel: 30, coupure: 10, seul: 30 }; // seul : 18 sans signal, 30 s sans geste et l'évaluation se termine // coupure : secondes sans caméra avant le retour du réseau
+  var DUREES = { ordre: 30, appel: 30, coupure: 10, seul: 30, libre: 60 }; // libre : 60 s sans geste dans un moment libre, et le test reprend tout seul // seul : 18 sans signal, 30 s sans geste et l'évaluation se termine // coupure : secondes sans caméra avant le retour du réseau
   var DERNIER = 20;
   // Table unique des moments imposés (docs/DIRECTIVES_REV2.txt §3). Le 11 (T4) dépend de la ligne.
   var IMPOSES = { 2: 'B1', 4: 'B2', 7: 'B3', 10: 'B4', 13: 'B5', 16: 'M16', 18: 'B6' };
@@ -73,7 +73,7 @@
   function kind(x) { return !x ? null : x.ordre ? 'ordre' : x.appel ? 'appel' : 'impose'; }
   // Le premier appel (moment 3) sonne trente secondes : décrocher ou le laisser sonner, rien d'autre.
   function sonneLibre(s) { return s.cycle === 3 && !s.done.T1 && !forcedId(s) && dispo18(s); }
-  function duree(s) { var x = BY_ID[forcedId(s)]; var k = kind(x); return k === 'ordre' ? DUREES.ordre : k === 'appel' || sonneLibre(s) ? DUREES.appel : !x && coupure(s) ? DUREES.coupure : !x && seul(s) ? DUREES.seul : null; }
+  function duree(s) { var x = BY_ID[forcedId(s)]; var k = kind(x); return k === 'ordre' ? DUREES.ordre : k === 'appel' || sonneLibre(s) ? DUREES.appel : !x && coupure(s) ? DUREES.coupure : !x && seul(s) ? DUREES.seul : !x && s.cycle < DERNIER ? DUREES.libre : null; }
   // La 18 ne donne plus signe de vie : il reste trois moments pour fuir, sinon le Système conclut.
   function seul(s) { return s.flags.mortA != null && s.cycle > s.flags.mortA; }
   function plusDeSignal(s, g) {
@@ -306,6 +306,8 @@
       if (!forced && coupure(s)) { ev.push({ t: 'anim', n: 'lumiere' }); ev.push({ t: 'ecran', txt: 'RÉSEAU|RÉTABLI.' }); }
       else if (!forced && seul(s)) { verdict(s, ev); return { state: s, events: ev }; }
       else if (sonneLibre(s)) { var gi = ctx(s, ev, null); gi.narr('Tu laisses le téléphone sonner. Il finit par se taire.'); gi.ecran('MERCI,|SUJET 17.'); }
+      // Moment libre sans geste : le Système reprend la main.
+      else if (!forced) ctx(s, ev, null).ecran('REPRISE DU|PROTOCOLE|DE TEST.');
       else if (!forced || !fk || fk === 'impose') throw new Error('Pas de chrono en cours.');
       else {
       var gf = ctx(s, ev, forced);

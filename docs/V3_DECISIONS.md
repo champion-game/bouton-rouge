@@ -205,3 +205,8 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - Moment 19 : une porte qui s'ouvre reste franchissable ; l'intervention n'annonce « une chance » que s'il en reste une.
 - Le mot de 16 se prend dès le moment 4, sans perdre de temps (geste gratuit).
 - Le plan de la 18 (T5) passe avant les autres appels au 18 : jamais deux « Appeler la chambre 18 ».
+
+## 7.0 — moment libre sans geste
+
+- Un moment libre sans geste pendant 60 s (chrono invisible) passe tout seul : le moniteur affiche « REPRISE DU PROTOCOLE DE TEST. ». Chaque geste relance l'attente ; lire un texte la met en pause. (18 sans signal : 30 s, puis l'évaluation se termine, inchangé.)
+- Mode test (`TEST = true` dans `game.js`, à passer à `false` pour la version finale) : un bouton dans la barre du bas affiche le temps restant de tout chrono ; le toucher accélère le temps (×1 / ×5).

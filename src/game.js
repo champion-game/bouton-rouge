@@ -219,8 +219,8 @@
 
   // ---------- un moment de jeu ----------
   function forcedKind() { return t ? t.forcedKind : null; }
-  // 18 sans signal : 30 s sans geste et l'évaluation se termine. Chaque geste relance l'attente.
-  function attenteSeul() { return t && !forcedKind() && t.duree && s.flags.mortA != null && s.cycle > s.flags.mortA && s.cycle !== 5; }
+  // Moment libre : 60 s sans geste et le test reprend (18 sans signal : 30 s et l'évaluation se termine). Chaque geste relance l'attente.
+  function attenteLibre() { return t && !forcedKind() && t.duree && !t.sonne && s.cycle !== 5; }
   // Garde-fou : pendant une séquence (textes, animations), tout est grisé ; pendant une sonnerie, seul le téléphone répond.
   // Pendant un ordre, tout reste permis : agir ailleurs ou laisser passer le temps = désobéir.
   function verrou() { var k = forcedKind(); return !t || s.fin ? null : busy ? '*' : (k === 'appel' || (t.sonne && ringT)) ? 'phone' : null; }
@@ -302,7 +302,7 @@
     if (!s || s.fin || paused || busy || !t || !$('pop').hidden) return;
     var kind = forcedKind(), v = verrou(); calmeT = performance.now();
     if (v && k !== v && k !== 'monitor') { toast('Le téléphone sonne.'); return; }
-    if (attenteSeul()) timeLeft = timeTotal;
+    if (attenteLibre()) timeLeft = timeTotal;
     // La caméra voit le geste : petit mouvement, et le moniteur le note.
     if (k !== 'btn' && s.cycle >= 3 && !E.cameraAveugle(s) && TITRES[k]) { R.camRegarde(); A.sfx('servo'); R.journal(horloge() + ' — SUJET 17 : ' + TITRES[k].replace(/^(LE |LA |LES |L')/, '')); }
     var exit = t.sorties.filter(function (x) { return (x.via === 'porte' && k === 'door') || (x.via === 'trappe' && k === 'trappe' && !t.objets.trappe); })[0];
@@ -344,7 +344,7 @@
     // Même moment, même ordre (B2 pression par pression, objet ramassé) : le chrono continue.
     if (s.cycle === avant.c && E.forcedId(s) === avant.f) {
       t = E.turn(s); busy = false; lastTick = performance.now();
-      if (attenteSeul()) timeLeft = timeTotal;
+      if (attenteLibre()) timeLeft = timeTotal;
       if (t.sonne && ringT) A.ring(true);
       ecrire(SAVE_KEY, { v: 5, s: s, hist: hist.slice(-60) });
       return refresh();
@@ -374,15 +374,25 @@
   setInterval(function () {
     var nowT = performance.now(), dt = nowT - lastTick; lastTick = nowT;
     // La 18 s'impatiente : après 25 s sans geste dans un moment libre, elle frappe à la vitre (une fois par moment).
-    if (!busy && !paused && s && !s.fin && t && !forcedKind() && !t.duree && s.vie > 0 && s.cycle >= 2 && $('pop').hidden && !document.hidden) {
+    if (!busy && !paused && s && !s.fin && t && !forcedKind() && !t.sonne && s.cycle !== 5 && s.vie > 0 && s.cycle >= 2 && $('pop').hidden && !document.hidden) {
       if (nowT - calmeT > 25000 && frappeC !== s.cycle) { frappeC = s.cycle; R.anim('silFrappe'); A.sfx('knock'); }
     } else calmeT = nowT;
     if (busy || paused || confirmer || !s || s.fin || document.hidden || !t || !timeTotal) return;
-    if (attenteSeul() && !$('pop').hidden) return; // lire un texte, c'est encore agir
+    if (attenteLibre() && !$('pop').hidden) return; // lire un texte, c'est encore agir
     if (sel === 'phone' && !$('pop').hidden && (t.sonne || forcedKind() === 'appel')) return; // en ligne : l'appel ne se coupe pas
-    timeLeft -= dt; updateTimer();
+    timeLeft -= dt * accel; updateTimer();
     if (timeLeft <= 0) act({ type: 'temps' });
   }, 100);
+  // ---------- mode test (à passer à false pour la version finale) ----------
+  // Affiche le temps restant de tout chrono et permet d'accélérer le temps (×1 / ×5).
+  var TEST = true, accel = 1;
+  function majTest() {
+    var b = $('testBtn'); if (!b) return;
+    b.hidden = !TEST || !s || !!s.fin;
+    b.textContent = (timeTotal && !busy ? Math.max(0, Math.ceil(timeLeft / 1000)) + ' s' : '— s') + ' · ×' + accel;
+  }
+  $('testBtn').onclick = function () { accel = accel === 1 ? 5 : 1; majTest(); };
+  setInterval(majTest, 250);
   function setPaused(p) {
     paused = p; $('pauseBtn').textContent = p ? 'Reprendre' : 'Pause'; $('pauseBtn').setAttribute('aria-pressed', p); $('pausedLbl').hidden = !p;
     A.ambiance({ actif: !p && !!t && s && !s.fin });

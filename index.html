@@ -42,6 +42,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);out
 .hud .bag{flex:1 1 auto;max-width:380px;min-width:0}
 .hud .hist{flex:0 0 auto}
 .hud #waitBtn{margin-left:auto}
+.hud #testBtn{margin-left:auto;font-variant-numeric:tabular-nums;color:#ffb060}
+.hud #testBtn:not([hidden]) ~ #waitBtn,.hud #testBtn:not([hidden]) ~ #histBtn{margin-left:0}
 .hud #histBtn{margin-left:auto}
 .hud #waitBtn:not([hidden]) + #histBtn{margin-left:0}
 .bilan{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
@@ -204,7 +206,7 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
     <div class="hud">
       <div class="histbox" id="histBox" hidden></div>
       <div class="bag" id="bag" aria-label="Inventaire"></div>
-      <button class="hist" id="waitBtn" hidden>Attendre</button><button class="hist" id="histBtn" aria-expanded="false">Historique</button>
+      <button class="hist" id="testBtn" hidden title="Mode test : temps restant, toucher pour accélérer">— s · ×1</button><button class="hist" id="waitBtn" hidden>Attendre</button><button class="hist" id="histBtn" aria-expanded="false">Historique</button>
     </div>
   </div>
 </div>
@@ -222,7 +224,7 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
       <button class="mbtn" id="setBtn">Réglages</button>
     </div>
     <p>Une pièce. Un bouton. Touche ce qui t'entoure. Le son est recommandé.</p>
-    <p class="ver">Version 6.9 · 20/10</p>
+    <p class="ver">Version 7.0 · 20/10</p>
   </div>
   <div class="intro panel" id="finsPanel" hidden>
     <h2>Fins découvertes</h2>
@@ -244,10 +246,10 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 </div>
 <div class="ov" id="endOv" hidden><div class="end" id="endBox"></div></div>
 
-<script src="src/story.js?v=6.9"></script>
-<script src="src/engine.js?v=6.9"></script>
-<script src="src/audio.js?v=6.9"></script>
-<script src="src/room.js?v=6.9"></script>
-<script src="src/game.js?v=6.9"></script>
+<script src="src/story.js?v=7.0"></script>
+<script src="src/engine.js?v=7.0"></script>
+<script src="src/audio.js?v=7.0"></script>
+<script src="src/room.js?v=7.0"></script>
+<script src="src/game.js?v=7.0"></script>
 </body>
 </html>
