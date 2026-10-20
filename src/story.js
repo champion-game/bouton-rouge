@@ -163,6 +163,17 @@
   // Rejoindre la Chambre 18 par le conduit.
   function rencontre18(g) {
     g.narr('Tu rampes vers la 18. La respiration devient plus forte. Tu arrives derrière une grille.');
+    // La grille ne s'ouvre que du côté de la 18 : il faut lui avoir promis de venir (« Je viens »).
+    if (!g.has('objectif')) {
+      delete g.s.done.P5; // on pourra revenir
+      g.narr(g.truth === 'C' ? 'Une grille, vissée de l\'autre côté. Derrière, rien ne bouge. Seulement un haut-parleur qui grésille.'
+        : g.truth === 'A' ? 'Une grille, vissée de l\'autre côté. Derrière, une respiration rapide. Tu frappes. « Qui est là ? … Non. Ils m\'ont déjà fait le coup. » Personne n\'ouvre.'
+        : 'Une grille, vissée de l\'autre côté. Une voix, très calme : « Je ne t\'ouvrirai pas. Pas comme ça. » Personne n\'ouvre.');
+      g.narr('Tu rebrousses chemin.');
+      return;
+    }
+    if (g.truth === 'C') g.narr('Un déclic. La grille s\'ouvre toute seule. Une voix enregistrée : « Entre. »');
+    else g.narr('Un bruit de vis, de l\'autre côté. La grille s\'ouvre.');
     g.gain('verite');
     if (g.truth === 'A') {
       g.image('rev_A');

@@ -177,7 +177,7 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - **Garde-fous (6.8)** : pendant une séquence en cours (textes, animations), tous les objets sont grisés et ne font rien. Pendant une sonnerie, seul le téléphone répond (« Le téléphone sonne. »). Pendant un ordre, tout reste permis : faire autre chose ou laisser passer les 30 s = désobéir (« RÉACTION NON CONFORME »).
 - **Premier appel (6.7)** : le moniteur affiche « APPEL ENTRANT. NE RÉPONDEZ PAS. » ; 30 s pour décrocher ou laisser sonner. Décrocher → « COMMUNICATION NON AUTORISÉE ». Laisser sonner (ou tout appel ignoré) → « MERCI, SUJET 17. ».
 - **Défaut AUX au moment 6 (6.7)** : le moniteur ne parle plus du fusible ; c'est la narration qui montre le voyant du boîtier (le retour du courant a fait sauter un fusible).
-- **Coupure (moment 5)** : événement à part. « ALIMENTATION INSTABLE », la lampe clignote, puis le noir (veilleuse orange). Le moniteur compte 10 s jusqu'au retour du réseau. Caméra aveugle ; agir dans le noir ne fait plus revenir le courant. Le mot de 16 glisse sous la porte au moment 4 (avant, son texte arrivait avec la coupure).
+- **Coupure (moment 5)** : événement à part. « ALIMENTATION INSTABLE », la lampe clignote, puis le noir (veilleuse orange). Le moniteur compte 10 s jusqu'au retour du réseau. Caméra aveugle. (7.2) Une seule action possible : elle prend du temps, le compte à rebours continue de descendre pendant qu'elle se joue, et le courant revient à zéro (« Pas le temps : le courant revient. » si on touche autre chose). Le mot de 16 glisse sous la porte au moment 4 (avant, son texte arrivait avec la coupure).
 - **Trappe toujours visible**, fermée par un verrou électrique hors tension (voyant éteint, étiquette « ALIMENTATION — AUX 24 V ») ; le fusible rétablit le courant et le verrou s'ouvre (CLAC sous la trappe, voyant vert) — v6.5. Le boîtier en défaut dit « AUX 24 V — HORS SERVICE ».
 - **Impression** : le moniteur note chaque geste vu (« 14:03:12 — SUJET 17 : TIROIR »), la caméra réagit (moteur, voyant), la 18 frappe à la vitre après 25 s sans geste (une fois par moment), la lumière baisse un peu à chaque pression et la lampe grésille.
 - Bouton « Attendre » gardé pendant les tests.
@@ -216,3 +216,8 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - Plan commun en vérité B : elle entre seule, seringue et bipeur (plus de gardiens présents puis oubliés).
 - Le 00 (opérateur) se compose dès que la caméra l'a montré, même sans ligne ouverte avec la 18.
 - Le badge et l'enregistrement de l'inventaire s'utilisent aussi pendant un ordre (agir ailleurs = refuser, comme pour les objets de la pièce).
+
+## 7.2
+
+- Coupure : une seule action dans le noir, le compte à rebours ne s'arrête pas pendant qu'elle se joue.
+- Rejoindre la 18 par le conduit : sa grille ne s'ouvre que de son côté, et seulement si on lui a promis « Je viens » (appel du moment 11). Sinon on frappe, personne n'ouvre, on revient (le conduit reste praticable). En vérité C, après la promesse, la grille s'ouvre seule (« Entre. »). Concerne Sauvetage, Trop tard, Complice, Sujet 18, Miroir et Briser la boucle par le conduit.

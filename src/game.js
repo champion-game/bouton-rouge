@@ -261,7 +261,7 @@
   function refresh() {
     // Trois phases sonores : installation, surveillance accrue, confrontation finale (le silence gagne).
     var phase = s.cycle < 8 ? 1 : s.cycle < 16 ? 2 : 3;
-    A.ambiance({ vie: s.vie, soupcon: s.soupcon, phase: phase, vent: s.cycle === 5 ? 'off' : phase === 3 ? 'faible' : 'normal', actif: !!t && !s.fin && !paused });
+    A.ambiance({ vie: s.vie, soupcon: s.soupcon, phase: phase, vent: s.cycle === 5 || noirAction ? 'off' : phase === 3 ? 'faible' : 'normal', actif: !!t && !s.fin && !paused });
     R.render(s, roomInfo());
     renderBag(); updateTimer();
     var k = forcedKind(), hint = !busy && t && tuto && s.cycle <= 3 ? (k === 'ordre' ? E.AIDES.ordre : (k === 'appel' || (t.sonne && ringT)) ? E.AIDES.appel : !k ? E.AIDES.libre : '') : '';
@@ -298,7 +298,7 @@
   function hot(k) {
     A.init();
     if (!$('intro').hidden) return;
-    if (s && busy && !s.fin) { passer(); return; }
+    if (s && busy && !s.fin) { if (noirAction) toast('Pas le temps : le courant revient.'); passer(); return; }
     if (!s || s.fin || paused || busy || !t || !$('pop').hidden) return;
     var kind = forcedKind(), v = verrou(); calmeT = performance.now();
     if (v && k !== v && k !== 'monitor') { toast('Le téléphone sonne.'); return; }
@@ -327,6 +327,11 @@
     if (txt) objetPop(TITRES[k] || '', txt, null, true);
   }
 
+  // Attend la fin du compte à rebours de la coupure (il descend pendant l'action).
+  var noirAction = false;
+  function finirNoir(my) {
+    return new Promise(function (res) { (function boucle() { if (my !== run) return res(false); if (timeLeft <= 0) return res(true); setTimeout(boucle, 100); })(); });
+  }
   async function act(a) {
     if (busy || !s || s.fin || paused) return;
     var res;
@@ -336,8 +341,13 @@
     if (!$('pop').hidden) { popDone = null; $('pop').hidden = true; }
     s = res.state;
     refresh();
-    var my = run;
-    var ok = await play(res.events, my);
+    var my = run, evs = res.events;
+    // Coupure : l'action prend du temps et le compte à rebours continue ; le courant revient quand il arrive à zéro.
+    var cut = avant.c === 5 && !avant.f && a.type !== 'temps' ? evs.map(function (e) { return e.t === 'anim' && e.n === 'lumiere'; }).indexOf(true) : -1;
+    if (cut >= 0) { noirAction = true; refresh(); }
+    var ok = await play(cut >= 0 ? evs.slice(0, cut) : evs, my);
+    if (ok && cut >= 0) { ok = await finirNoir(my); noirAction = false; if (ok) ok = await play(evs.slice(cut), my); }
+    noirAction = false;
     if (!ok) return;
     R.render(s, roomInfo()); renderBag();
     if (s.fin) return finale(my);
@@ -366,7 +376,7 @@
     } else if (tensionOn) A.tension(null);
     tensionOn = ordre;
     // Coupure de courant : le moniteur, sur la batterie de secours, compte jusqu'au retour du réseau.
-    var coup = !busy && !forcedKind() && t && t.duree && s.cycle === 5;
+    var coup = noirAction || (!busy && !forcedKind() && t && t.duree && s.cycle === 5);
     if (coup && sec !== lastSec && lastSec !== -1) R.ecran('RÉTABLISSEMENT|RÉSEAU DANS|' + sec + ' S', { color: '#ffb060', instant: true });
     if ((low || (coup && sec <= 3)) && sec !== lastSec && sec > 0) A.sfx('tick');
     lastSec = sec;
@@ -377,6 +387,7 @@
     if (!busy && !paused && s && !s.fin && t && !forcedKind() && !t.sonne && s.cycle !== 5 && s.vie > 0 && s.cycle >= 2 && $('pop').hidden && !document.hidden) {
       if (nowT - calmeT > 25000 && frappeC !== s.cycle) { frappeC = s.cycle; R.anim('silFrappe'); A.sfx('knock'); }
     } else calmeT = nowT;
+    if (noirAction) { if (!paused && !document.hidden) { timeLeft -= dt * accel; updateTimer(); } return; }
     if (busy || paused || confirmer || !s || s.fin || document.hidden || !t || !timeTotal) return;
     if (attenteLibre() && !$('pop').hidden) return; // lire un texte, c'est encore agir
     if (sel === 'phone' && !$('pop').hidden && (t.sonne || forcedKind() === 'appel')) return; // en ligne : l'appel ne se coupe pas

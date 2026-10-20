@@ -51,7 +51,7 @@ function jouer(truth, steps, avant) {
     else if (p[0] === 'porte' || p[0] === 'trappe') a = { type: 'sortir', via: p[0] };
     else a = { type: 'situation', id: p[0], choix: p[1] || 'A' };
     var c0 = st.cycle, n0 = st.stats.actions, res = E.choose(st, a); note(res); st = res.state;
-    // Coupure : agir ne fait plus revenir le courant ; les parcours attendent ensuite la fin des 10 s.
+    // Coupure : une seule action, qui prend tout le temps du noir (le moment avance ensuite).
     if (a.type === 'situation' && c0 === 5 && st.cycle === 5 && !st.fin && st.stats.actions > n0 && !E.forcedId(st)) { res = E.choose(st, { type: 'temps' }); note(res); st = res.state; }
   }
   return st;
@@ -65,12 +65,12 @@ var ROUTES = {
   porteDerobee: ['A', ['wait', 'temps', 'T1 A', 'temps', 'T2 A', 'T3 A', 'temps', 'P4 B', 'trappe']],
   evasion: ['A', ['wait', 'temps', 'C1 A', 'temps', 'wait', 'C3 A', 'MALAISE A']],
   cooperation: ['A', ['wait', 'temps', 'T1 A', 'press', 'press', 'temps', 'P1 A', 'T2 A', 'temps', 'C1 A', 'COMP_FORCER A', 'temps', 'T4 A', 'FUS', 'temps', 'T5 A', 'C2 A', 'M16 A', 'PLAN']],
-  sauvetage: ['A', ['wait', 'temps', 'wait', 'press', 'temps', 'P1 A', 'P2 A', 'temps', 'P5 A']],
-  tropTard: ['A', ['wait', 'press', 'wait', 'press', 'press', 'press', 'P1 A', 'P2 A', 'temps', 'press', 'P5 A']],
-  complice: ['B', ['wait', 'temps', 'wait', 'press', 'temps', 'P1 A', 'P2 A', 'temps', 'P5 A', 'RENCONTRE_B A']],
-  sujet18: ['B', ['wait', 'temps', 'wait', 'press', 'temps', 'P1 A', 'P2 A', 'temps', 'P5 A', 'RENCONTRE_B B']],
-  miroir: ['C', ['wait', 'temps', 'wait', 'press', 'temps', 'P1 A', 'P2 A', 'temps', 'P5 A', 'RENCONTRE_C B']],
-  boucle: ['C', ['H2 A', 'temps', 'C1 A', 'press', 'press', 'press', 'P1 A', 'C2 A', 'temps', 'P4 A', 'temps', 'P2 A', 'P5 A', 'RENCONTRE_C A']],
+  sauvetage: ['A', ['wait', 'temps', 'T1 A', 'temps', 'P1 A', 'P2 A', 'temps', 'wait', 'wait', 'temps', 'T4 A', 'P5 A']],
+  tropTard: ['A', ['wait', 'press', 'T1 A', 'press', 'press', 'press', 'P1 A', 'P2 A', 'temps', 'wait', 'wait', 'temps', 'T4 A', 'press', 'P5 A']],
+  complice: ['B', ['wait', 'temps', 'T1 A', 'temps', 'P1 A', 'P2 A', 'temps', 'wait', 'wait', 'temps', 'T4 A', 'P5 A', 'RENCONTRE_B A']],
+  sujet18: ['B', ['wait', 'temps', 'T1 A', 'temps', 'P1 A', 'P2 A', 'temps', 'wait', 'wait', 'press', 'T4 A', 'P5 A', 'RENCONTRE_B B']],
+  miroir: ['C', ['wait', 'temps', 'T1 A', 'temps', 'P1 A', 'P2 A', 'temps', 'wait', 'wait', 'temps', 'T4 A', 'P5 A', 'RENCONTRE_C B']],
+  boucle: ['C', ['H2 A', 'temps', 'T1 A', 'press', 'press', 'press', 'P1 A', 'wait', 'temps', 'P4 A', 'temps', 'T4 A', 'P2 A', 'P5 A', 'RENCONTRE_C A']],
   isolement: ['A', ['wait', 'temps', 'wait', 'press', 'temps', 'P1 A', 'P2 A', 'temps', 'P3 B', 'wait', 'temps', 'wait']],
   gardien: ['A', ['H2 B', 'temps', 'C1 A', 'temps', 'wait', 'C2 A', 'temps', 'wait', 'wait', 'temps', 'C3 A', 'MALAISE A']],
   temoin: ['A', ['wait', 'temps', 'C1 B', 'press', 'press', 'press', 'P1 A', 'C2 A', 'temps', 'COMP_FORCER A', 'FUS', 'temps', 'C3 B', 'porte']],

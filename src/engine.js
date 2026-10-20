@@ -265,12 +265,10 @@
       s.done[x.id] = c;
       if (!x.gratuit) { s.stats.actions++; s.flags.dernierActe = label; }
       x[c].fx(g);
-      // Pendant la coupure, agir ne fait pas revenir le courant : le noir dure ses 10 secondes.
-      // Descendre aux archives ou ramper vers EXT. fait quitter la pièce : le moment avance malgré le noir.
-      var part = s.flags.awayCycle === s.cycle + 1 || s.flags.ext === s.cycle + 1;
+      // Pendant la coupure, une action prend tout le temps du noir : le courant revient à la fin (l'interface laisse filer le compte à rebours).
       // Au dernier moment, une porte qui vient de s'ouvrir doit rester franchissable.
       var porteNeuve = s.cycle >= DERNIER - 1 && porteOuverte(s) && !porteOuverte(state);
-      if (x.gratuit || s.flags.suite || porteNeuve || (!forced && coupure(s) && !part)) avance = false;
+      if (x.gratuit || s.flags.suite || porteNeuve) avance = false;
       // Une remarque du Système, de temps en temps seulement, après une exploration vue.
       else if (!s.fin && !forced && x.fil !== 'telephone' && !cameraAveugle(s) && s.cycle >= 4 && g.hasard() < 0.12) g.ecran(g.pick(S.PHRASES.apresExploration));
     } else if (action.type === 'appuyer') {
@@ -303,7 +301,7 @@
       } else throw new Error('Sortie impossible : ' + action.via);
     } else if (action.type === 'temps') {
       // Fin du chrono : un ordre non exécuté est un REFUS (jamais de pression automatique) ; un appel se tait.
-      if (!forced && coupure(s)) { ev.push({ t: 'anim', n: 'lumiere' }); ev.push({ t: 'ecran', txt: 'RÉSEAU|RÉTABLI.' }); }
+      if (!forced && coupure(s)) { /* le retour du courant est joué par advance() */ }
       else if (!forced && seul(s)) { verdict(s, ev); return { state: s, events: ev }; }
       else if (sonneLibre(s)) { var gi = ctx(s, ev, null); gi.narr('Tu laisses le téléphone sonner. Il finit par se taire.'); gi.ecran('MERCI,|SUJET 17.'); }
       // Moment libre sans geste : le Système reprend la main.
@@ -337,6 +335,8 @@
   function advance(s, ev) {
     // Soupçon maximal : la décision accordée est passée, l'intervention arrive.
     if (s.flags.intervention && s.cycle >= s.flags.intervention) { var g = ctx(s, ev, null); g.son('alarm'); g.ecran('Sujet 17.'); g.ecran('Vous avez été averti.'); g.fin('isolement'); return; }
+    // Fin de la coupure : le réseau revient (l'interface coupe ici pour laisser finir le compte à rebours).
+    if (coupure(s)) { ev.push({ t: 'anim', n: 'lumiere' }); ev.push({ t: 'ecran', txt: 'RÉSEAU|RÉTABLI.' }); }
     if (s.cycle === 3 && !s.done.T1) { s.flags.t1Manque = true; ev.push({ t: 'narr', txt: 'APPEL MANQUÉ — CH.18' }); }
     s.cycle++;
     enterCycle(s, ev);
