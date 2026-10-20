@@ -75,7 +75,8 @@ var ROUTES = {
   gardien: ['A', ['H2 B', 'temps', 'C1 A', 'temps', 'wait', 'C2 A', 'temps', 'wait', 'wait', 'temps', 'C3 A', 'MALAISE A']],
   temoin: ['A', ['wait', 'press', 'C1 B', 'press', 'press', 'press', 'P1 A', 'TIROIR', 'C2 A', 'COMP_FORCER A', 'FUS', 'C3 B', 'porte']],
   revolte: ['A', ['wait', 'temps', 'C1 A', 'press', 'P1 A', 'TIROIR', 'C2 A', 'COMP_FORCER A', 'FUS', 'wait', 'temps', 'P4 A', 'DIFFUSER']],
-  tempsEcoule: ['A', ['wait', 'temps', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'M16 B', 'wait', 'temps', 'wait']],
+  tempsEcoule: ['A', ['H2 A', 'temps', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'M16 B', 'wait', 'temps', 'wait']],
+  immobile: ['A', ['wait', 'temps', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'M16 B', 'wait', 'temps', 'wait']],
   curiosite: ['A', ['wait', 'temps', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'M16 B', 'wait', 'press', 'press']]
 };
 console.log('\nUn parcours par fin :');
@@ -109,6 +110,11 @@ var T = [
   ['20 Tiroir laissé ouvert : le gardien fouille et prend les objets interdits', function () { var st = etat('A', function (s) { s.cycle = 5; s.done.C1 = 'A'; }); st = E.choose(st, { type: 'situation', id: 'P1', choix: 'A' }).state; st = E.choose(st, { type: 'situation', id: 'C2', choix: 'A' }).state; st = E.choose(st, { type: 'temps' }).state; st = E.choose(st, { type: 'attendre' }).state; return st.cycle === 9 && !E.has(st, 'tournevis') && st.flags.vesteConfisquee; }],
   ['21 Tiroir refermé : pas de fouille', function () { var st = etat('A', function (s) { s.cycle = 5; s.done.C1 = 'A'; }); st = E.choose(st, { type: 'situation', id: 'P1', choix: 'A' }).state; st = E.choose(st, { type: 'situation', id: 'TIROIR', choix: 'A' }).state; st = E.choose(st, { type: 'situation', id: 'C2', choix: 'A' }).state; st = E.choose(st, { type: 'temps' }).state; st = E.choose(st, { type: 'attendre' }).state; return st.cycle === 9 && E.has(st, 'tournevis'); }],
   ['22 Le gardien trouve la chambre vide : alerte', function () { var st = etat('A', function (s) { s.cycle = 6; s.done.C1 = 'A'; s.items.push('trappe'); }); st = E.choose(st, { type: 'situation', id: 'C2', choix: 'A' }).state; st.cycle = 8; st = E.choose(st, { type: 'situation', id: 'P4', choix: 'A' }).state; return st.soupcon === 4 && !!st.flags.intervention; }],
+  ['23 Le Système se souvient de la partie précédente (deux souvenirs au plus)', function () {
+    var n = 0, st = E.newGame({ seed: 5, truth: 'A', memoire: { session: 2, dernier: { fin: 'conforme', presses: 3, refus: 4, suivis: 0, camera: true, tiroir: true, menti: true } } });
+    E.intro(st); for (var i = 0; i < 14 && !st.fin; i++) { var r = E.choose(st, E.turn(st).forcedKind ? { type: 'temps' } : { type: 'attendre' }); st = r.state; }
+    n = st.flags.souvenirs || 0; return n >= 1 && n <= 2; }],
+  ['24 Carnet, piste et souvenir sont lisibles', function () { var st = jouer('A', ['H2 A', 'temps', 'T1 A']); var c = E.carnet(st), p = E.piste(st, {}), sv = E.souvenir(st); return c.join(' ').indexOf('4 · 1') >= 0 && p.length > 0 && typeof sv.presses === 'number'; }],
   ['17 Recharger conserve tout (état sérialisable)', function () { var st = jouer('B', ['wait', 'temps', 'T1 A']); var c = JSON.parse(JSON.stringify(st)); return c.truth === 'B' && c.flags.ligne === 'ouverte'; }]
 ];
 console.log('\nTests d\'acceptation :');

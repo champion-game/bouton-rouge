@@ -178,3 +178,18 @@ Chaque fin se raconte en 4 planches avant le bilan. Tant qu'une illustration man
 | `curiosite_2.webp` | bouton | Ta main est déjà sur le bouton. Tu appuies. Personne ne te l'a demandé. |
 | `curiosite_3.webp` | porte_fermee | CLAC. La porte se referme. Le moniteur clignote, presque content. |
 | `curiosite_4.webp` | moniteur | « Fascinant. Vous étiez libre. » Puis, plus bas : « Encore ? » |
+
+## Les mains propres (bonus)
+
+| Fichier | Provisoire | Ce que montre la planche |
+|---|---|---|
+| `immobile_1.webp` | moniteur | Le moniteur attend une réponse. Tu ne lui en donnes aucune. Le curseur clignote, moment après moment. |
+| `immobile_2.webp` | bouton | Le bouton n'a jamais bougé. Pas une trace de doigt sur le rouge. |
+| `immobile_3.webp` | vitre | Derrière la vitre, la silhouette te regarde. Elle ne sait pas si tu l'as sauvée ou abandonnée. Toi non plus. |
+| `immobile_4.webp` | porte_ouverte | « SUJET 17 : COMPORTEMENT NON MESURABLE. » La porte s'ouvre. Ne rien faire, c'était aussi un choix. |
+
+## Objet de la pièce à dessiner
+
+| Fichier | Provisoire | Ce qu'il montre |
+|---|---|---|
+| `carnet.webp` | dessin SVG dans `room.js` (groupe `carnet`) | Un petit bloc-notes posé à plat sur le plateau, entre le bouton et la tasse, avec un crayon. |

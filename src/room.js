@@ -112,6 +112,7 @@
   '<linearGradient id="platFade" gradientUnits="userSpaceOnUse" x1="0" y1="520" x2="0" y2="556"><stop offset="0" stop-color="#fff" stop-opacity=".32"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
   '<mask id="mPlat" maskUnits="userSpaceOnUse" x="440" y="490" width="800" height="80"><rect x="457" y="498" width="756" height="58" fill="url(#platFade)"/></mask>' +
   '<filter id="reflBlur" x="-5%" y="-10%" width="110%" height="120%"><feGaussianBlur stdDeviation="1.3"/></filter>' +
+  '<filter id="tracesF" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation=".9"/></filter>' +
   '<filter id="ctcF" x="-20%" y="-200%" width="140%" height="500%"><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/><feGaussianBlur stdDeviation="2"/></filter>' +
   '<filter id="castF" x="-30%" y="-60%" width="160%" height="220%"><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/><feGaussianBlur stdDeviation="5"/></filter>' +
   '<clipPath id="platClip"><rect x="440" y="400" width="790" height="152"/></clipPath>' +
@@ -150,6 +151,7 @@
   '<rect x="' + (GL.x + GL.w / 2 - 60) + '" y="' + (GL.y + 14) + '" width="120" height="7" rx="3" fill="#fff" opacity=".9" filter="url(#flou)" style="pointer-events:none"/>' +
   '</g>' + VITRE +
   '<g clip-path="url(#glassClip)">' +
+  I('mainTrace', 'main', GL.x + 6, GL.y + 70, 250, 250, ' opacity="0" filter="url(#flou)" style="pointer-events:none"') +
   I('hand', 'main', GL.x + GL.w / 2 - 185, GL.y + 20, 370, 370, ' opacity="0" style="transition:opacity .5s ease"') +
   I('buee', 'fleche', GL.x + GL.w / 2 - 185, GL.y - 40, 370, 370, ' opacity="0" style="transition:opacity .8s ease"') +
   '<polygon points="' + (GL.x + 40) + ',' + (GL.y + GL.h) + ' ' + (GL.x + 120) + ',' + (GL.y + GL.h) + ' ' + (GL.x + 250) + ',' + GL.y + ' ' + (GL.x + 170) + ',' + GL.y + '" fill="url(#glassRG)" style="pointer-events:none"/>' +
@@ -200,10 +202,22 @@
   '<g clip-path="url(#platClip)">' + ombreObjet('phoneInner', 573, 541, -16) + ombreObjet('btnImg', 837, 544, 0) + ombreObjet('mugImg', 1042, 524, 10) + '</g></g>' +
   '<ellipse id="btnGlow" cx="837" cy="495" rx="120" ry="60" fill="url(#glowG)" opacity="0" style="pointer-events:none"/>' +
   '<g id="btn" class="hs" data-k="btn" role="button" tabindex="0" aria-label="Appuyer sur le bouton rouge">' +
-  I('btnImg', 'bouton', BTN.x, BTN.y, BTN.w, BTN.h) + I('btnImg2', 'bouton_enfonce', BTN.x, BTN.y, BTN.w, BTN.h, ' opacity="0"') + '</g>' +
+  I('btnImg', 'bouton', BTN.x, BTN.y, BTN.w, BTN.h) + I('btnImg2', 'bouton_enfonce', BTN.x, BTN.y, BTN.w, BTN.h, ' opacity="0"') +
+  '<g id="traces" opacity="0" style="pointer-events:none" filter="url(#tracesF)"><g fill="#ffe2da" opacity=".3"><ellipse cx="818" cy="461" rx="7" ry="3.2" transform="rotate(-12 818 461)"/><ellipse cx="846" cy="457" rx="6" ry="2.8"/><ellipse cx="862" cy="464" rx="6.5" ry="3" transform="rotate(14 862 464)"/><ellipse cx="831" cy="467" rx="5" ry="2.4"/></g>' +
+  '<g fill="#000" opacity=".4"><ellipse cx="806" cy="514" rx="15" ry="3"/><ellipse cx="872" cy="516" rx="12" ry="2.6"/></g></g></g>' +
   '<g id="phone" class="hs" data-k="phone"><rect x="500" y="440" width="172" height="104" fill="transparent"/><g id="phoneInner">' +
   I('telImg', 'tel_pose', 479.3, 445.5, 188.4, 99.6) + I('telImg2', 'tel_decroche', 479.3, 445.5, 188.4, 99.6, ' opacity="0"') + '</g>' +
   '<circle id="ecouteLed" cx="640" cy="520" r="4.5" fill="#ff3b30" class="pulse" opacity="0"/></g>' +
+  // carnet de notes (dessin provisoire : un bloc posé à plat, un crayon)
+  '<g id="carnet" class="hs" data-k="carnet"><rect x="916" y="500" width="80" height="50" fill="transparent"/>' +
+  '<ellipse cx="958" cy="543" rx="38" ry="4" fill="#000" opacity=".55" filter="url(#ombreP)"/>' +
+  '<polygon points="926,542 990,542 990,545 926,545" fill="#6e6655"/>' +
+  '<polygon points="926,542 990,542 983,527 931,527" fill="#d6ccb0"/>' +
+  '<polygon points="926,542 990,542 983,527 931,527" fill="url(#poolG)" opacity=".6"/>' +
+  '<g stroke="#8f8670" stroke-width=".8" opacity=".8"><line x1="934" y1="531" x2="980" y2="531"/><line x1="932" y1="535" x2="983" y2="535"/><line x1="930" y1="539" x2="986" y2="539"/></g>' +
+  '<line x1="931" y1="527.5" x2="983" y2="527.5" stroke="#3a3428" stroke-width="1.6" stroke-dasharray="2 2.4"/>' +
+  '<line x1="944" y1="544" x2="981" y2="533" stroke="#c9a23a" stroke-width="2.4" stroke-linecap="round"/><line x1="979" y1="533.6" x2="983" y2="532.4" stroke="#2b2620" stroke-width="2.4" stroke-linecap="round"/>' +
+  '</g>' +
   '<g class="hs" data-k="mug"><rect x="998" y="452" width="90" height="82" fill="transparent"/>' + I('mugImg', 'tasse', 1010, 468, 65.3, 58) + '</g>' +
   '</g></g>' +
   // ombre des coins, lumière et alarme
@@ -322,6 +336,10 @@
     sujet = s.truth || 'A'; vieCourante = s.vie;
     // vie de la 18 : les trois voyants
     for (var i = 1; i <= 3; i++) { var on = s.vie >= i; attr('vie' + i, 'opacity', on ? 1 : 0); attr('vieGlow' + i, 'opacity', on ? 0.8 : 0); }
+    // Le dernier voyant allumé vacille ; la pièce garde les traces : doigts sur le bouton, main sur la vitre.
+    attr('vie1', 'class', s.vie === 1 ? 'vacille' : ''); attr('vieGlow1', 'class', s.vie === 1 ? 'vacille' : '');
+    attr('traces', 'opacity', Math.min(1, (s.stats.presses || 0) * 0.18).toFixed(2));
+    attr('mainTrace', 'opacity', s.stats.blessures ? Math.min(0.24, 0.1 + 0.05 * s.stats.blessures) : 0);
     // La silhouette se courbe avec sa vie ; la lumière de la 18 rougit quand le soupçon est élevé.
     // Quand la 18 attend ton signal, elle reste la paume contre la vitre.
     silhouette(s.items.indexOf('plan') >= 0 && s.vie > 0 ? 'paume' : poseVie(s.vie));
@@ -538,7 +556,7 @@
 
   // ---------- animations ----------
   function press() {
-    attr('btnImg', 'opacity', 0); attr('btnImg2', 'opacity', 1);
+    attr('btnImg', 'opacity', 0); attr('btnImg2', 'opacity', 1); attr('traces', 'opacity', 0);
     setTimeout(function () { attr('btnImg', 'opacity', 1); attr('btnImg2', 'opacity', 0); }, 150);
     // La lampe grésille un instant après la pression.
     if (!reduce) { later2(350, function () { attr('bulb', 'opacity', 0.3); }); later2(420, function () { attr('bulb', 'opacity', 1); }); later2(500, function () { attr('bulb', 'opacity', 0.5); }); later2(560, function () { attr('bulb', 'opacity', 1); }); }
@@ -574,6 +592,9 @@
     silBuee: function () { attr('buee', 'opacity', 0.75); later2(3800, function () { attr('buee', 'opacity', 0); }); },
     compartiment: function () { src('compImg', 'compart3_fusible'); taille('compImg', [990.9, 304.8, 241]); },
     silSursaut: function () { harmLeger(); },
+    silRecule: function () { poseTemp('recule', 1800); attr('silMove', 'transform', 'translate(26 0)'); later2(1700, function () { attr('silMove', 'transform', ''); }); },
+    silApproche: function () { var cx = GL.x + GL.w / 2, cy = GL.y + GL.h; attr('silMove', 'transform', 'translate(' + cx + ' ' + cy + ') scale(1.08) translate(' + (-cx) + ' ' + (-cy) + ')'); later2(2000, function () { attr('silMove', 'transform', ''); }); },
+    silDetourne: function () { poseTemp('tel', 2400); attr('silMove', 'transform', 'translate(-30 0)'); later2(2300, function () { attr('silMove', 'transform', ''); }); },
     silFige: function () { attr('hand', 'opacity', 0); attr('silMove', 'transform', ''); silhouette('debout'); },
     video: function () { video(5200); }
   };

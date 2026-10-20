@@ -55,6 +55,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);out
 @keyframes shake{0%{transform:translate(0,0)}25%{transform:translate(-1.5px,.5px)}50%{transform:translate(1.5px,-.5px)}75%{transform:translate(-1px,0)}}
 .pulse{animation:pls 1.3s infinite}
 @keyframes pls{50%{opacity:.45}}
+.vacille{animation:vac 2.6s infinite steps(1)}
+@keyframes vac{0%,100%{opacity:1}12%{opacity:.25}15%{opacity:.9}52%{opacity:.4}55%{opacity:1}}
 
 .timer{position:absolute;left:0;right:0;top:0;height:4px;background:rgba(0,0,0,.35);pointer-events:none;z-index:2}
 .timer i{display:block;height:100%;width:100%;background:var(--phos);opacity:.75;transform-origin:left;transition:background .3s}
@@ -152,6 +154,7 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 .end .crt{font-family:var(--f-crt);font-size:1.5rem;line-height:1.1;color:var(--phos);background:#071311;border-radius:6px;padding:10px 12px}
 .end p{margin:0}
 .end .truth{color:var(--amber)}
+.end .piste{font-style:italic;color:var(--muted,#9aa5a1);border-left:2px solid var(--amber);padding-left:10px;margin:10px 0}
 .end .indice{font-style:italic;color:var(--muted);border-left:2px solid var(--red);padding-left:10px}
 .end.histoire{max-width:980px}
 .planche{display:flex;gap:18px;align-items:center}
@@ -170,7 +173,7 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 .fins span{font-size:.74rem;font-weight:700;border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:#56625f}
 .fins span.on{border-color:var(--green);color:var(--green)}
 .fins span.cur{background:var(--green);color:#071311}
-@media (prefers-reduced-motion:reduce){.ring,.pulse,.glisse{animation:none}}
+@media (prefers-reduced-motion:reduce){.ring,.pulse,.glisse,.vacille{animation:none}}
 /* Le jeu se joue en paysage : en portrait sur téléphone ou tablette, on demande de tourner l'écran. */
 .rotate{display:none;position:fixed;inset:0;z-index:100;background:#050707;color:var(--text);flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px}
 .rotate svg{width:84px;height:84px;animation:tourne 2.4s ease-in-out infinite}
@@ -224,7 +227,7 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
       <button class="mbtn" id="setBtn">Réglages</button>
     </div>
     <p>Une pièce. Un bouton. Touche ce qui t'entoure. Le son est recommandé.</p>
-    <p class="ver">Version 7.9 · 20/10</p>
+    <p class="ver">Version 8.0 · 20/10</p>
   </div>
   <div class="intro panel" id="finsPanel" hidden>
     <h2>Fins découvertes</h2>
@@ -253,10 +256,10 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 </div>
 <div class="ov" id="endOv" hidden><div class="end" id="endBox"></div></div>
 
-<script src="src/story.js?v=7.9"></script>
-<script src="src/engine.js?v=7.9"></script>
-<script src="src/audio.js?v=7.9"></script>
-<script src="src/room.js?v=7.9"></script>
-<script src="src/game.js?v=7.9"></script>
+<script src="src/story.js?v=8.0"></script>
+<script src="src/engine.js?v=8.0"></script>
+<script src="src/audio.js?v=8.0"></script>
+<script src="src/room.js?v=8.0"></script>
+<script src="src/game.js?v=8.0"></script>
 </body>
 </html>

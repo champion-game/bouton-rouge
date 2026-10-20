@@ -311,7 +311,8 @@
   // ---------- toucher un objet de la pièce ----------
   // Heure affichée par le moniteur (fictive : la séance commence à 14:02).
   function horloge() { var x = Math.floor(performance.now() / 1000) + 14 * 3600 + 120; return [Math.floor(x / 3600) % 24, Math.floor(x / 60) % 60, x % 60].map(function (n) { return (n < 10 ? '0' : '') + n; }).join(':'); }
-  var TITRES = { mug: 'LA TASSE', compart: 'LE COMPARTIMENT', phone: 'LE TÉLÉPHONE', drawer: 'LE TIROIR', grille: 'LA GRILLE', box: 'LE BOÎTIER', trappe: 'LA TRAPPE', camera: 'LA CAMÉRA', note: 'LE MOT', bureau: 'SOUS LE BUREAU', window: 'LA CHAMBRE 18', monitor: 'LE MONITEUR', light: 'LA LAMPE', mug: 'LA TASSE', door: 'LA PORTE' };
+  var TITRES = { mug: 'LA TASSE', compart: 'LE COMPARTIMENT', phone: 'LE TÉLÉPHONE', drawer: 'LE TIROIR', grille: 'LA GRILLE', box: 'LE BOÎTIER', trappe: 'LA TRAPPE', camera: 'LA CAMÉRA', note: 'LE MOT', bureau: 'SOUS LE BUREAU', window: 'LA CHAMBRE 18', monitor: 'LE MONITEUR', light: 'LA LAMPE', mug: 'LA TASSE', door: 'LA PORTE', carnet: 'LE CARNET' };
+  var reaction18C = null; // la 18 réagit une fois par moment quand on s'approche de la vitre
   function hot(k) {
     A.init();
     if (!$('intro').hidden) return;
@@ -339,8 +340,14 @@
     if (k === 'phone' && (kind === 'appel' || (t.sonne && ringT))) { sel = 'phone'; A.ring(false); A.sfx('pickup'); objetPop('', '', t.objets.phone, kind === 'appel' ? false : true); R.render(s, roomInfo()); return; }
     // Téléphone : d'abord choisir qui appeler, ensuite quoi dire.
     if (k === 'phone' && t.objets.phone && t.objets.phone.length > 1) { sel = 'phone'; A.sfx('pickup'); composerPop(); R.render(s, roomInfo()); return; }
-    if (t.objets[k]) { sel = k; objetPop(t.objets[k].length > 1 ? (TITRES[k] || '') : '', '', t.objets[k], true); if (k === 'phone') R.render(s, roomInfo()); return; }
+    // Le carnet : ce que tu as appris, écrit à la main (gratuit).
+    if (k === 'carnet') { A.sfx('paper'); openPop('<div class="who"><span>LE CARNET</span><button class="x" data-close="1" aria-label="Fermer">×</button></div>' + lettreHtml({ titre: 'TES NOTES', recto: E.carnet(s) }), null); return; }
+    // S'approcher de la vitre : la 18 réagit (recule, s'approche, pose sa paume, se détourne).
+    var reac = '';
+    if (k === 'window' && reaction18C !== s.seed + ':' + s.cycle) { var r = E.reaction18(s); if (r) { reaction18C = s.seed + ':' + s.cycle; R.anim(r.anim); reac = r.narr; } }
+    if (t.objets[k]) { sel = k; objetPop(t.objets[k].length > 1 || reac ? (TITRES[k] || '') : '', reac, t.objets[k], true); if (k === 'phone') R.render(s, roomInfo()); return; }
     var txt = E.regarder(s, k);
+    if (reac) txt = reac + (txt ? ' ' + txt : '');
     if (txt) objetPop(TITRES[k] || '', txt, null, true);
   }
 
@@ -430,7 +437,7 @@
   $('waitBtn').onclick = function () { A.init(); if (!busy && t && t.peutAttendre && !verrou() && $('pop').hidden) act({ type: 'attendre' }); };
 
   // ---------- fin ----------
-  var SONS_FIN = { conforme: 'lock', employe: 'lock', marche: 'ring', seulDehors: 'thud', porteDerobee: 'thud', evasion: 'alarm', cooperation: 'lock', sauvetage: 'thud', tropTard: 'blink', complice: 'alarm', sujet18: 'thud', miroir: 'glitch', boucle: 'blink', isolement: 'slam', gardien: 'alarm', temoin: 'pickup', revolte: 'alarm', tempsEcoule: 'cry', curiosite: 'slam' };
+  var SONS_FIN = { conforme: 'lock', employe: 'lock', marche: 'ring', seulDehors: 'thud', porteDerobee: 'thud', evasion: 'alarm', cooperation: 'lock', sauvetage: 'thud', tropTard: 'blink', complice: 'alarm', sujet18: 'thud', miroir: 'glitch', boucle: 'blink', isolement: 'slam', gardien: 'alarm', temoin: 'pickup', revolte: 'alarm', tempsEcoule: 'cry', curiosite: 'slam', immobile: 'blink' };
   function texteFin(F) { return (s.flags.variante && F.variante && F.variante[s.flags.variante]) || F.texte; }
   async function finale(my) {
     var F = E.FINS[s.fin];
@@ -471,7 +478,7 @@
   function endScreen() {
     var found = loadFound(); found[s.fin] = 1;
     try { localStorage.setItem(FOUND_KEY, JSON.stringify(found)); } catch (e) {}
-    ecrireMemoire({ sessions: s.memoire.session, dernier: { fin: s.fin, presses: s.stats.presses } });
+    ecrireMemoire({ sessions: s.memoire.session, dernier: E.souvenir(s) });
     var F = E.FINS[s.fin];
     var ids = E.FIN_IDS.slice().sort(function (a, b) { return (E.FINS[a].bonus ? 99 : E.FINS[a].n) - (E.FINS[b].bonus ? 99 : E.FINS[b].n); });
     var nb = ids.filter(function (k) { return found[k] && !E.FINS[k].bonus; }).length;
@@ -481,6 +488,9 @@
     h += '<p class="truth">' + (E.has(s, 'verite') ? esc(E.VERITES[s.truth].texte) : 'Ce que cachait la Chambre 18 : tu ne l\'as pas découvert.') + '</p>';
     // Trois éléments au plus : un acte décisif, sa conséquence, une question encore ouverte.
     h += '<ul class="bilan">' + E.bilan(s).map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul>';
+    // Une piste vers une fin encore inconnue : donner envie de revenir, sans livrer la recette.
+    var piste = E.piste(s, found);
+    if (piste) h += '<p class="piste">' + esc(piste) + '</p>';
     h += '<div class="k">FINS DÉCOUVERTES : ' + nb + ' / 18</div><div class="fins">' + ids.map(function (k) {
       return '<span class="' + (k === s.fin ? 'cur' : found[k] ? 'on' : '') + '">' + (found[k] ? esc(E.FINS[k].titre) : '???') + '</span>';
     }).join('') + '</div>';

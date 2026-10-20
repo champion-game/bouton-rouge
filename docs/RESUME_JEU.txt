@@ -160,6 +160,7 @@ protocole (enregistrement).
 18 Le Temps est écoulé ... verdict sans rien de ce qui précède (texte différent selon la vérité ;
                            variante « pièce vide » si la vraie victime est hors de combat).
 Bonus Curiosité ......... après B6 (« ÉVALUATION TERMINÉE », porte ouverte), appuyer encore.
+Bonus Les mains propres . aller jusqu'au verdict sans aucune pression ni aucune action choisie.
 
 Chaque fin se raconte d'abord en 4 planches (image + texte), voir docs/ILLUSTRATIONS_FINS.md.
 L'écran de fin montre ensuite trois éléments : ton dernier geste, sa conséquence, une question
@@ -168,6 +169,10 @@ encore ouverte. La vérité n'est affichée que si tu l'as découverte.
 
 9. REJOUABILITÉ
 ---------------
-- Le Système se souvient des parties précédentes (numéro de test, dernière fin, pressions).
+- Le Système se souvient des parties précédentes (numéro de test, dernière fin, pressions, et deux
+  gestes marquants : caméra aveuglée, tiroir forcé, faux nom, promesse…). En C, la 18 « te reconnaît ».
+- Le bilan donne une piste vers une fin encore inconnue.
+- Le carnet du bureau garde ce que tu as appris (codes, numéros, promesse, preuves).
+- La pièce garde des traces : doigts sur le bouton, main sur la vitre, voyant qui vacille.
 - Réglages : vitesse du texte, son, passer les passages déjà vus, effacer la mémoire.
 - Sauvegarde à chaque moment : « Continuer » à l'écran titre.

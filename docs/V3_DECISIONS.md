@@ -243,3 +243,12 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 
 ## 7.9
 - **B2 dépend du passé** : tant que le joueur n'a jamais vu la 18 souffrir par sa pression (`flags.aBlesse`), B2 est un simple « APPUYEZ. » (comme B1, sans récompense). Une fois la conséquence connue, B2 devient le test de détermination : « VOUS CONNAISSEZ LE PRIX. APPUYEZ TROIS FOIS. » avec dossier, caméra et code.
+
+## 8.0
+- **Rendu** (consignes d'Amine) : cône de lampe plus chaud, halo sur le plateau, voile d'ombre global allégé (carte `ombre` à 0,8, vignette 0,52). Ombres de contact et ombres portées des objets tirées de leur propre dessin (`ombreObjet()`, masque alpha), poussées à l'opposé de la lampe ; ombres serrées sous chaque appui du bureau (`pied()`). Plus de halo rouge fixe sur le bouton (seul l'ordre l'allume). Sol mat : reflets à 0,13, flous et aplatis. Reflet du néon large et diffus, masqué dans le verre (`neonVitre`, grésille avec le néon), plus de liseré sur le cadre. Signes vitaux centrés sous le verre, voyants posés sur les trous du dessin (`SG`). Écran : halo discret (`scrGlow`), trame allégée, lueur sur le mur qui suit l'écran et le courant (`lueur()`).
+- **Traces** : traces de doigts sur le bouton (selon les pressions), empreinte de main sur la vitre après la première douleur, dernier voyant qui vacille. Aucune n'a d'effet sur les règles.
+- **Souvenirs** (`SOUVENIRS` dans `story.js`) : la partie suivante relit ce qui a été gardé (`SOUVENIR()` : caméra aveuglée, tiroir forcé, faux nom, archives, promesse, conduit, refus, obéissance). Deux remarques au plus, au début d'un moment libre, à partir du 3e. En vérité C, la silhouette « te reconnaît ».
+- **Piste au bilan** (`PISTES`) : une phrase vers une fin pas encore découverte, sans la recette.
+- **Carnet** sur le bureau (dessin provisoire en SVG, à remplacer par `carnet.webp`) : gratuit, il liste ce que le joueur a appris (codes, numéros, promesse, plan, preuves, pages de 16). Jamais de jauge ni de numéro de moment.
+- **Réactions de la 18** quand on touche la vitre (une fois par moment) : recule juste après une douleur, pose sa paume si promesse / plan / confiance ≥ 3, se détourne si le joueur obéit sans lien avec elle, sinon s'approche.
+- **Fin bonus « Les mains propres »** : verdict sans aucune pression ni aucune action choisie (les ordres refusés et les choix imposés comme M16 ne comptent pas, `stats.libres`). Passe avant « Sujet conforme » et « Le Temps est écoulé ».

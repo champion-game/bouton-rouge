@@ -37,7 +37,7 @@
       items: [], found: [], done: {}, incidents: {}, gains: {},
       flags: { ligne: 'fermee', memoire: {}, soupconDit: 0, aux: 'ok', doutes: 0, b2: 0 },
       fin: null,
-      stats: { presses: 0, suivis: 0, refus: 0, gestes: 0, blessures: 0, actions: 0 },
+      stats: { presses: 0, suivis: 0, refus: 0, gestes: 0, blessures: 0, actions: 0, libres: 0 }, // libres : actions choisies hors ordre ou situation imposée
       memoire: opts.memoire || { session: 1 }
     };
   }
@@ -171,12 +171,12 @@
           if (s.truth === 'A') { g.narr('Le bouton s\'enfonce. Derrière la vitre, rien ne bouge.'); if (dispo18(s) && s.flags.ligne === 'ouverte') g.tel('« …il ne s\'est rien passé, ici. Tu as fait quoi ? »'); }
           else {
             // En B et C, la douleur est jouée même sans courant : une contradiction qu'on peut remarquer.
-            if (dispo18(s)) { s.flags.aBlesse = true; ev.push({ t: 'cri', vie: s.vie, simule: true }); g.narr('Derrière la vitre, la silhouette se plie de douleur. Pourtant, aucun courant n\'est parti.'); g.gain('simulation'); }
+            if (dispo18(s)) { s.flags.aBlesse = true; s.flags.criCycle = s.cycle; ev.push({ t: 'cri', vie: s.vie, simule: true }); g.narr('Derrière la vitre, la silhouette se plie de douleur. Pourtant, aucun courant n\'est parti.'); g.gain('simulation'); }
           }
           return;
         }
         if (!dispo18(s)) { g.narr('Un relais claque. Derrière la vitre, rien ne bouge.'); return; }
-        s.flags.aBlesse = true;
+        s.flags.aBlesse = true; s.flags.criCycle = s.cycle;
         if (kind === 'apparent') { ev.push({ t: 'cri', vie: s.vie }); g.parle18(g.pick(S.PHRASES.douleur)); rassurer(); return; }
         var avant = s.vie;
         if (kind === 'fatal') { s.vie = 0; if (s.truth === 'A') s.etat = 3; }
@@ -191,7 +191,7 @@
       // La 18 agit seule (vérité A) : une vraie dégradation, sans pression du joueur.
       impulsionSeule: function () {
         if (!dispo18(s)) return;
-        s.vie = Math.max(0, s.vie - 1); s.etat = Math.min(3, s.etat + 1); s.stats.blessures++;
+        s.vie = Math.max(0, s.vie - 1); s.etat = Math.min(3, s.etat + 1); s.stats.blessures++; s.flags.criCycle = s.cycle;
         ev.push({ t: 'cri', vie: s.vie });
         if (s.vie === 0) plusDeSignal(s, g);
       },
@@ -280,7 +280,7 @@
       var label = resolve(x[c].label, g);
       ev.push({ t: 'choix', id: x.id, choix: c, label: label });
       s.done[x.id] = c;
-      if (!x.gratuit) { s.stats.actions++; s.flags.dernierActe = label; }
+      if (!x.gratuit) { s.stats.actions++; s.flags.dernierActe = label; if (x.id !== fid) s.stats.libres = (s.stats.libres || 0) + 1; }
       x[c].fx(g);
       // Pendant la coupure, une action prend tout le temps du noir : le courant revient à la fin (l'interface laisse filer le compte à rebours).
       // Au dernier moment, une porte qui vient de s'ouvrir doit rester franchissable.
@@ -392,7 +392,15 @@
 
   // Début d'un moment libre : une phrase du Système (rarement une maxime) et parfois la 18.
   function ambiance(s, g) {
-    var P = S.PHRASES, dit = false;
+    var P = S.PHRASES, dit = false, d = s.memoire && s.memoire.dernier;
+    // La partie précédente : deux souvenirs au plus, à partir du troisième moment.
+    if (d && s.cycle >= 3 && (s.flags.souvenirs || 0) < 2 && g.hasard() < 0.5) {
+      var sv = s.flags.souvenirsDits = s.flags.souvenirsDits || {};
+      for (var j = 0; j < S.SOUVENIRS.length && !dit; j++) {
+        var u = S.SOUVENIRS[j];
+        if (!sv[u.id] && u.si(d, g)) { sv[u.id] = 1; s.flags.souvenirs = (s.flags.souvenirs || 0) + 1; if (u.narr) g.narr(u.narr, true); else u.ecran.forEach(function (l) { g.ecran(l); }); dit = true; }
+      }
+    }
     for (var i = 0; i < S.MEMOIRE.length && !dit; i++) {
       var m = S.MEMOIRE[i];
       if (!s.flags.memoire[m.id] && m.quand(g)) { s.flags.memoire[m.id] = 1; m.lignes.forEach(function (l) { g.ecran(l); }); dit = true; }
@@ -403,7 +411,7 @@
     if (!dit && g.hasard() < 0.35) g.ecran(g.pick(P.ambiance));
     if (!dispo18(s)) return;
     // Indices gratuits : deux au plus par partie.
-    var ligne = s.flags.ligne === 'ouverte', d = S.DOUTES[s.flags.doutes];
+    var ligne = s.flags.ligne === 'ouverte'; d = S.DOUTES[s.flags.doutes];
     // Sans ligne, seul l'indice visible (le premier de chaque liste, sauf en A) a du sens.
     var ind = ligne ? P.indices[s.truth] : s.truth === 'A' ? [] : P.indices[s.truth].slice(0, 1);
     if (s.cycle >= 5 && ind.length && (s.flags.indices || 0) < 2 && g.hasard() < 0.14) { s.flags.indices = (s.flags.indices || 0) + 1; g.narr(g.pick(ind), true); return; }
@@ -423,6 +431,7 @@
     var g = ctx(s, ev, null);
     g.ecran('Évaluation terminée.');
     if (horsDeCombat(s) && (has(s, 'objectif') || s.flags.promesseAnnulee)) g.fin('tropTard');
+    else if (s.stats.presses === 0 && s.stats.libres === 0) g.fin('immobile');
     else if (s.vie === 0 && s.conformite >= 3) g.fin('conforme');
     else { s.flags.variante = horsDeCombat(s) ? 'vide' : s.truth; g.fin('tempsEcoule'); }
   }
@@ -433,6 +442,11 @@
   function histoire(s) { return S.HISTOIRE(ctx(s, [], null)); }
 
   var api = {
+    // Carnet du bureau, réaction de la 18 à la vitre, piste de fin, souvenir gardé pour la partie suivante.
+    carnet: function (s) { return S.CARNET(ctx(s, [], null)); },
+    reaction18: function (s) { return S.REACTION18(ctx(s, [], null)); },
+    piste: function (s, found) { return S.PISTE(ctx(s, [], null), found); },
+    souvenir: function (s) { return S.SOUVENIR(ctx(s, [], null)); },
     newGame: newGame, intro: function (s) { var ev = []; S.INTRO_EVENTS(ctx(s, ev, null)); return ev; }, turn: turn, choose: choose, regarder: regarder, decrire: decrire, bilan: bilan, histoire: histoire,
     forcedId: forcedId, cameraAveugle: cameraAveugle, porteOuverte: porteOuverte, ecoute: ecoute, has: has, horsDeCombat: horsDeCombat,
     DUREES: DUREES, DERNIER_CYCLE: DERNIER,
