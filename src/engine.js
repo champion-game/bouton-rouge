@@ -109,6 +109,7 @@
       horsDeCombat: function () { return horsDeCombat(s); },
       dispo: function () { return dispo18(s); },
       libreSuivant: function () { return libre(s, s.cycle + 1); },
+      dernier: DERNIER,
       // La vidéo voit-elle ce geste ? L'angle mort ne protège que la petite zone sous le bureau.
       vu: function () { return !cameraAveugle(s) && !(has(s, 'angleMort') && SOUS_BUREAU.indexOf(objet) >= 0); },
       gain: function (k) {
@@ -140,8 +141,6 @@
       // Une manipulation interdite : +1 si la vidéo la voit.
       // Le moniteur affiche ce que la caméra voit : l'action est signalée à chaque fois.
       manip: function (id, txt) { if (g.vu()) { if (S.MANIP_ECRAN[id]) g.ecran(S.MANIP_ECRAN[id]); return g.incident(id, 1, txt); } g.narr(cameraAveugle(s) ? 'La caméra n\'a rien vu.' : 'Angle mort : la caméra n\'a rien vu.'); return false; },
-      // G1 : un objet interdit pris sous les yeux de la caméra sera repris au moment suivant.
-      surveiller: function (k) { if (g.vu()) (s.flags.aConfisquer = s.flags.aConfisquer || []).push(k); },
       cacher: function () {
         for (var i = s.found.length - 1; i >= 0; i--) {
           var k = s.found[i];
@@ -201,10 +200,11 @@
   function intervention(s, ev) {
     if (s.flags.intervention) return;
     // Pendant l'entrée d'un moment, la décision de ce moment est la dernière ; après une action, c'est la suivante.
-    s.flags.intervention = Math.min(19, s.flags.entree ? s.cycle : s.cycle + 1);
+    s.flags.intervention = Math.min(DERNIER - 1, s.flags.entree ? s.cycle : s.cycle + 1);
+    var chance = s.flags.entree || s.flags.intervention > s.cycle || porteOuverte(s);
     ev.push({ t: 'son', n: 'alarm' });
     ev.push({ t: 'ecran', txt: 'SUJET 17.|INTERVENTION|EN COURS.' });
-    ev.push({ t: 'narr', txt: 'Des pas lourds approchent dans le couloir. Il te reste peut-être une chance d\'agir.', pop: true });
+    ev.push({ t: 'narr', txt: 'Des pas lourds approchent dans le couloir.' + (chance ? ' Il te reste peut-être une chance d\'agir.' : ''), pop: true });
   }
 
   function available(s, x) {
@@ -266,7 +266,11 @@
       if (!x.gratuit) { s.stats.actions++; s.flags.dernierActe = label; }
       x[c].fx(g);
       // Pendant la coupure, agir ne fait pas revenir le courant : le noir dure ses 10 secondes.
-      if (x.gratuit || s.flags.suite || (!forced && coupure(s))) avance = false;
+      // Descendre aux archives ou ramper vers EXT. fait quitter la pièce : le moment avance malgré le noir.
+      var part = s.flags.awayCycle === s.cycle + 1 || s.flags.ext === s.cycle + 1;
+      // Au dernier moment, une porte qui vient de s'ouvrir doit rester franchissable.
+      var porteNeuve = s.cycle >= DERNIER - 1 && porteOuverte(s) && !porteOuverte(state);
+      if (x.gratuit || s.flags.suite || porteNeuve || (!forced && coupure(s) && !part)) avance = false;
       // Une remarque du Système, de temps en temps seulement, après une exploration vue.
       else if (!s.fin && !forced && x.fil !== 'telephone' && !cameraAveugle(s) && s.cycle >= 4 && g.hasard() < 0.12) g.ecran(g.pick(S.PHRASES.apresExploration));
     } else if (action.type === 'appuyer') {
@@ -344,14 +348,15 @@
     s.flags.b2 = 0;
     if (s.flags.porte && c > s.flags.porte.until) { s.flags.porte = null; ev.push({ t: 'porte', open: false }); g.narr('Ta porte se referme.'); }
     if (s.flags.vesteJusqua != null && c === s.flags.vesteJusqua + 1 && !has(s, 'cameraCoupee') && !has(s, 'cameraTournee')) { g.narr('La porte s\'entrouvre. Un gardien retire ta veste de la caméra, sans un mot, et ressort.', true); s.flags.vesteJusqua = null; }
-    confisquer(s, g);
     // Diagnostics techniques (le soupçon ne compte qu'une fois par défaut).
     if (s.flags.diagCam === c) g.incident('defautCamera', 1, 'PANNE CAMÉRA|DIAGNOSTIQUÉE.');
     if (s.flags.diagSab === c) g.incident('sabotage', 2, 'ANOMALIE ACTIONNEUR|CONFIRMÉE.');
     // Échéances annoncées par la 18 (plan ou tentative seule).
     if (s.flags.planFin != null && c > s.flags.planFin && has(s, 'plan') && !s.done.PLAN) { g.lose('plan'); g.confiance(-2); S.SEULE(g); }
     if (s.flags.seuleA === c) { s.flags.seuleA = null; S.SEULE(g); }
-    S.MOMENTS[c] && S.MOMENTS[c](g);
+    // Absent de la pièce (archives, conduit) : les règles du moment s'appliquent, sans le raconter.
+    var absent = s.flags.awayCycle === c || s.flags.ext === c;
+    S.MOMENTS[c] && S.MOMENTS[c](absent ? ctx(s, [], null) : g);
     if (s.fin) return;
     var fid = forcedId(s, c);
     if (s.flags.awayCycle !== c) {
@@ -365,18 +370,6 @@
       s.flags.entree = false;
       if (!s.fin) advance(s, ev);
     }
-  }
-
-  // G1 : un gardien reprend les objets interdits que la caméra a vu prendre.
-  function confisquer(s, g) {
-    var l = s.flags.aConfisquer; if (!l || !l.length) return;
-    s.flags.aConfisquer = [];
-    if (cameraAveugle(s)) return;
-    var pris = l.filter(function (k) { return has(s, k) && s.flags.cache !== k; });
-    if (!pris.length) return;
-    pris.forEach(function (k) { g.lose(k); });
-    g.narr('CLONK. La porte s\'ouvre. Un gardien entre, prend ' + pris.map(function (k) { return S.OBJETS[k].toLowerCase(); }).join(' et ') + ', et repart sans un mot.', true);
-    g.ecran('OBJET NON AUTORISÉ|RÉCUPÉRÉ.');
   }
 
   // Début d'un moment libre : une phrase du Système (rarement une maxime) et parfois la 18.

@@ -21,7 +21,7 @@
 
   var s = null, t = null, run = 0, busy = true, paused = false, sel = null, tuto = false;
   var timeLeft = 0, timeTotal = 0, lastTick = 0, lastSec = -1, lastEcran = '', popDone = null, flashItems = [];
-  var hist = [], introSil = false, confirmer = false, ringT = null;
+  var hist = [], introSil = false, confirmer = false, ringT = false;
   // Coupure : la pièce ne s'éteint qu'à l'animation « panne », et ne se rallume qu'à « lumiere » (pas avant les messages).
   var noirVu = false;
 
@@ -237,7 +237,8 @@
     if (my !== run) return;
     t = E.turn(s); busy = false; sel = null; confirmer = false; noirVu = s.cycle === 5;
     var k = forcedKind();
-    clearTimeout(ringT); ringT = null;
+    // ringT est un simple drapeau (sonnerie en cours) : surtout pas clearTimeout(true), qui arrêtait l'horloge du jeu.
+    ringT = false;
     if (k === 'ordre') R.ecran(t.forced.ecran, { color: '#ff8a7a' });
     else if (k === 'appel' || t.sonne) {
       if (t.forced && t.forced.ecran) R.ecran(t.forced.ecran);
@@ -305,7 +306,13 @@
     // La caméra voit le geste : petit mouvement, et le moniteur le note.
     if (k !== 'btn' && s.cycle >= 3 && !E.cameraAveugle(s) && TITRES[k]) { R.camRegarde(); A.sfx('servo'); R.journal(horloge() + ' — SUJET 17 : ' + TITRES[k].replace(/^(LE |LA |LES |L')/, '')); }
     var exit = t.sorties.filter(function (x) { return (x.via === 'porte' && k === 'door') || (x.via === 'trappe' && k === 'trappe' && !t.objets.trappe); })[0];
-    if (exit) return act({ type: 'sortir', via: exit.via });
+    // Partir termine la partie : on demande une fois, pour éviter un toucher par erreur.
+    if (exit) {
+      confirmer = true; sel = k;
+      var q = exit.via === 'porte' ? ['LA PORTE', 'La porte est ouverte.'] : ['LA TRAPPE', 'La sortie dérobée est prête.'];
+      openPop('<div class="who"><span>' + q[0] + '</span></div><p>' + q[1] + '</p><div class="ab"><button class="ch" data-ok="' + esc(JSON.stringify({ type: 'sortir', via: exit.via })) + '">' + esc(exit.label) + '</button><button class="ch" data-no="1">Rester</button></div>', function () { confirmer = false; sel = null; });
+      return;
+    }
     if (kind === 'impose') { sel = t.forced.objet; objetPop('', '', [t.forced], false); return; }
     if (k === 'btn') {
       if (!kind || kind === 'ordre') return act({ type: 'appuyer' });

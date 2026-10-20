@@ -70,7 +70,7 @@ Coopération et Briser la boucle sortent rarement dans les parties au hasard, ca
 **La silhouette dépend de la vérité cachée (décision d'Amine).** Un homme si la 18 est une vraie victime (A), une femme si c'est la complice (B), un enfant si c'est nous (C). Le joueur ne le sait pas à sa première partie : c'est un indice « devant ses yeux » qu'il comprend après coup. L'enfant est plus petit : sa tête apparaît plus bas derrière le verre. Les poses suivent la vie de la 18 (debout, courbée, accroupie) et les événements (paume sur la vitre, poing qui frappe, recul à la douleur). La pose au téléphone n'existe que pour l'homme (A) ; en B et C, la silhouette se décale.
 
 **Garde-fous G1 à G7** (détails dans `docs/ETUDE_SCENARIOS.md`) :
-- G1 : un tournevis forcé, ou un badge et un enregistrement remontés du sous-sol, sous les yeux de la caméra, sont repris par un gardien au début du moment suivant. Pas s'ils sont cachés sous la plaque, si la caméra est aveuglée entre-temps, ni s'ils ont été pris pendant la coupure ou depuis l'angle mort. Ce que le Système donne en récompense (B2) n'est jamais repris.
+- G1 (6.9) : retiré. Le badge et l'enregistrement remontés du sous-sol ne sont plus repris (la caméra de la chambre ne voit pas les archives). Seule l'inspection du moment 10 confisque encore.
 - G2 : descendre dans la trappe (« SUJET 17 NON VISIBLE »), préparer la sortie dérobée et remplacer le fusible font monter le soupçon de 1 (mêmes exceptions).
 - G3 : l'inspection (soupçon ≥ 2) retire la veste, remet la caméra face à la pièce et revisse la grille (le conduit se referme ; on peut le rouvrir). Une caméra coupée au boîtier reste coupée.
 - G4 : au verdict, 18 morte et conformité < 3 : variante de « Le Temps est écoulé », la porte de la 18 s'ouvre sur une pièce vide et quelqu'un d'autre entre.
@@ -194,3 +194,14 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - Quand la 18 tombe à 0 : « AUCUN SIGNAL REÇU. L'ÉVALUATION CONTINUE. », puis **plus aucun ordre d'appuyer** (les propositions B5 et M16 restent).
 - Il reste **3 moments** pour fuir ; au 4e, le verdict tombe (« Évaluation terminée. »).
 - **30 s sans geste** pendant ces moments (chrono invisible, relancé à chaque geste, en pause pendant la lecture d'un popup) : verdict immédiat.
+
+## 6.9 — chasse aux incohérences
+
+- Sortir par la porte ou la trappe demande une confirmation (« Rester » possible).
+- Descendre aux archives ou ramper vers EXT. pendant la coupure fait quitter la pièce tout de suite.
+- Absent de la pièce (archives, conduit) : les événements du moment s'appliquent sans être racontés.
+- Plus de descente aux archives à partir du moment 18 (on ne remonterait pas à temps).
+- « Préparer une sortie dérobée » prévient que la trappe ne mènera plus aux archives.
+- Moment 19 : une porte qui s'ouvre reste franchissable ; l'intervention n'annonce « une chance » que s'il en reste une.
+- Le mot de 16 se prend dès le moment 4, sans perdre de temps (geste gratuit).
+- Le plan de la 18 (T5) passe avant les autres appels au 18 : jamais deux « Appeler la chambre 18 ».

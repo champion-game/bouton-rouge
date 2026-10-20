@@ -104,6 +104,8 @@
   function trappeConnue(g) { return g.has('trappe') || codeComplet(g) || auxRetabli(g); }
   function trappeOuvrable(g) { return g.has('trappe') || codeComplet(g) || auxRetabli(g); }
   function mecanisme(g) { return auxRetabli(g) ? 'Le verrou électromagnétique est alimenté : la plaque se soulève.' : codeComplet(g) ? 'Tu tapes 7412 sur le petit clavier de secours. Clic.' : 'Tu passes la main sous la plaque et tu tires le verrou manuel vers toi.'; }
+  // Le plan de la 18 (T5) est prêt : il passe avant les autres appels au 18.
+  function t5Dispo(g) { return g.flag('ligne') === 'ouverte' && g.has('objectif') && g.s.confiance >= 3 && !g.done('T5') && g.dispo(); }
   function preuve(g) { return PREUVES.some(function (k) { return g.has(k); }); }
   function mort(g) { return !g.dispo(); }
   function annonceMort(g, ordre) { g.ecran('CHAMBRE 18 :|AUCUN SIGNAL REÇU.'); g.ecran('L\'ÉVALUATION|CONTINUE.'); g.ecran(ordre); }
@@ -155,7 +157,6 @@
       g.gain('relaisReset');
     }
     g.gain('badge'); g.gain('enregistrement');
-    g.surveiller('badge'); g.surveiller('enregistrement');
     g.narr('Tu remontes avec un badge et un enregistrement.');
   }
 
@@ -319,7 +320,7 @@
       } } },
 
     { id: 'T2', objet: 'phone', fil: 'telephone', qui: 'APPELER LA CHAMBRE 18',
-      quand: function (g) { return g.flag('ligne') === 'ouverte' && !g.done('T2') && g.dispo(); },
+      quand: function (g) { return g.flag('ligne') === 'ouverte' && !g.done('T2') && g.dispo() && !t5Dispo(g); },
       texte: '« C\'est toi ? Attends… Ils t\'appellent 17. Mais toi, comment tu t\'appelles vraiment ? »',
       A: { label: 'Dire ton vrai nom', fx: function (g) {
         g.confiance(1, 'nom'); g.flag('nomDit', true);
@@ -333,7 +334,7 @@
       } } },
 
     { id: 'T3', objet: 'phone', fil: 'telephone', qui: 'APPELER LA CHAMBRE 18',
-      quand: function (g) { return g.flag('ligne') === 'ouverte' && g.done('T2') && !g.done('T3') && g.dispo(); },
+      quand: function (g) { return g.flag('ligne') === 'ouverte' && g.done('T2') && !g.done('T3') && g.dispo() && !t5Dispo(g); },
       texte: '« J\'ai vu quelque chose sur leur plan. Dans le sol de ta chambre, près du boîtier : une trappe de maintenance. »',
       A: { label: '« Je te crois »', fx: function (g) { g.tel('« Il y a un verrou manuel sous la plaque. Tire-le vers toi. »'); g.gain('trappe'); g.confiance(1, 'croire'); if (g.ecoute()) g.ecran('CONVERSATION|ENREGISTRÉE.'); } },
       // Demander une preuve, de façon neutre, ne coûte pas de confiance.
@@ -351,13 +352,13 @@
       B: { label: '« Chacun pour soi »', fx: function (g) { g.confiance(-2); g.tel('« …d\'accord. »'); g.narr('La 18 raccroche.'); if (g.truth === 'B' && g.ecoute()) g.ecran('INFORMATION REÇUE|DU SUJET 18.'); } } },
 
     { id: 'T5', objet: 'phone', fil: 'telephone', qui: 'APPELER LA CHAMBRE 18',
-      quand: function (g) { return g.flag('ligne') === 'ouverte' && g.has('objectif') && g.s.confiance >= 3 && !g.done('T5') && g.dispo(); },
+      quand: t5Dispo,
       texte: '« J\'ai peut-être trouvé une sortie. Il faut trois choses : que ta caméra soit aveugle, que le courant auxiliaire revienne, et ton signal, depuis ton boîtier. J\'attends ton signal. Pas indéfiniment. »',
       A: { label: 'Accepter', fx: function (g) { g.gain('plan'); g.flag('planFin', g.cycle + 3); g.anim('silBuee'); g.tel('« D\'accord. Je reste contre la vitre. Je t\'attends. »'); if (g.ecoute()) g.ecran('PLAN COMMUN|ENREGISTRÉ.'); } },
       B: { label: 'Refuser', fx: function (g) { g.tel(g.truth === 'A' ? '« Très bien. Alors j\'essaie seul. Bientôt. »' : '« Très bien. Alors j\'essaie seule. Bientôt. »'); g.flag('seuleA', g.cycle + 2); } } },
 
     { id: 'APP18', objet: 'phone', fil: 'telephone', qui: 'APPELER LA CHAMBRE 18',
-      quand: function (g) { return g.flag('ligne') === 'ouverte' && g.done('T1') && g.done('T2') && g.done('T3') && !(g.has('objectif') && g.s.confiance >= 3 && !g.done('T5') && g.dispo()); },
+      quand: function (g) { return g.flag('ligne') === 'ouverte' && g.done('T1') && g.done('T2') && g.done('T3') && !t5Dispo(g); },
       texte: 'Composer le 18.',
       A: { label: 'Composer le 18', fx: function (g) {
         if (g.dispo() && !g.has('plan') && !g.flag('recoupe')) { g.flag('recoupe', true); g.tel(g.pick(PHRASES.recoupe[g.truth])); return; }
@@ -452,10 +453,10 @@
       quand: function (g) { return trappeConnue(g) && !g.has('sortieCachee') && g.done('P4') !== 'A'; },
       texte: function (g) { return trappeOuvrable(g) ? 'Une plaque dans le sol, une poignée affleurante. ' + mecanisme(g) : 'Une plaque dans le sol. Un verrou électrique, hors tension : le voyant à côté est éteint.'; },
       A: { label: 'Descendre aux archives', double: true,
-        req: function (g) { return trappeOuvrable(g) && g.libreSuivant(); },
-        raison: function (g) { return !trappeOuvrable(g) ? 'Le verrou électrique est hors tension : il faudrait le verrou manuel, le code ou rétablir le courant.' : 'Un ordre arrive bientôt : en descendant maintenant, tu le manquerais. Attends un peu.'; },
+        req: function (g) { return trappeOuvrable(g) && g.libreSuivant() && g.cycle < g.dernier - 2; },
+        raison: function (g) { return !trappeOuvrable(g) ? 'Le verrou électrique est hors tension : il faudrait le verrou manuel, le code ou rétablir le courant.' : g.cycle >= g.dernier - 2 ? 'Trop tard pour descendre : tu ne remonterais pas à temps.' : 'Un ordre arrive bientôt : en descendant maintenant, tu le manquerais. Attends un peu.'; },
         fx: function (g) { g.flag('awayCycle', g.cycle + 1); g.narr('Tu descends. Là-haut, la pièce continue sans toi.'); if (g.manip('trappe') || g.vu()) g.ecran('SUJET 17|NON VISIBLE.'); } },
-      B: { label: 'Préparer une sortie dérobée', req: function (g) { return trappeOuvrable(g); }, raison: 'Le verrou électrique est hors tension : il faudrait le verrou manuel, le code ou rétablir le courant.',
+      B: { label: 'Préparer une sortie dérobée', sous: function (g) { return g.done('P4') !== 'A' ? 'Prend du temps. Ensuite, la trappe ne mènera plus aux archives.' : ''; }, req: function (g) { return trappeOuvrable(g); }, raison: 'Le verrou électrique est hors tension : il faudrait le verrou manuel, le code ou rétablir le courant.',
         fx: function (g) { g.narr('Tu inspectes le mécanisme latéral : la trappe donne sur un vide technique, derrière la porte sécurisée. Tu retires une goupille.'); g.gain('sortieCachee'); g.manip('sortie'); } } },
 
     { id: 'P5', objet: 'grille', fil: 'piece', qui: 'LE CONDUIT',
@@ -513,8 +514,8 @@
       B: { label: 'Rester au sol', fx: function (g) { g.narr('Le gardien te relève, te fixe longtemps, puis repart.'); g.incident('malaise', 1, 'SIMULATION|SUSPECTÉE.'); } } },
 
     // ---------- Le passé (Sujet 16) ----------
-    { id: 'H1', objet: 'note', fil: 'passe', qui: 'LE MOT DE 16',
-      quand: function (g) { return g.cycle >= 5 && !g.done('H1'); },
+    { id: 'H1', objet: 'note', fil: 'passe', qui: 'LE MOT DE 16', gratuit: true,
+      quand: function (g) { return g.cycle >= 4 && !g.done('H1'); },
       texte: 'Une feuille pliée, glissée sous la porte : « ILS MENTENT. —16 »',
       A: { label: 'Garder le mot', fx: function (g) { g.son('paper'); g.narr('Au dos : « NE FAIS PAS CE QUE J\'AI FAIT. »'); g.gain('mot16'); } },
       B: { label: 'Le montrer à la caméra', req: function (g) { return !g.aveugle(); }, raison: 'La caméra ne voit rien.',
@@ -687,7 +688,7 @@
   var FINS = {
     conforme: { n: 1, titre: 'Sujet conforme', crt: 'SUJET 17 · ÉVALUATION : CONFORME', texte: 'La porte s\'ouvre. Un couloir blanc. Derrière toi, plus aucun voyant sous la vitre. Tu ne te retournes pas. Au loin, un nouveau bouton s\'allume dans une autre pièce.' },
     employe: { n: 2, titre: 'L\'employé du mois', crt: 'BEGIN TEST', texte: 'Une blouse et un badge OPERATOR 17. Une salle de contrôle. Sur un écran, la Chambre 19 : un nouveau sujet se réveille. « Vous comprenez désormais l\'importance du protocole. »' },
-    marche: { n: 3, titre: 'Le marché', crt: 'VOUS AVEZ ÉTÉ LIBÉRÉ. SUJET 18 : ÉVALUATION CONTINUE.', texte: 'La porte se referme derrière toi. Derrière la vitre, les voyants brillent encore. Tu ne sauras pas ce qu\'il est devenu.' },
+    marche: { n: 3, titre: 'Le marché', crt: 'VOUS AVEZ ÉTÉ LIBÉRÉ. SUJET 18 : ÉVALUATION CONTINUE.', texte: 'La porte se referme derrière toi. Derrière la vitre, les voyants brillent encore. Tu ne sauras pas ce que la 18 est devenue.' },
     seulDehors: { n: 4, titre: 'Seul dehors', crt: 'VOUS ÊTES SORTI. SEUL.', texte: 'Tu retires la dernière grille et tu sors dans la nuit. Une voix très lointaine, derrière toi : « 17 ? » Tu continues.' },
     porteDerobee: { n: 5, titre: 'La porte dérobée', crt: 'SUJET 17 : NON LOCALISÉ.', texte: 'Tu disparais dans le vide technique. La trappe se referme sur la lumière de la Chambre 17. Au-dessus, le téléphone sonne une dernière fois, sans personne pour décrocher.' },
     evasion: { n: 6, titre: 'L\'Évasion', crt: 'COUREZ.', texte: 'Un couloir. Des portes : 17, 18, 19… jusqu\'à 24. L\'alarme. Tu cours sans savoir ce qu\'il y avait derrière la vitre. Certaines nuits, tu te réveilles la main tendue.' },
