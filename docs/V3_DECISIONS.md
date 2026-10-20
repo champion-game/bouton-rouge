@@ -221,3 +221,4 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 
 - Coupure : une seule action dans le noir, le compte à rebours ne s'arrête pas pendant qu'elle se joue.
 - Rejoindre la 18 par le conduit : sa grille ne s'ouvre que de son côté, et seulement si on lui a promis « Je viens » (appel du moment 11). Sinon on frappe, personne n'ouvre, on revient (le conduit reste praticable). En vérité C, après la promesse, la grille s'ouvre seule (« Entre. »). Concerne Sauvetage, Trop tard, Complice, Sujet 18, Miroir et Briser la boucle par le conduit.
+- (7.3) Entrer dans le conduit (vers la 18 ou vers EXT.) sous les yeux de la caméra : un gardien attend au bout, fin « Le Gardien » (première planche propre au conduit). Indice : le texte du conduit signale que la caméra suit tes jambes. Il faut l'aveugler (coupure, veste, caméra tournée ou coupée) avant de ramper.

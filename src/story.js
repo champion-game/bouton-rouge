@@ -160,8 +160,16 @@
     g.narr('Tu remontes avec un badge et un enregistrement.');
   }
 
+  // Entrer dans le conduit sous les yeux de la caméra : un gardien attend de l'autre côté.
+  function conduitVu(g) {
+    if (!g.vu()) return false;
+    g.narr('Tu rampes. Au bout du conduit, une lampe torche s\'allume. Un gardien t\'attendait : la caméra t\'a vu entrer.');
+    g.flag('variante', 'conduit'); g.fin('gardien');
+    return true;
+  }
   // Rejoindre la Chambre 18 par le conduit.
   function rencontre18(g) {
+    if (conduitVu(g)) return;
     g.narr('Tu rampes vers la 18. La respiration devient plus forte. Tu arrives derrière une grille.');
     // La grille ne s'ouvre que du côté de la 18 : il faut lui avoir promis de venir (« Je viens »).
     if (!g.has('objectif')) {
@@ -472,10 +480,10 @@
 
     { id: 'P5', objet: 'grille', fil: 'piece', qui: 'LE CONDUIT',
       quand: function (g) { return g.has('conduit') && !g.done('P5'); },
-      texte: 'Après quelques mètres, une bifurcation. Sur la tôle : « 18 → » et « ← EXT. ».',
+      texte: function (g) { return 'Après quelques mètres, une bifurcation. Sur la tôle : « 18 → » et « ← EXT. ».' + (g.vu() ? ' Derrière toi, le voyant de la caméra suit tes jambes.' : ''); },
       A: { label: 'Vers la 18', fx: rencontre18 },
       B: { label: 'Vers EXT.', sous: 'Au bout, une grille vissée : il faudra encore du temps.', req: function (g) { return g.libreSuivant(); }, raison: 'Un ordre arrive bientôt : tu le manquerais.',
-        fx: function (g) { g.flag('ext', g.cycle + 1); g.narr('Tu rampes vers « EXT. ». L\'air devient froid. Au bout : une grille, vissée de l\'extérieur… et de l\'intérieur.'); } } },
+        fx: function (g) { if (conduitVu(g)) return; g.flag('ext', g.cycle + 1); g.narr('Tu rampes vers « EXT. ». L\'air devient froid. Au bout : une grille, vissée de l\'extérieur… et de l\'intérieur.'); } } },
     { id: 'EXT', objet: 'grille', fil: 'piece', impose: true, qui: 'LA GRILLE EXTÉRIEURE',
       texte: 'La grille du bout du conduit. Quatre vis. Derrière : la nuit.',
       A: { label: 'Dévisser et sortir', req: function (g) { return g.has('tournevis'); }, raison: 'Sans outil, impossible de l\'ouvrir.',
@@ -815,7 +823,7 @@
       ['mur', 'Ensuite, une pièce sans vitre, sans bouton, sans téléphone. Personne ne t\'a dit pour combien de temps.']
     ],
     gardien: [
-      ['porte_ouverte', 'Tu te relèves et tu cours. Deux gardiens. Le deuxième t\'attendait.'],
+      ['porte_ouverte', { A: 'Tu te relèves et tu cours. Deux gardiens. Le deuxième t\'attendait.', conduit: 'Le conduit. Une lampe torche dans les yeux. Une main t\'attrape par le col et te tire dehors.' }],
       ['sol', 'Le sol. Un genou dans ton dos. Une odeur de désinfectant.'],
       ['camera', 'Quand l\'image revient : des sangles, une chaise. La caméra, à vingt centimètres de ton visage.'],
       ['bouton', '« Nous allons recommencer. » Sur le bureau devant toi, le bouton rouge. Plus près qu\'avant.']
