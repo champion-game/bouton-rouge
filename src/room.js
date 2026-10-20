@@ -87,6 +87,16 @@
   '<linearGradient id="aoDown" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".6"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>' +
   '<linearGradient id="sideL" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".82"/><stop offset="1" stop-color="#000" stop-opacity=".42"/></linearGradient>' +
   '<linearGradient id="sideR" x1="1" x2="0"><stop offset="0" stop-color="#000" stop-opacity=".82"/><stop offset="1" stop-color="#000" stop-opacity=".42"/></linearGradient>' +
+  // néon froid au-dessus de la vitre, reflets et ombres de contact des objets du bureau
+  '<linearGradient id="neonTubeG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#58d9c8"/><stop offset=".45" stop-color="#f4fffd"/><stop offset="1" stop-color="#3fbfae"/></linearGradient>' +
+  '<radialGradient id="neonG"><stop offset="0" stop-color="#9ff7ea" stop-opacity=".55"/><stop offset=".4" stop-color="#6fe8d6" stop-opacity=".18"/><stop offset="1" stop-color="#6fe8d6" stop-opacity="0"/></radialGradient>' +
+  '<radialGradient id="neonSpillG"><stop offset="0" stop-color="#7ff0de" stop-opacity=".15"/><stop offset=".5" stop-color="#7ff0de" stop-opacity=".05"/><stop offset="1" stop-color="#7ff0de" stop-opacity="0"/></radialGradient>' +
+  '<linearGradient id="neonLiseG" x1="0" x2="1"><stop offset="0" stop-color="#bff9f0" stop-opacity="0"/><stop offset=".5" stop-color="#bff9f0" stop-opacity="1"/><stop offset="1" stop-color="#bff9f0" stop-opacity="0"/></linearGradient>' +
+  '<linearGradient id="neonLiseV" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bff9f0" stop-opacity=".9"/><stop offset="1" stop-color="#bff9f0" stop-opacity="0"/></linearGradient>' +
+  '<radialGradient id="monG"><stop offset="0" stop-color="#a8f0da" stop-opacity=".2"/><stop offset="1" stop-color="#a8f0da" stop-opacity="0"/></radialGradient>' +
+  '<linearGradient id="platFade" gradientUnits="userSpaceOnUse" x1="0" y1="520" x2="0" y2="556"><stop offset="0" stop-color="#fff" stop-opacity=".32"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+  '<mask id="mPlat" maskUnits="userSpaceOnUse" x="440" y="490" width="800" height="80"><rect x="457" y="498" width="756" height="58" fill="url(#platFade)"/></mask>' +
+  '<filter id="reflBlur" x="-5%" y="-10%" width="110%" height="120%"><feGaussianBlur stdDeviation="1.3"/></filter>' +
   '<pattern id="scan" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="2.5" fill="#000" opacity=".22"/></pattern>' +
   '</defs>' +
   '<g id="bg"></g>' +
@@ -143,13 +153,15 @@
   '<polygon id="cone" points="810,70 866,70 1140,850 530,850" fill="url(#coneG)" opacity=".55" filter="url(#coneBlur)" style="pointer-events:none"/>' +
   '<ellipse cx="836" cy="818" rx="340" ry="34" fill="url(#shadowG)" style="pointer-events:none"/>' +
   ombre(560, 92, 1090, 366, 0.7) +
-  '<g class="hs" data-k="monitor">' + I('', 'moniteur', 560, 92, 530, 274.5) + '</g>' + lisere(600, 1050, 92.5, 0.55) +
+  '<g class="hs" data-k="monitor">' + I('', 'moniteur', 560, 92, 530, 274.5) + '</g>' + '<ellipse cx="824" cy="384" rx="240" ry="36" fill="url(#monG)" style="pointer-events:none"/>' + lisere(600, 1050, 92.5, 0.55) +
   '<g class="hs" data-k="light">' + I('', 'lampe', 745, -130, 187.3, 206) +
   '<circle id="bulb" cx="838" cy="68" r="30" fill="url(#bulbG)" style="pointer-events:none"/>' +
   '<g class="lit" style="pointer-events:none"><circle cx="838" cy="70" r="240" fill="url(#bulbG)" opacity=".16"/><ellipse cx="838" cy="63" rx="74" ry="9" fill="url(#bulbG)"/><ellipse cx="838" cy="63" rx="52" ry="5" fill="#fffdf6" opacity=".9"/></g></g>' +
   // sol mouillé : reflet du bureau et éclat de la lampe
   '<g style="pointer-events:none"><g mask="url(#reflM)"><use href="#desk" transform="translate(0 1632) scale(1 -1)"/></g>' +
   '<g class="lit"><ellipse cx="836" cy="884" rx="300" ry="70" fill="url(#sheenG)"/><ellipse cx="836" cy="890" rx="70" ry="120" fill="url(#sheenG)"/></g></g>' +
+  '<g style="pointer-events:none"><ellipse cx="512" cy="807" rx="52" ry="6" fill="url(#shadowG)"/><ellipse cx="840" cy="808" rx="104" ry="7" fill="url(#shadowG)"/><ellipse cx="1098" cy="808" rx="116" ry="7" fill="url(#shadowG)"/>' +
+  '<ellipse id="btnFloor" cx="837" cy="880" rx="70" ry="46" fill="url(#glowG)" opacity=".06"/></g>' +
   '<g id="desk">' +
   // bureau modulaire (pack 20/10, canevas 2000 × 1000 réduit d'un bloc à 0,4725) : fond, pied gravé, tiroir, compartiment, plateau
   I('', 'bureau3_fond', 471.2, 566.9, 713.5, 241, ' style="pointer-events:none"') +
@@ -160,6 +172,9 @@
   I('', 'bureau3_plateau', 457, 496, 756, 80.3, ' style="pointer-events:none"') + lisere(500, 1170, 496.5, 0.4) +
   '<ellipse cx="836" cy="518" rx="270" ry="40" fill="url(#poolG)" style="pointer-events:none"/>' +
   '<g style="pointer-events:none"><ellipse class="lit" cx="836" cy="508" rx="230" ry="20" fill="url(#specG)"/><ellipse cx="837" cy="522" rx="135" ry="26" fill="url(#glowG)" opacity=".4"/></g>' +
+  '<g style="pointer-events:none"><ellipse cx="824" cy="508" rx="290" ry="16" fill="url(#monG)"/>' +
+  '<g mask="url(#mPlat)" filter="url(#reflBlur)" opacity=".55"><use href="#phoneInner" transform="translate(0 1090) scale(1 -1)"/><use href="#btnImg" transform="translate(0 1092) scale(1 -1)"/><use href="#mugImg" transform="translate(0 1052) scale(1 -1)"/></g>' +
+  '<ellipse cx="580" cy="543" rx="82" ry="7" fill="url(#shadowG)"/><ellipse cx="837" cy="545" rx="80" ry="7" fill="url(#shadowG)"/><ellipse cx="1046" cy="525" rx="36" ry="5" fill="url(#shadowG)"/></g>' +
   '<ellipse id="btnGlow" cx="837" cy="495" rx="120" ry="60" fill="url(#glowG)" opacity="0" style="pointer-events:none"/>' +
   '<g id="btn" class="hs" data-k="btn" role="button" tabindex="0" aria-label="Appuyer sur le bouton rouge">' +
   I('btnImg', 'bouton', BTN.x, BTN.y, BTN.w, BTN.h) + I('btnImg2', 'bouton_enfonce', BTN.x, BTN.y, BTN.w, BTN.h, ' opacity="0"') + '</g>' +
@@ -167,11 +182,22 @@
   '<g id="phone" class="hs" data-k="phone"><rect x="500" y="440" width="172" height="104" fill="transparent"/><g id="phoneInner">' +
   I('telImg', 'tel_pose', 479.3, 445.5, 188.4, 99.6) + I('telImg2', 'tel_decroche', 479.3, 445.5, 188.4, 99.6, ' opacity="0"') + '</g>' +
   '<circle id="ecouteLed" cx="640" cy="520" r="4.5" fill="#ff3b30" class="pulse" opacity="0"/></g>' +
-  '<g class="hs" data-k="mug"><rect x="998" y="452" width="90" height="82" fill="transparent"/>' + I('', 'tasse', 1010, 468, 65.3, 58) + '</g>' +
+  '<g class="hs" data-k="mug"><rect x="998" y="452" width="90" height="82" fill="transparent"/>' + I('mugImg', 'tasse', 1010, 468, 65.3, 58) + '</g>' +
   '</g></g>' +
   // ombre des coins, lumière et alarme
   // carte d'ombre tirée de l'image de référence : seule la lampe éclaire vraiment la pièce
   I('ombre', 'ombre', -400, -220, 2472, 1381, ' style="pointer-events:none"') +
+  // néon froid au-dessus de la vitre : il grésille de temps en temps, plus souvent quand le soupçon monte
+  '<g id="gNeon" style="pointer-events:none"><rect x="1190" y="22" width="5" height="14" fill="#151a19"/><rect x="1395" y="22" width="5" height="14" fill="#151a19"/>' +
+  '<rect x="1166" y="32" width="258" height="11" rx="2" fill="#1b201f" stroke="#070909" stroke-width="1.5"/>' +
+  '<g class="lit"><g id="neonOn">' +
+  '<ellipse cx="1295" cy="70" rx="340" ry="280" fill="url(#neonSpillG)"/>' +
+  '<ellipse cx="1295" cy="47" rx="175" ry="26" fill="url(#neonG)"/>' +
+  '<rect x="1172" y="43" width="246" height="7" rx="3.5" fill="url(#neonTubeG)"/>' +
+  '<rect x="1118" y="71" width="354" height="3" fill="url(#neonLiseG)" opacity=".55"/>' +
+  '<rect x="1518" y="208" width="2" height="190" fill="url(#neonLiseV)" opacity=".35"/>' +
+  '<ellipse cx="1295" cy="830" rx="46" ry="150" fill="url(#neonSpillG)" opacity=".9"/>' +
+  '</g></g></g>' +
   '<rect id="vig" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="url(#vigG)" style="pointer-events:none"/>' +
   '<rect id="grain" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="url(#grainP)" opacity=".05" style="pointer-events:none"/>' +
   '<rect id="tint" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="#ff1e1e" opacity="0" style="pointer-events:none"/>' +
@@ -184,7 +210,8 @@
   '<text id="journal" x="' + (SC.x + 10) + '" y="' + (SC.y + SC.h - 9) + '" font-family="VT323, monospace" font-size="15" fill="#7fd9bc" style="opacity:0"></text>' +
   '<rect x="' + SC.x + '" y="' + SC.y + '" width="' + SC.w + '" height="' + SC.h + '" rx="6" fill="url(#scan)"/>' +
   '<g class="lit" clip-path="url(#screenClip)"><rect x="' + SC.x + '" y="' + SC.y + '" width="' + SC.w + '" height="' + SC.h + '" fill="url(#glareG)"/>' +
-  '<ellipse cx="' + SC.cx + '" cy="' + SC.y + '" rx="130" ry="18" fill="#fff3d6" opacity=".07"/></g>' +
+  '<ellipse cx="' + SC.cx + '" cy="' + SC.y + '" rx="130" ry="18" fill="#fff3d6" opacity=".07"/>' +
+  '<polygon points="' + (SC.x + SC.w - 95) + ',' + (SC.y + SC.h) + ' ' + (SC.x + SC.w - 60) + ',' + (SC.y + SC.h) + ' ' + (SC.x + SC.w - 5) + ',' + SC.y + ' ' + (SC.x + SC.w - 40) + ',' + SC.y + '" fill="#9ff7ea" opacity=".045"/></g>' +
   '</g>' +
   '<rect id="flash" x="0" y="0" width="' + W0 + '" height="' + H0 + '" fill="#fff" opacity="0" style="pointer-events:none"/>' +
   '</svg>';
@@ -237,7 +264,7 @@
     var floorY = SOL + dy;
     ['gCenter', 'gCenter2', 'gTrappe'].forEach(function (id) { shift(id, dx, dy); });
     ['gDoor', 'gNote'].forEach(function (id) { shift(id, dx - sp, dy); });
-    ['gWin', 'gSig', 'gBox', 'gCam', 'gGrille'].forEach(function (id) { shift(id, dx + sp, dy); });
+    ['gWin', 'gSig', 'gBox', 'gCam', 'gGrille', 'gNeon'].forEach(function (id) { shift(id, dx + sp, dy); });
     svg.setAttribute('viewBox', '0 0 ' + W.toFixed(1) + ' ' + H.toFixed(1));
     attr('ombre', 'x', dx - 400); attr('ombre', 'y', dy - 220);
     ['tint', 'dark', 'flash', 'vig', 'grain'].forEach(function (id) { attr(id, 'width', W); attr(id, 'height', H); });
@@ -315,6 +342,8 @@
     src('levAux', s.flags.aux === 'defaut' ? 'levier_bas' : 'levier_haut');
     // bouton
     attr('btnGlow', 'opacity', info.ordre ? 0.8 : 0); attr('btnGlow', 'class', info.ordre ? 'pulse' : '');
+    attr('btnFloor', 'opacity', info.ordre ? 0.3 : 0.06); attr('btnFloor', 'class', info.ordre ? 'pulse' : '');
+    nerfs = s.soupcon || 0; neon();
     door(info.porteOuverte);
     // lumière
     usure = s.stats.presses || 0;
@@ -454,6 +483,18 @@
     curiosite: function () { door(false); flash(); }
   };
   function fin(id) { resetFx(); if (FIN_FX[id]) FIN_FX[id](); }
+
+  // Le néon grésille au hasard : toutes les 8 à 20 s au calme, bien plus souvent quand le soupçon monte.
+  var nerfs = 0, neonT = null;
+  function neon() {
+    if (neonT || reduce) return;
+    neonT = setTimeout(function () {
+      neonT = null;
+      var seq = Math.random() < 0.5 ? [0.15, 1, 0.05, 0.8, 1] : [0.4, 1];
+      seq.forEach(function (o, i) { later2(i * 70, function () { attr('neonOn', 'opacity', o); }); });
+      neon();
+    }, (8000 + Math.random() * 12000) / (1 + nerfs));
+  }
 
   // ---------- animations ----------
   function press() {
