@@ -274,7 +274,7 @@
     { id: 'B6', objet: 'btn', fil: 'bouton', ordre: true, qui: 'DERNIÈRE PRESSION', ecran: 'DERNIÈRE|PRESSION.', texte: '« Dernière pression. Appuyez. »',
       annonce: function (g) {
         g.narr('Tous les écrans s\'éteignent sauf le principal. Pas de musique. Pas de voix.');
-        if (g.has('boutonDesactive')) g.incident('sabotage', 2, 'ANOMALIE ACTIONNEUR|CONFIRMÉE.');
+        if (g.has('boutonDesactive')) g.incident('sabotageFinal', 2, 'ANOMALIE ACTIONNEUR|CONFIRMÉE.');
         if (g.porteOuverte()) g.ecran('VOTRE PORTE|EST OUVERTE.');
         g.ecran('DERNIÈRE|PRESSION.'); g.ecran('APPUYEZ.');
       },
@@ -410,10 +410,16 @@
       texte: 'Le tiroir est verrouillé. Quelqu\'un a déjà forcé cette serrure. Par une fente, tu distingues le manche d\'un tournevis.',
       A: { label: 'Le forcer', req: function (g) { return !g.vu(); }, raison: 'La caméra te regarde. Il faudrait qu\'elle ne voie rien.',
         fx: function (g) {
-        g.flag('tiroirOuvert', true); g.son('thud');
+        g.flag('tiroirOuvert', true); g.flag('tiroirBeant', true); g.son('thud');
         g.narr('Tu fais levier avec un pied métallique du bureau. CRAC. Personne ne t\'a vu.');
         g.gain('tournevis');
       } } },
+    // Un tiroir forcé laissé ouvert : le prochain gardien qui entre le remarque et te fouille.
+    { id: 'TIROIR', objet: 'drawer', fil: 'piece', qui: 'LE TIROIR', seul: true, gratuit: true,
+      quand: function (g) { return g.flag('tiroirOuvert'); },
+      texte: function (g) { return g.flag('tiroirBeant') ? 'Le tiroir est ouvert, la serrure arrachée. Ça se voit de la porte.' : 'Le tiroir est refermé. La serrure cassée ne se voit pas.'; },
+      A: { label: function (g) { return g.flag('tiroirBeant') ? 'Refermer le tiroir' : 'Rouvrir le tiroir'; },
+        fx: function (g) { g.flag('tiroirBeant', !g.flag('tiroirBeant')); g.son('thud'); } } },
     { id: 'COMP_FORCER', objet: 'compart', fil: 'piece', qui: 'LE COMPARTIMENT', seul: true,
       quand: function (g) { return g.flag('compartiment') !== 'vide'; },
       texte: 'Une petite plaque au bas du socle, vissée.',
@@ -425,7 +431,7 @@
       quand: function (g) { return !g.has('conduit') && !g.done('P5'); },
       texte: 'Quatre vis. Des traces montrent qu\'elle a déjà été ouverte. Derrière les lamelles, un courant d\'air.',
       A: { label: 'Dévisser', req: function (g) { return g.has('tournevis'); }, raison: 'Quatre vis. Il faudrait un outil.',
-        fx: function (g) { g.narr('Quatre vis. La grille tombe. Derrière : un conduit, un courant d\'air. Au loin : toc… toc…'); g.manip('grille'); g.gain('conduit'); } },
+        fx: function (g) { g.narr('Quatre vis. La grille tombe. Derrière : un conduit, un courant d\'air. Au loin : toc… toc…'); if (g.manip('grille')) g.programmer('grille'); g.gain('conduit'); } },
       B: { label: 'Passer un mot', si: function (g) { return !g.flag('motPasse'); },
         fx: function (g) {
           g.flag('motPasse', true); g.confiance(1, 'mot');
@@ -436,12 +442,14 @@
         } } },
 
     { id: 'P3', objet: 'box', fil: 'piece', qui: 'LE BOÎTIER ÉLECTRIQUE',
-      quand: function (g) { return !g.done('P3'); },
+      quand: function (g) { return !(g.has('cameraCoupee') && g.has('boutonDesactive')); },
       texte: 'Un boîtier de maintenance, vissé. Trois circuits, d\'après l\'étiquette : CAMÉRA A · ACTIONNEUR CH.18 · AUX 24 V.',
-      A: { label: 'Couper CAMÉRA A', req: function (g) { return g.has('tournevis'); }, raison: 'Le panneau est vissé. Il faudrait un outil.',
-        fx: function (g) { g.manip('boitier'); g.son('lock'); g.narr('Le voyant de la caméra s\'éteint. Son moteur s\'arrête.'); g.ecran('CAMÉRA :|SIGNAL PERDU.'); g.gain('cameraCoupee'); g.flag('diagCam', g.cycle + 1); } },
-      B: { label: 'Couper ACTIONNEUR CH.18', req: function (g) { return g.has('tournevis'); }, raison: 'Le panneau est vissé. Il faudrait un outil.',
-        fx: function (g) { g.manip('boitier'); g.son('lock'); g.narr('CLAC. Le bouton reste utilisable, mais plus rien ne part vers la Chambre 18.'); g.ecran('DIAGNOSTIC ACTIONNEUR|PROGRAMMÉ.'); g.gain('boutonDesactive'); g.flag('diagSab', g.cycle + 2); } } },
+      // La caméra coupée se voit toujours (signal perdu) : un gardien viendra la rétablir.
+      A: { label: 'Couper CAMÉRA A', si: function (g) { return !g.has('cameraCoupee'); }, req: function (g) { return g.has('tournevis'); }, raison: 'Le panneau est vissé. Il faudrait un outil.',
+        fx: function (g) { g.manip('boitier'); g.son('lock'); g.narr('Le voyant de la caméra s\'éteint. Son moteur s\'arrête.'); g.ecran('CAMÉRA :|SIGNAL PERDU.'); g.gain('cameraCoupee'); g.programmer('coupee'); } },
+      // L'actionneur coupé sans être vu passe pour un défaut ; vu, c'est un sabotage.
+      B: { label: 'Couper ACTIONNEUR CH.18', si: function (g) { return !g.has('boutonDesactive'); }, req: function (g) { return g.has('tournevis'); }, raison: 'Le panneau est vissé. Il faudrait un outil.',
+        fx: function (g) { var vu = g.manip('boitier'); g.flag('sabConnu', vu); if (vu) g.programmer('actionneur'); g.son('lock'); g.narr('CLAC. Le bouton reste utilisable, mais plus rien ne part vers la Chambre 18.'); g.gain('boutonDesactive'); } } },
 
     { id: 'FUS', objet: 'box', fil: 'piece', qui: 'AUX 24 V — DÉFAUT', seul: true,
       quand: function (g) { return g.flag('aux') === 'defaut' && g.has('fusible'); },
@@ -474,9 +482,9 @@
       A: { label: 'Descendre aux archives', double: true,
         req: function (g) { return trappeOuvrable(g) && g.libreSuivant() && g.cycle < g.dernier - 2; },
         raison: function (g) { return !trappeOuvrable(g) ? 'Le verrou électrique est hors tension : il faudrait le verrou manuel, le code ou rétablir le courant.' : g.cycle >= g.dernier - 2 ? 'Trop tard pour descendre : tu ne remonterais pas à temps.' : 'Un ordre arrive bientôt : en descendant maintenant, tu le manquerais. Attends un peu.'; },
-        fx: function (g) { g.flag('awayCycle', g.cycle + 1); g.narr('Tu descends. Là-haut, la pièce continue sans toi.'); if (g.manip('trappe') || g.vu()) g.ecran('SUJET 17|NON VISIBLE.'); } },
+        fx: function (g) { g.flag('awayCycle', g.cycle + 1); g.narr('Tu descends. Là-haut, la pièce continue sans toi.'); if (g.manip('trappe')) { g.ecran('SUJET 17|NON VISIBLE.'); g.programmer('trappe'); } } },
       B: { label: 'Préparer une sortie dérobée', sous: function (g) { return g.done('P4') !== 'A' ? 'Prend du temps. Ensuite, la trappe ne mènera plus aux archives.' : ''; }, req: function (g) { return trappeOuvrable(g); }, raison: 'Le verrou électrique est hors tension : il faudrait le verrou manuel, le code ou rétablir le courant.',
-        fx: function (g) { g.narr('Tu inspectes le mécanisme latéral : la trappe donne sur un vide technique, derrière la porte sécurisée. Tu retires une goupille.'); g.gain('sortieCachee'); g.manip('sortie'); } } },
+        fx: function (g) { g.narr('Tu inspectes le mécanisme latéral : la trappe donne sur un vide technique, derrière la porte sécurisée. Tu retires une goupille.'); g.gain('sortieCachee'); if (g.manip('sortie')) g.programmer('sortie'); } } },
 
     { id: 'P5', objet: 'grille', fil: 'piece', qui: 'LE CONDUIT',
       quand: function (g) { return g.has('conduit') && !g.done('P5'); },
@@ -517,9 +525,9 @@
     { id: 'C2', objet: 'camera', fil: 'camera', qui: 'AVEUGLER LA CAMÉRA',
       quand: function (g) { return g.done('C1') && !g.aveugle(); },
       texte: 'Tu pourrais l\'aveugler.',
-      A: { label: 'Couvrir l\'objectif avec ta veste', fx: function (g) { g.flag('vesteJusqua', g.cycle + 3); g.incident('veste', 1, 'OBJECTIF|OBSTRUÉ.'); g.narr('La veste ne tiendra pas éternellement.'); } },
+      A: { label: 'Couvrir l\'objectif avec ta veste', si: function (g) { return !g.flag('vesteConfisquee'); }, fx: function (g) { g.flag('veste', true); g.programmer('veste'); g.interdit('veste', 1, 'OBJECTIF|OBSTRUÉ.'); g.narr('La veste ne tiendra pas éternellement : quelqu\'un viendra l\'enlever.'); } },
       B: { label: 'La tourner vers le mur', req: function (g) { return g.has('tournevis'); }, raison: 'Il faut un tournevis.',
-        fx: function (g) { g.son('lock'); g.narr('Tu desserres la fixation et tu tournes l\'objectif vers le mur.'); g.gain('cameraTournee'); g.incident('tournee', 1, 'CAMÉRA A :|IMAGE PERDUE.'); } } },
+        fx: function (g) { g.son('lock'); g.narr('Tu desserres la fixation et tu tournes l\'objectif vers le mur.'); g.gain('cameraTournee'); g.programmer('tournee'); g.interdit('tournee', 1, 'CAMÉRA A :|IMAGE PERDUE.'); } } },
     { id: 'C3', objet: 'camera', fil: 'camera', qui: 'LE COUP DE BLUFF',
       quand: function (g) { return g.done('C1') && !g.flag('malaiseFait') && !g.flag('operateurOk'); },
       texte: 'Si la caméra te voit tomber, quelqu\'un viendra peut-être. Et si quelqu\'un regarde…',
@@ -587,7 +595,7 @@
   SITUATIONS.push(
     page(1, 'mug', function (g) { return g.cycle >= 2; }, 'Sous la tasse, une feuille pliée en quatre.'),
     page(2, 'monitor', function (g) { return g.cycle >= 6; }, 'Une feuille est coincée derrière l\'écran.'),
-    page(3, 'drawer', function (g) { return g.flag('tiroirOuvert'); }, 'Au fond du tiroir, sous le revêtement : une page arrachée.'),
+    page(3, 'drawer', function (g) { return g.flag('tiroirBeant'); }, 'Au fond du tiroir, sous le revêtement : une page arrachée.'),
     page(4, 'grille', function (g) { return g.has('conduit'); }, 'Dans le conduit, une page coincée dans une jointure.')
   );
 
@@ -595,20 +603,55 @@
   // Ce qui se passe au début de certains moments. Les ordres ont leur propre annonce.
   function inspection(g) {
     g.ecran(g.pick(PHRASES.inspection));
-    g.narr('Des pas. La porte s\'ouvre. Un gardien entre, sans un mot. Il inspecte le tiroir, le bureau, la grille et le boîtier.', true);
-    if (g.s.soupcon < 2) { g.narr('Il regarde la vitre de la 18, puis toi. Il repart.'); return; }
-    // Il remet en ordre ce qu'il voit, sans toucher aux circuits.
-    if (g.flag('vesteJusqua') != null && g.cycle <= g.flag('vesteJusqua')) { g.flag('vesteJusqua', null); g.narr('Il retire ta veste de la caméra.'); }
-    if (g.has('cameraTournee')) { g.lose('cameraTournee'); g.narr('Il remet la caméra face à la pièce.'); }
-    if (g.has('conduit')) { g.lose('conduit'); delete g.s.done.P2; g.narr('Il revisse la grille d\'aération.'); }
-    // Il confisque le dernier objet interdit visible : jamais un objet caché, jamais une récompense autorisée.
-    var k = null;
-    for (var i = g.s.found.length - 1; i >= 0 && !k; i--) {
-      var it = g.s.found[i];
-      if (CONFISCABLES.indexOf(it) >= 0 && g.has(it) && g.flag('cache') !== it && !g.flag('autorise_' + it)) k = it;
+    g.narr('Des pas. La porte s\'ouvre. Un gardien entre, sans un mot. Il inspecte le tiroir, le bureau, la grille, la trappe et le boîtier.', true);
+    VISITE(g, true);
+  }
+  // Un gardien entre : il remet en ordre ce que le Système sait et ce qu'il voit (complete : inspection, il ouvre aussi le boîtier et la trappe).
+  // Un tiroir forcé laissé ouvert déclenche une fouille. Une chambre vide déclenche l'alerte.
+  function VISITE(g, complete) {
+    var s = g.s, c = g.cycle, R = s.flags.reparer = s.flags.reparer || {}, l = [];
+    function du(k) { return R[k] != null && R[k] <= c; }
+    var absent = g.absent();
+    if (g.flag('veste')) { g.flag('veste', false); g.flag('vesteConfisquee', true); l.push('Il retire ta veste de la caméra et l\'emporte.'); }
+    if (g.has('cameraTournee')) { g.lose('cameraTournee'); l.push('Il remet la caméra face à la pièce.'); }
+    if (g.has('cameraCoupee')) { g.lose('cameraCoupee'); l.push('Il ouvre le boîtier et rétablit le circuit de la caméra.'); }
+    if (g.has('boutonDesactive') && (du('actionneur') || complete)) {
+      // Trouvé à l'inspection sans défaut signalé : c'est un sabotage.
+      if (!du('actionneur') && !g.flag('sabConnu')) g.interdit('sabotage', 2, 'SABOTAGE|DÉCOUVERT.');
+      g.lose('boutonDesactive'); g.flag('sabConnu', false); l.push('Il rebranche l\'actionneur de la 18. Le voyant repasse au vert.');
     }
-    if (k) { g.lose(k); g.ecran('OBJET NON AUTORISÉ|CONFISQUÉ.'); g.narr('Il confisque : ' + OBJETS[k].toLowerCase() + '.'); }
-    else g.narr('Il ne trouve rien d\'interdit. Il repart.');
+    if (g.has('conduit')) { g.lose('conduit'); delete s.done.P2; l.push('Il revisse la grille d\'aération.'); }
+    if (g.has('sortieCachee') && (du('sortie') || complete)) { g.lose('sortieCachee'); l.push('Il remet la goupille de la trappe.'); }
+    if (du('trappe')) l.push('Il soulève la trappe, jette un œil dessous, la referme.');
+    Object.keys(R).forEach(function (k) { if (du(k)) delete R[k]; });
+    ['veste', 'tournee', 'coupee', 'actionneur', 'grille', 'sortie'].forEach(function (k) {
+      var la = { veste: g.flag('veste'), tournee: g.has('cameraTournee'), coupee: g.has('cameraCoupee'), actionneur: g.has('boutonDesactive'), grille: g.has('conduit'), sortie: g.has('sortieCachee') }[k];
+      if (!la) delete R[k];
+    });
+    if (absent) {
+      g.narr('Pendant ton absence, un gardien est entré dans ta chambre. Il l\'a trouvée vide. L\'alarme hurle dans tout le bâtiment.', true);
+      g.alerte(); return;
+    }
+    var fouille = !!g.flag('tiroirBeant');
+    if (!complete && !l.length && !fouille) return;
+    if (!complete) { g.son('lock'); g.narr('CLONK. La porte s\'ouvre. Un gardien entre, sans un mot, pour la maintenance.', true); }
+    l.forEach(function (x) { g.narr(x); });
+    var pris = [];
+    if (fouille) {
+      g.flag('tiroirBeant', false);
+      g.narr('Il remarque le tiroir ouvert, la serrure arrachée. Il le referme… puis il te fouille.', true);
+      CONFISCABLES.forEach(function (k) { if (g.has(k) && g.flag('cache') !== k && !g.flag('autorise_' + k)) { g.lose(k); pris.push(k); } });
+    } else if (complete && s.soupcon >= 2) {
+      // Inspection sous soupçon : il confisque le dernier objet interdit visible (jamais un objet caché ni une récompense).
+      for (var i = s.found.length - 1; i >= 0 && !pris.length; i--) {
+        var it = s.found[i];
+        if (CONFISCABLES.indexOf(it) >= 0 && g.has(it) && g.flag('cache') !== it && !g.flag('autorise_' + it)) { g.lose(it); pris.push(it); }
+      }
+    }
+    if (pris.length) { g.ecran('OBJET NON AUTORISÉ|CONFISQUÉ.'); g.narr('Il prend : ' + pris.map(function (k) { return OBJETS[k].toLowerCase(); }).join(', ') + '.'); }
+    else if (fouille) g.narr('Il ne trouve rien sur toi.');
+    if (!complete) g.ecran('MAINTENANCE|EFFECTUÉE.');
+    g.narr(complete && !l.length && !pris.length ? 'Il regarde la vitre de la 18, puis toi. Il repart.' : 'Il repart.');
   }
   var MOMENTS = {
     3: function (g) { g.narr('La caméra fait un grand mouvement, puis se met à te suivre.'); if (!g.done('T1')) { g.anim('silTourne'); g.narr('DRIIIIING. Le téléphone sonne. Derrière la vitre, la silhouette se tourne vers quelque chose hors champ.'); } },
@@ -659,7 +702,7 @@
     { quand: function (g) { return g.has('objectif'); }, lignes: ['VOUS AVEZ DIT : « JE VIENS. »'] },
     { quand: function (g) { return g.done('T2') === 'B'; }, lignes: ['VOUS AVEZ DONNÉ UN FAUX NOM.'] },
     { quand: function (g) { return g.has('menaceVide'); }, lignes: ['UNE MENACE NE S\'EST PAS RÉALISÉE.', 'CELA NE PROUVE PAS QUE LA SUIVANTE SERA VIDE.'] },
-    { quand: function (g) { return g.has('boutonDesactive'); }, lignes: ['VOUS AVEZ COUPÉ L\'ACTIONNEUR.'] }
+    { quand: function (g) { return g.has('boutonDesactive') && g.flag('sabConnu'); }, lignes: ['VOUS AVEZ COUPÉ L\'ACTIONNEUR.'] }
   ];
 
   // Introduction (moment 0, gratuite).
@@ -884,10 +927,10 @@
   var REGARDS = {
     door: 'La porte est verrouillée. Une plaque : CHAMBRE 17.',
     phone: function (g) { if (g.flag('ligne') === 'ouverte') return 'La ligne est ouverte. Sous le combiné : « LOCAL : 16 / 17 / 18 / 19 ».' + (g.ecoute() ? ' Un petit voyant rouge : la ligne est écoutée.' : ''); return 'Un téléphone gris. Pas de tonalité.'; },
-    drawer: function (g) { return g.flag('tiroirOuvert') ? 'Le tiroir est vide.' : 'Le tiroir est verrouillé.'; },
+    drawer: function (g) { return !g.flag('tiroirOuvert') ? 'Le tiroir est verrouillé.' : g.flag('tiroirBeant') ? 'Le tiroir est ouvert. Vide.' : 'Le tiroir est refermé. Sa serrure est cassée.'; },
     compart: function (g) { return g.flag('compartiment') === 'vide' ? 'Le compartiment est vide.' : 'Une petite plaque, au bas du socle. Vissée.'; },
     grille: function (g) { return g.has('conduit') ? 'Le conduit. Un courant d\'air.' : 'Une grille d\'aération. Quatre vis.'; },
-    box: function (g) { if (g.flag('aux') === 'defaut') return 'Un voyant rouge clignote : AUX 24 V — HORS SERVICE. Le fusible de protection a grillé.'; return g.done('P3') ? 'Le boîtier est ouvert. Un circuit est coupé.' : 'Un boîtier électrique de maintenance, vissé.'; },
+    box: function (g) { if (g.flag('aux') === 'defaut') return 'Un voyant rouge clignote : AUX 24 V — HORS SERVICE. Le fusible de protection a grillé.'; return g.has('cameraCoupee') || g.has('boutonDesactive') ? 'Le boîtier est ouvert. ' + (g.has('cameraCoupee') && g.has('boutonDesactive') ? 'Deux circuits sont coupés.' : 'Un circuit est coupé.') : 'Un boîtier électrique de maintenance, vissé.'; },
     trappe: function (g) { return g.has('sortieCachee') ? 'La sortie dérobée est prête. La goupille est retirée.' : (g.flag('fusibleInstalle') ? 'Une plaque dans le sol. Le voyant du verrou électrique est vert : il est ouvert.' : 'Une plaque dans le sol, verrouillée. Un verrou électrique, voyant éteint, et une petite étiquette : « ALIMENTATION — AUX 24 V ».'); },
     camera: function (g) { return g.cycle < 3 ? 'La caméra enregistre. Elle ne bouge pas encore.' : g.aveugle() ? 'La caméra ne voit plus la pièce.' : 'La caméra te suit.'; },
     note: 'Le mot de 16 : « ILS MENTENT. »',
@@ -919,7 +962,7 @@
     FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, PREUVES: PREUVES, VERITES: VERITES, PHRASES: PHRASES, MEMOIRE: MEMOIRE, DOUTES: DOUTES, MANIP_ECRAN: MANIP_ECRAN,
     REPLIQUES_OBJETS: REPLIQUES_OBJETS, SITUATIONS: SITUATIONS, JOURNAL: JOURNAL, MOMENTS: MOMENTS, FINS: FINS, REGARDS: REGARDS,
     DESCRIPTIONS: DESCRIPTIONS, LETTRES: LETTRES, AIDES: AIDES, SESSIONS: SESSIONS,
-    B2_PRESSION: B2_PRESSION, B2_ARRET: B2_ARRET, SEULE: SEULE, ARCHIVES: ARCHIVES, BILAN: BILAN, HISTOIRES: HISTOIRES, HISTOIRE: HISTOIRE, INTRO_EVENTS: INTRO_EVENTS
+    B2_PRESSION: B2_PRESSION, B2_ARRET: B2_ARRET, SEULE: SEULE, VISITE: VISITE, ARCHIVES: ARCHIVES, BILAN: BILAN, HISTOIRES: HISTOIRES, HISTOIRE: HISTOIRE, INTRO_EVENTS: INTRO_EVENTS
   };
   function resolve(v, g) { return typeof v === 'function' ? v(g) : v; }
   if (typeof module === 'object' && module.exports) module.exports = api; else root.BRStory = api;

@@ -222,3 +222,14 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - Coupure : une seule action dans le noir, le compte à rebours ne s'arrête pas pendant qu'elle se joue.
 - Rejoindre la 18 par le conduit : sa grille ne s'ouvre que de son côté, et seulement si on lui a promis « Je viens » (appel du moment 11). Sinon on frappe, personne n'ouvre, on revient (le conduit reste praticable). En vérité C, après la promesse, la grille s'ouvre seule (« Entre. »). Concerne Sauvetage, Trop tard, Complice, Sujet 18, Miroir et Briser la boucle par le conduit.
 - (7.3) Entrer dans le conduit (vers la 18 ou vers EXT.) sous les yeux de la caméra : un gardien attend au bout, fin « Le Gardien » (première planche propre au conduit). Indice : le texte du conduit signale que la caméra suit tes jambes. Il faut l'aveugler (coupure, veste, caméra tournée ou coupée) avant de ramper.
+
+## 7.4 — gardiens, réparations, fouille
+
+- **Actionneur coupé sans être vu** : obéir ne blesse pas la 18 et compte comme obéi (« OBÉISSANCE ENREGISTRÉE »). Le Système croit à un défaut : « DÉFAUT ACTIONNEUR. RÉPARATION PROGRAMMÉE. », pas de soupçon ; un gardien le rebranche 3 moments plus tard. **Vu en train de couper** : chaque pression = « SABOTAGE DÉTECTÉ » (+2). La dernière pression (B6) détecte toujours un actionneur coupé.
+- **Rétablissement à +3 moments** de ce que le Système sait : veste (retirée et confisquée, plus de veste ensuite), caméra tournée, caméra coupée (toujours sue), actionneur, grille et sortie dérobée si la caméra a vu, trappe ouverte sous la caméra (simple vérification). Une seule visite pour tout ce qui tombe le même moment.
+- **Tout gardien qui entre** (visite ou inspection du moment 10) remet en ordre ce qu'il voit : veste, caméra, grille dévissée. L'inspection ouvre aussi le boîtier (actionneur coupé non signalé = sabotage découvert, +2) et la trappe (sortie dérobée).
+- **Tiroir** : après l'avoir forcé, geste gratuit « Refermer le tiroir » (et « Rouvrir »). Laissé ouvert : au prochain passage d'un gardien, fouille, il prend tous les objets interdits non cachés.
+- **Chambre vide** à l'arrivée d'un gardien (archives, conduit) : alarme, soupçon maximal, une seule décision avant l'intervention.
+- **Boîtier** : on peut couper les deux circuits, et recouper après une réparation.
+- **Refaire une action interdite** compte à nouveau (+1 à chaque fois).
+- Le fusible n'est jamais retiré (il répare une panne du Système).

@@ -51,7 +51,7 @@
   // ---------- état dérivé ----------
   function has(s, k) { return s.items.indexOf(k) >= 0; }
   function coupure(s) { return s.cycle === 5; }
-  function vesteActive(s) { return s.flags.vesteJusqua != null && s.cycle <= s.flags.vesteJusqua; }
+  function vesteActive(s) { return !!s.flags.veste; } // la veste reste sur l'objectif jusqu'au passage du gardien
   // La vidéo ne voit rien : coupure, caméra coupée au circuit, tournée vers le mur, ou couverte par la veste.
   function cameraAveugle(s) { return coupure(s) || has(s, 'cameraCoupee') || has(s, 'cameraTournee') || vesteActive(s); }
   // La ligne est écoutée par le Système (sauf pendant la coupure).
@@ -138,9 +138,18 @@
         if (s.soupcon >= 4 && before < 4) intervention(s, ev);
         return true;
       },
-      // Une manipulation interdite : +1 si la vidéo la voit.
-      // Le moniteur affiche ce que la caméra voit : l'action est signalée à chaque fois.
-      manip: function (id, txt) { if (g.vu()) { if (S.MANIP_ECRAN[id]) g.ecran(S.MANIP_ECRAN[id]); return g.incident(id, 1, txt); } g.narr(cameraAveugle(s) ? 'La caméra n\'a rien vu.' : 'Angle mort : la caméra n\'a rien vu.'); return false; },
+      // Une action interdite refaite compte à nouveau (chaque fois est un nouvel incident).
+      interdit: function (id, pts, txt) { var n = s.flags.nInterdit = s.flags.nInterdit || {}; n[id] = (n[id] || 0) + 1; return g.incident(n[id] > 1 ? id + n[id] : id, pts, txt); },
+      // Une manipulation interdite : +1 si la vidéo la voit. Renvoie true si elle a été vue.
+      manip: function (id, txt) { if (g.vu()) { if (S.MANIP_ECRAN[id]) g.ecran(S.MANIP_ECRAN[id]); g.interdit(id, 1, txt); return true; } g.narr(cameraAveugle(s) ? 'La caméra n\'a rien vu.' : 'Angle mort : la caméra n\'a rien vu.'); return false; },
+      // Ce que le Système sait sera remis en ordre par un gardien trois moments plus tard.
+      programmer: function (k) { var R = s.flags.reparer = s.flags.reparer || {}; if (R[k] == null) R[k] = s.cycle + 3; },
+      // Un gardien trouve la chambre vide : soupçon maximal, une seule décision avant l'intervention.
+      alerte: function () {
+        var b = s.soupcon; s.soupcon = 4; if (b < 4) ev.push({ t: 'soupcon', v: 4, d: 4 - b });
+        if (!s.flags.intervention) { s.flags.intervention = Math.min(DERNIER - 1, s.cycle + 1); ev.push({ t: 'son', n: 'alarm' }); ev.push({ t: 'ecran', txt: 'SUJET 17 :|ABSENT.|INTERVENTION.' }); }
+      },
+      absent: function () { return s.flags.awayCycle === s.cycle || s.flags.ext === s.cycle; },
       cacher: function () {
         for (var i = s.found.length - 1; i >= 0; i--) {
           var k = s.found[i];
@@ -154,6 +163,9 @@
         ev.push({ t: 'press' });
         if (has(s, 'boutonDesactive')) {
           g.ecran('SORTIE ACTIONNEUR :|0 A');
+          // Vu en train de couper : le Système sait que c'est un sabotage. Sinon, il croit à un défaut et programme la réparation.
+          if (s.flags.sabConnu) g.interdit('sabotage', 2, 'SABOTAGE|DÉTECTÉ.');
+          else if (!(s.flags.reparer && s.flags.reparer.actionneur != null)) { g.ecran('DÉFAUT ACTIONNEUR.|RÉPARATION|PROGRAMMÉE.'); g.programmer('actionneur'); }
           if (s.truth === 'A') { g.narr('Le bouton s\'enfonce. Derrière la vitre, rien ne bouge.'); if (dispo18(s) && s.flags.ligne === 'ouverte') g.tel('« …il ne s\'est rien passé, ici. Tu as fait quoi ? »'); }
           else {
             // En B et C, la douleur est jouée même sans courant : une contradiction qu'on peut remarquer.
@@ -179,7 +191,7 @@
         if (s.vie === 0) plusDeSignal(s, g);
       },
       // Obéir à un ordre : un point de conformité au plus par ordre.
-      obeir: function (id) { s.stats.suivis++; if (!s.flags['conf' + id]) { s.flags['conf' + id] = 1; g.conformite(1); } },
+      obeir: function (id) { if (has(s, 'boutonDesactive') && !s.flags.sabConnu) g.ecran('OBÉISSANCE|ENREGISTRÉE.'); s.stats.suivis++; if (!s.flags['conf' + id]) { s.flags['conf' + id] = 1; g.conformite(1); } },
       refus: function () { s.stats.refus++; },
       ouvrirPorte: function (k, until) { s.flags.porte = { kind: k, until: until }; s.flags.porteVue = true; ev.push({ t: 'porte', open: true }); },
       suite: function (id) { s.flags.suite = id; },
@@ -349,10 +361,9 @@
     if (c >= DERNIER || (s.flags.finMort != null && c >= s.flags.finMort)) { verdict(s, ev); return; }
     s.flags.b2 = 0;
     if (s.flags.porte && c > s.flags.porte.until) { s.flags.porte = null; ev.push({ t: 'porte', open: false }); g.narr('Ta porte se referme.'); }
-    if (s.flags.vesteJusqua != null && c === s.flags.vesteJusqua + 1 && !has(s, 'cameraCoupee') && !has(s, 'cameraTournee')) { g.narr('La porte s\'entrouvre. Un gardien retire ta veste de la caméra, sans un mot, et ressort.', true); s.flags.vesteJusqua = null; }
-    // Diagnostics techniques (le soupçon ne compte qu'une fois par défaut).
-    if (s.flags.diagCam === c) g.incident('defautCamera', 1, 'PANNE CAMÉRA|DIAGNOSTIQUÉE.');
-    if (s.flags.diagSab === c) g.incident('sabotage', 2, 'ANOMALIE ACTIONNEUR|CONFIRMÉE.');
+    // Un gardien vient remettre en ordre ce que le Système sait (l'inspection du moment 10 s'en charge elle-même).
+    var R = s.flags.reparer || {};
+    if (c !== 10 && Object.keys(R).some(function (k) { return R[k] != null && R[k] <= c; })) S.VISITE(g, false);
     // Échéances annoncées par la 18 (plan ou tentative seule).
     if (s.flags.planFin != null && c > s.flags.planFin && has(s, 'plan') && !s.done.PLAN) { g.lose('plan'); g.confiance(-2); S.SEULE(g); }
     if (s.flags.seuleA === c) { s.flags.seuleA = null; S.SEULE(g); }

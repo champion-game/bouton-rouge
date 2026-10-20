@@ -296,17 +296,17 @@
     else if (noteAvant === false && s.cycle === 4) attr('noteSlide', 'class', 'glisse');
     noteAvant = noteVue;
     attr('note', 'opacity', noteVue ? 1 : 0);
-    var tir = s.flags.tiroirOuvert ? (s.flags.tournevisDispo && !s.flags.tournevisPris && !has('tournevis') ? 'tiroir2_tournevis' : 'tiroir2_vide') : 'tiroir2_ferme';
+    var tir = s.flags.tiroirBeant ? (s.flags.tournevisDispo && !s.flags.tournevisPris && !has('tournevis') ? 'tiroir2_tournevis' : 'tiroir2_vide') : 'tiroir2_ferme';
     src('drawerImg', tir);
     src('compImg', !s.flags.compartiment ? 'compart_ferme' : s.flags.compartiment === 'ouvert' ? 'compart_fusible' : 'compart_vide');
     src('grilleImg', has('conduit') ? 'grille_ouverte' : 'grille');
-    src('trappeImg', s.done.P4 === 'A' ? 'trappe_ouverte' : s.done.P4 === 'B' ? 'trappe_preparee' : 'trappe_fermee');
-    var ouvert = !!s.done.P3;
+    src('trappeImg', s.done.P4 === 'A' ? 'trappe_ouverte' : has('sortieCachee') ? 'trappe_preparee' : 'trappe_fermee');
+    var ouvert = has('cameraCoupee') || has('boutonDesactive');
     src('boxImg', ouvert ? 'boitier_ouvert' : 'boitier_ferme'); attr('boxOpen', 'opacity', ouvert ? 1 : 0); attr('auxLed', 'opacity', ouvert ? 0 : 1);
-    attr('ledCam', 'fill', cut && s.done.P3 === 'A' ? '#e3262b' : '#3ee08f');
+    attr('ledCam', 'fill', cut ? '#e3262b' : '#3ee08f');
     attr('ledBtn', 'fill', has('boutonDesactive') ? '#e3262b' : '#3ee08f');
     attr('ledAux', 'fill', s.flags.aux === 'defaut' ? '#e3262b' : '#3ee08f');
-    src('levCam', cut && s.done.P3 === 'A' ? 'levier_bas' : 'levier_haut');
+    src('levCam', cut ? 'levier_bas' : 'levier_haut');
     src('levBtn', has('boutonDesactive') ? 'levier_bas' : 'levier_haut');
     src('levAux', s.flags.aux === 'defaut' ? 'levier_bas' : 'levier_haut');
     // bouton
