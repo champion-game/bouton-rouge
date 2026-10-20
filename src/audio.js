@@ -31,7 +31,8 @@
   }
 
   var SFX = {
-    clac: function () { var t = now(); noise(t, 0.05, 0.5, 'highpass', 1800); osc('sine', 140, t, 0.16, 0.5, 50); },
+    // Bouton : le poussoir s'enfonce (déclic), le ressort vibre, puis il remonte.
+    clac: function () { var t = now(); noise(t, 0.025, 0.55, 'highpass', 2500); osc('square', 1700, t, 0.015, 0.05); osc('sine', 150, t, 0.18, 0.45, 70); osc('triangle', 420, t + 0.01, 0.12, 0.04, 380); noise(t + 0.14, 0.02, 0.3, 'highpass', 3200); osc('sine', 260, t + 0.14, 0.06, 0.12, 180); },
     blink: function () { var t = now(); osc('square', 100, t, 0.18, 0.06); osc('square', 120, t + 0.05, 0.1, 0.05); },
     thud: function () { var t = now(); osc('sine', 80, t, 0.45, 0.5, 40); noise(t, 0.2, 0.2, 'lowpass', 300); },
     knock: function () { var t = now(); for (var i = 0; i < 3; i++) { osc('sine', 180, t + i * 0.2, 0.12, 0.35, 90); noise(t + i * 0.2, 0.06, 0.25, 'bandpass', 900); } },
@@ -58,6 +59,23 @@
   SFX.coeur = function (k) { k = k || 0; var t = now(); osc('sine', 58, t, 0.13, 0.22 + 0.4 * k, 38); osc('sine', 52, t + 0.2, 0.15, 0.16 + 0.3 * k, 34); };
   SFX.servo = function () { var t = now(); osc('sawtooth', 220, t, 0.22, 0.025, 330); noise(t, 0.22, 0.04, 'bandpass', 2400); };
   SFX.gresil = function () { var t = now(); for (var i = 0; i < 5; i++) noise(t + i * 0.05 + Math.random() * 0.03, 0.03, 0.12, 'highpass', 4000); };
+  // Toucher un objet : un bruit propre à chaque objet de la pièce.
+  var TOUCHE = {
+    drawer: function (t) { noise(t, 0.4, 0.16, 'bandpass', 650); noise(t + 0.05, 0.3, 0.08, 'bandpass', 1300); osc('sine', 110, t + 0.38, 0.14, 0.35, 70); noise(t + 0.38, 0.08, 0.2, 'lowpass', 700); },
+    compart: function (t) { osc('square', 1900, t, 0.015, 0.06); noise(t, 0.02, 0.35, 'highpass', 3000); osc('triangle', 520, t + 0.08, 0.35, 0.05, 490); osc('triangle', 780, t + 0.08, 0.25, 0.025); noise(t + 0.08, 0.12, 0.12, 'bandpass', 2500); },
+    trappe: function (t) { osc('square', 1500, t, 0.015, 0.05); osc('triangle', 320, t + 0.06, 0.45, 0.06, 300); osc('triangle', 470, t + 0.06, 0.3, 0.03); noise(t + 0.06, 0.2, 0.15, 'bandpass', 1500); },
+    grille: function (t) { for (var i = 0; i < 4; i++) { var d = t + i * 0.045 + Math.random() * 0.02; noise(d, 0.03, 0.2, 'bandpass', 2600 + Math.random() * 1200); osc('square', 650 + Math.random() * 300, d, 0.02, 0.03); } },
+    box: function (t) { noise(t, 0.03, 0.3, 'highpass', 2000); osc('triangle', 290, t, 0.45, 0.07, 270); osc('triangle', 430, t, 0.35, 0.04, 410); noise(t, 0.25, 0.12, 'bandpass', 1200); },
+    mug: function (t) { noise(t, 0.015, 0.25, 'highpass', 4000); osc('sine', 2350, t, 0.3, 0.05); osc('sine', 3650, t, 0.18, 0.03); osc('sine', 180, t, 0.06, 0.12, 120); },
+    light: function (t) { noise(t, 0.015, 0.4, 'highpass', 4000); osc('square', 2100, t, 0.01, 0.05); osc('sine', 120, t, 0.05, 0.15, 90); },
+    door: function (t) { for (var i = 0; i < 2; i++) { var d = t + i * 0.14; noise(d, 0.03, 0.35, 'bandpass', 2200); osc('triangle', 600, d, 0.08, 0.05, 520); osc('sine', 90, d, 0.12, 0.3, 60); } },
+    carnet: function (t) { noise(t, 0.18, 0.14, 'bandpass', 3200); noise(t + 0.22, 0.2, 0.11, 'bandpass', 2300); },
+    note: function (t) { noise(t, 0.22, 0.13, 'bandpass', 2900); },
+    window: function (t) { for (var i = 0; i < 2; i++) { var d = t + i * 0.16; noise(d, 0.02, 0.3, 'highpass', 2600); osc('sine', 1850, d, 0.07, 0.05); osc('sine', 300, d, 0.05, 0.1, 220); } },
+    bureau: function (t) { osc('sine', 210, t, 0.12, 0.3, 140); noise(t, 0.08, 0.2, 'lowpass', 800); },
+    monitor: function (t) { osc('sine', 15600, t, 0.3, 0.008); osc('square', 880, t, 0.05, 0.03); }
+  };
+  SFX.toucher = function (k) { if (AC && TOUCHE[k]) TOUCHE[k](now()); };
   function sfx(n, a) { if (SFX[n]) SFX[n](a); }
   // Pression pendant un ordre : la ventilation et le bourdonnement montent ; null = retour à l'ambiance.
   function tension(k) { if (!AC) return; if (k == null) return ambiance({}); rampe(ventG, 0.05 + 0.13 * k); rampe(droneG, 0.012 + 0.06 * k); }

@@ -321,6 +321,7 @@
     var kind = forcedKind(), v = verrou(); calmeT = performance.now();
     if (v && k !== v && k !== 'monitor') { toast('Le téléphone sonne.'); return; }
     if (attenteLibre()) timeLeft = timeTotal;
+    if (k !== 'btn' && k !== 'phone') A.sfx('toucher', k);
     // La caméra voit le geste : petit mouvement, et le moniteur le note.
     if (k !== 'btn' && s.cycle >= 3 && !E.cameraAveugle(s) && TITRES[k]) { R.camRegarde(); A.sfx('servo'); R.journal(horloge() + ' — SUJET 17 : ' + TITRES[k].replace(/^(LE |LA |LES |L')/, '')); }
     var exit = t.sorties.filter(function (x) { return (x.via === 'porte' && k === 'door') || (x.via === 'trappe' && k === 'trappe' && !t.objets.trappe); })[0];
@@ -341,7 +342,7 @@
     // Téléphone : d'abord choisir qui appeler, ensuite quoi dire.
     if (k === 'phone' && t.objets.phone && t.objets.phone.length > 1) { sel = 'phone'; A.sfx('pickup'); composerPop(); R.render(s, roomInfo()); return; }
     // Le carnet : ce que tu as appris, écrit à la main (gratuit).
-    if (k === 'carnet') { A.sfx('paper'); var notes = E.carnet(s), nc = notes.join(' ').length + notes.length * 12, kc = Math.max(0.65, Math.min(1, Math.sqrt(260 / nc)));
+    if (k === 'carnet') { var notes = E.carnet(s), nc = notes.join(' ').length + notes.length * 12, kc = Math.max(0.65, Math.min(1, Math.sqrt(260 / nc)));
       openPop('<div class="who"><span>LE CARNET</span><button class="x" data-close="1" aria-label="Fermer">×</button></div>' + lettreHtml({ titre: 'TES NOTES', recto: notes }).replace('class="lettre"', 'class="lettre carnet" style="--k:' + kc.toFixed(2) + '"'), null); return; }
     // S'approcher de la vitre : la 18 réagit (recule, s'approche, pose sa paume, se détourne).
     var reac = '';
