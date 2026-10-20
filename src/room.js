@@ -151,12 +151,13 @@
   '<g style="pointer-events:none"><g mask="url(#reflM)"><use href="#desk" transform="translate(0 1632) scale(1 -1)"/></g>' +
   '<g class="lit"><ellipse cx="836" cy="884" rx="300" ry="70" fill="url(#sheenG)"/><ellipse cx="836" cy="890" rx="70" ry="120" fill="url(#sheenG)"/></g></g>' +
   '<g id="desk">' +
-  // dessous du bureau d'Amine (fond, côtés, caisson, socle ; sans son plateau), derrière les tiroirs, le compartiment, le pied et le plateau
-  I('', 'bureau_fond', 442.4, 566.0, 785.6, 255.0, ' preserveAspectRatio="none" style="pointer-events:none"') +
-  '<g class="hs" data-k="bureau">' + I('socleImg', 'bureau_socle', 737.5, 562.5, 188.5, 254.6) + '</g>' +
-  '<g id="compart" class="hs" data-k="compart">' + I('compImg', 'compart_ferme', 991.5, 575, 225.6, 207.5) + '</g>' +
-  '<g id="drawer" class="hs" data-k="drawer">' + I('drawerImg', 'tiroir2_ferme', 464.5, 562.1, 251.6, 169.4) + '</g>' +
-  I('', 'bureau_plateau', 457, 496, 756, 84, ' style="pointer-events:none"') + lisere(500, 1170, 496.5, 0.4) +
+  // bureau modulaire (pack 20/10, canevas 2000 × 1000 réduit d'un bloc à 0,4725) : fond, pied gravé, tiroir, compartiment, plateau
+  I('', 'bureau3_fond', 471.2, 566.9, 713.5, 241, ' style="pointer-events:none"') +
+  '<g class="hs" data-k="bureau">' + I('socleImg', 'bureau3_pied', 745.2, 566.9, 189, 241) + '</g>' +
+  '<g id="compart" class="hs" data-k="compart">' + I('compImg', 'compart3_ferme', 990.9, 566.9, 215, 241) + '</g>' +
+  '<g id="drawer" class="hs" data-k="drawer">' + I('drawerImg', 'tiroir3_ferme', 494.8, 574, 219.7, 87.9) + '</g>' +
+  '<rect x="471" y="572" width="736" height="34" fill="url(#aoDown)" opacity=".75" style="pointer-events:none"/>' +  // ombre du plateau sur le dessous
+  I('', 'bureau3_plateau', 457, 496, 756, 80.3, ' style="pointer-events:none"') + lisere(500, 1170, 496.5, 0.4) +
   '<ellipse cx="836" cy="518" rx="270" ry="40" fill="url(#poolG)" style="pointer-events:none"/>' +
   '<g style="pointer-events:none"><ellipse class="lit" cx="836" cy="508" rx="230" ry="20" fill="url(#specG)"/><ellipse cx="837" cy="522" rx="135" ry="26" fill="url(#glowG)" opacity=".4"/></g>' +
   '<ellipse id="btnGlow" cx="837" cy="495" rx="120" ry="60" fill="url(#glowG)" opacity="0" style="pointer-events:none"/>' +
@@ -192,6 +193,7 @@
   function silNom(p) { return 'sil_' + (SIL_PAR_VERITE ? sujet + '_' : '') + p; }
   function $(id) { return document.getElementById(id); }
   function attr(id, k, v) { var e = $(id); if (e) e.setAttribute(k, v); }
+  function taille(id, t) { var e = $(id); if (e) { e.setAttribute('x', t[0]); e.setAttribute('width', t[1]); e.setAttribute('height', t[2]); } }
   function src(id, name) { var e = $(id); if (e && e.getAttribute('href') !== IMG + name + '.webp') e.setAttribute('href', IMG + name + '.webp'); }
 
   function mount(el, handler) {
@@ -296,9 +298,11 @@
     else if (noteAvant === false && s.cycle === 4) attr('noteSlide', 'class', 'glisse');
     noteAvant = noteVue;
     attr('note', 'opacity', noteVue ? 1 : 0);
-    var tir = s.flags.tiroirBeant ? (s.flags.tournevisDispo && !s.flags.tournevisPris && !has('tournevis') ? 'tiroir2_tournevis' : 'tiroir2_vide') : 'tiroir2_ferme';
-    src('drawerImg', tir);
-    src('compImg', !s.flags.compartiment ? 'compart_ferme' : s.flags.compartiment === 'ouvert' ? 'compart_fusible' : 'compart_vide');
+    // Le tiroir et le compartiment ouverts ont un cadre plus grand que fermés : on change l'image et sa taille ensemble.
+    var tir = s.flags.tiroirBeant ? (s.flags.tournevisDispo && !s.flags.tournevisPris && !has('tournevis') ? 'tiroir3_tournevis' : 'tiroir3_vide') : 'tiroir3_ferme';
+    src('drawerImg', tir); taille('drawerImg', tir === 'tiroir3_ferme' ? [494.8, 219.7, 87.9] : [492.4, 224.4, 139.4]);
+    var comp = !s.flags.compartiment ? 'compart3_ferme' : s.flags.compartiment === 'ouvert' ? 'compart3_fusible' : 'compart3_vide';
+    src('compImg', comp); taille('compImg', comp === 'compart3_ferme' ? [990.9, 215, 241] : [990.9, 304.8, 241]);
     src('grilleImg', has('conduit') ? 'grille_ouverte' : 'grille');
     src('trappeImg', s.done.P4 === 'A' ? 'trappe_ouverte' : has('sortieCachee') ? 'trappe_preparee' : 'trappe_fermee');
     var ouvert = has('cameraCoupee') || has('boutonDesactive');
@@ -487,7 +491,7 @@
     silFrappe: function () { poseTemp('poing', 1800); var n = 0, iv = setInterval(function () { attr('silMove', 'transform', n % 2 ? '' : 'translate(-4 2)'); if (++n > 5) { clearInterval(iv); attr('silMove', 'transform', ''); } }, 140); },
     silTourne: function () { poseTemp('tel', 2600); if (sujet !== 'A') { attr('silMove', 'transform', 'translate(40 0)'); later2(2200, function () { attr('silMove', 'transform', ''); }); } },
     silBuee: function () { attr('buee', 'opacity', 0.75); later2(3800, function () { attr('buee', 'opacity', 0); }); },
-    compartiment: function () { src('compImg', 'compart_fusible'); },
+    compartiment: function () { src('compImg', 'compart3_fusible'); taille('compImg', [990.9, 304.8, 241]); },
     silSursaut: function () { harmLeger(); },
     silFige: function () { attr('hand', 'opacity', 0); attr('silMove', 'transform', ''); silhouette('debout'); },
     video: function () { video(5200); }
