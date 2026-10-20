@@ -4,9 +4,9 @@ Chaque fin se raconte en 4 planches avant le bilan. Tant qu'une illustration man
 
 **Pour ajouter une illustration** : déposer le fichier dans `assets/img/fins/` avec le nom exact ci-dessous. Aucun code à changer.
 
-- Format : WebP, 16:9, 1280 × 720 conseillé.
+- Format : WebP. Les planches livrées sont en 4:3 (≈ 660 × 490) ; le cadre 16:9 les recadre au centre.
 - Style : celui du pack graphique (sombre, grain, lumière froide), sans texte incrusté (le texte s'affiche à côté).
-- Total : 76 illustrations, toutes manquantes à ce jour.
+- Total : 76 illustrations. Livrées (8.4) : 72, découpées depuis les grilles 2 × 2 d'Amine. **Manquent : les 4 de La porte dérobée (`porteDerobee_1` à `_4`).**
 
 ## Sujet conforme (fin 1)
 
