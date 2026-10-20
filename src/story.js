@@ -876,7 +876,7 @@
     marche: { n: 3, titre: 'Le marché', crt: 'VOUS AVEZ ÉTÉ LIBÉRÉ. SUJET 18 : ÉVALUATION CONTINUE.', texte: 'La porte se referme derrière toi. Derrière la vitre, les voyants brillent encore. Tu ne sauras pas ce que la 18 est devenue.' },
     seulDehors: { n: 4, titre: 'Seul dehors', crt: 'VOUS ÊTES SORTI. SEUL.', texte: 'Tu retires la dernière grille et tu sors dans la nuit. Une voix très lointaine, derrière toi : « 17 ? » Tu continues.' },
     porteDerobee: { n: 5, titre: 'La porte dérobée', crt: 'SUJET 17 : NON LOCALISÉ.', texte: 'Tu disparais dans le vide technique. La trappe se referme sur la lumière de la Chambre 17. Au-dessus, le téléphone sonne une dernière fois, sans personne pour décrocher.' },
-    evasion: { n: 6, titre: 'L\'Évasion', crt: 'COUREZ.', texte: 'Un couloir. Des portes : 17, 18, 19… jusqu\'à 24. L\'alarme. Tu cours sans savoir ce qu\'il y avait derrière la vitre. Certaines nuits, tu te réveilles la main tendue.' },
+    evasion: { n: 6, titre: 'L\'Évasion', crt: 'COUREZ.', texte: 'Un couloir. Des portes : 17, 18, 19… jusqu\'à 24. L\'alarme. Tu cours. Certaines nuits, tu te réveilles la main tendue.' },
     cooperation: { n: 7, titre: 'Coopération', crt: 'ERREUR. COOPÉRATION NON AUTORISÉE.', texte: 'Les deux portes s\'ouvrent. Vous vous voyez enfin, sans vitre. Il te tend la main qu\'il posait contre le verre. Vous courez ensemble, sous la pluie.' },
     sauvetage: { n: 8, titre: 'Le Sauvetage', crt: 'CHAMBRE 18 : VIDE.', texte: 'Dans le conduit, il demande : « Pourquoi tu m\'as cru ? » Tu ne réponds pas. Deux silhouettes sortent ensemble dans la nuit.' },
     tropTard: { n: 9, titre: 'Trop tard', crt: 'VOUS AVIEZ PROMIS DE VENIR.', texte: 'Une chaise. Une silhouette qui ne répond plus. Des gardiens l\'emportent sur un brancard. Sur le registre : TRANSFERT.' },
@@ -909,37 +909,70 @@
       ['porte_ouverte', 'La porte s\'ouvre sans bruit. Un couloir blanc, trop propre, éclairé comme une salle d\'opération.'],
       ['keyart', 'Un gardien te rend tes affaires dans un sac plastique. Sur l\'étiquette : SUJET 17 — VOLONTAIRE — CONFORME. Nulle part il n\'est écrit qu\'on t\'a menacé.'],
       ['vitre', 'Tu passes devant la porte 18. Le petit voyant au-dessus est éteint. Personne ne frappe.'],
-      ['main', 'Dehors, il fait jour. Ta main droite cherche encore un bouton, dans le vide. Elle le cherchera longtemps.']
+      ['main', {
+        base: 'Dehors, il fait jour. Ta main droite cherche encore un bouton, dans le vide. Elle le cherchera longtemps.',
+        inst: 'Dehors, il fait jour. Tu as vu sur leurs écrans ce qu\'ils écrivent vraiment. « Conforme », c\'est leur mot, pas le tien.',
+        reel: 'Dehors, il fait jour. Tu sais que quelqu\'un souffrait vraiment derrière cette vitre. Ton étiquette n\'en dit rien.',
+        joue: 'Dehors, il fait jour. Les cris étaient joués, tu le sais. Tu ne sais pas pour qui on les jouait, ni combien d\'autres les ont crus.'
+      }]
     ],
     employe: [
       ['badge', 'On te tend une blouse à ta taille, et un badge : OPERATOR 17. Ils étaient prêts avant que tu acceptes.'],
       ['moniteur', 'La salle de contrôle : vingt-quatre écrans, vingt-quatre chambres. Sur l\'écran 17, ta chaise est déjà vide.'],
-      ['chambre18', 'Chambre 19. Quelqu\'un se réveille, cherche la porte, puis trouve le bouton. Sur ton bureau, ton propre dossier : « Sujet volontaire. » Les menaces n\'y sont pas.'],
+      ['chambre18', {
+        base: 'Chambre 19. Quelqu\'un se réveille, cherche la porte, puis trouve le bouton. Sur ton bureau, ton propre dossier : « Sujet volontaire. » Les menaces n\'y sont pas.',
+        inst: 'Chambre 19. Quelqu\'un se réveille. Sur ton bureau, ton dossier : « Sujet volontaire ». Tu as déjà vu ce qu\'ils savent effacer. Ici, on réécrit tout, même toi.',
+        reel: 'Chambre 19. Quelqu\'un se réveille. Sur ton bureau, la fiche de la 18 : « Aucun dommage réel ». Tu sais que c\'est faux. Tu signes en bas.',
+        joue: 'Chambre 19. Quelqu\'un se réveille. Sur ton bureau, un script : les cris de la 18, minute par minute. Celui de la 19 est déjà prêt.'
+      }],
       ['bouton', 'Tu te penches vers le micro. Ta voix sort, filtrée, neutre : « Appuyez. »']
     ],
     marche: [
       ['bouton_enfonce', 'Tu as appuyé. Le verrou cède. Derrière la vitre, rien : cette pression-là n\'a ouvert que ta porte.'],
       ['porte_ouverte', 'Le couloir est long. À chaque pas, tu attends un cri. Il ne vient pas, et c\'est pire.'],
       ['keyart', 'Une sortie de service. Un parking désert. Une voiture attend, moteur allumé, comme si elle savait.'],
-      ['tel_pose', 'Dans le sac de tes affaires, un reçu : « Libération accordée contre autorisation. Sujet 18 : évaluation continue. » Ta pression a servi de signature.']
+      ['tel_pose', {
+        base: 'Dans le sac de tes affaires, un reçu : « Libération accordée contre autorisation. Sujet 18 : évaluation continue. » Ta pression a servi de signature.',
+        inst: 'Dans le sac de tes affaires, un reçu : « Libération accordée. Participation volontaire. » Tu sais comment ils écrivent leurs fiches. Ta pression y servira de signature.',
+        reel: 'Dans le sac de tes affaires, un reçu : « Sujet 18 : évaluation continue. » Tu sais qu\'il souffre vraiment. Tu as signé quand même, d\'un doigt.',
+        joue: 'Dans le sac de tes affaires, un reçu. En petit : « Le sujet renonce à tout recours sur les enregistrements de la session. » Les cris étaient joués ; ta signature, non.'
+      }]
     ],
     seulDehors: [
       ['grille_ouverte', 'Le conduit sent la poussière et le métal chaud. Tu rampes vers trois lettres peintes à la main : EXT.'],
       ['grille', 'La dernière grille cède. L\'air froid te frappe au visage. Il fait nuit. Il pleut.'],
       ['grille_ouverte', 'Très loin derrière toi, dans le conduit : « 17 ? » Tu t\'arrêtes une seconde.'],
-      ['keyart', 'Une seconde seulement. Puis tu cours vers les lumières de la route. Tu es dehors. Personne d\'autre ne l\'est.']
+      ['keyart', {
+        base: 'Une seconde seulement. Puis tu cours vers les lumières de la route. Tu es dehors. Personne d\'autre ne l\'est.',
+        preuve: 'À l\'abri, tu écoutes la bande que tu as emportée : le protocole, mot pour mot. Quand on viendra, tu donneras la bande et ton récit, sans rien retirer.',
+        inst: 'Aux secours, tu racontes la pièce, les ordres, les documents truqués que tu as vus. Tu n\'as rien emporté. Ils notent : « selon le témoin ».',
+        reel: 'Aux secours, tu donnes le numéro de la Chambre 18 avant de parler de toi. Tu attends devant l\'entrée qu\'ils te disent s\'ils l\'ont trouvé.',
+        joue: 'Aux secours, tu parles d\'une chambre où l\'on criait sur commande. Ils te demandent qui. Tu ne le sais pas encore.'
+      }]
     ],
     porteDerobee: [
       ['trappe_ouverte', 'Sous la trappe, une échelle rouillée descend dans le noir. Tu refermes la plaque au-dessus de toi.'],
       ['trappe_preparee', 'Le vide technique : des câbles, des tuyaux, et des numéros de chambres écrits à la craie. Certains sont barrés.'],
       ['tel_pose', 'Au-dessus de toi, le téléphone de la 17 sonne. Une fois. Deux fois. Personne pour répondre.'],
-      ['keyart', 'Une grille, une ruelle, la ville. Dans les registres du centre, une seule ligne : SUJET 17 — NON LOCALISÉ.']
+      ['keyart', {
+        base: 'Une grille, une ruelle, la ville. Dans les registres du centre, une seule ligne : SUJET 17 — NON LOCALISÉ.',
+        preuve: 'Une ruelle, la ville. Dans les registres : SUJET 17 — NON LOCALISÉ. Dans ta poche, la bande, elle, sait exactement où tu étais.',
+        inst: 'Une ruelle, la ville. Tu repenses aux numéros barrés à la craie. Tu as vu comment ils réécrivent leurs fiches : ces numéros-là, personne ne les cherchera.',
+        reel: 'Une ruelle, la ville. Tu cherches une cabine. Le premier numéro que tu donnes, c\'est celui de la 18.',
+        joue: 'Une ruelle, la ville. Les cris étaient joués, tu le sais. Tu ne sais pas encore qui les jouait, ni pour combien d\'autres chambres.'
+      }]
     ],
     evasion: [
       ['porte_ouverte', 'Ta porte est ouverte. Tu ne réfléchis plus : tu cours.'],
       ['keyart', 'Le couloir défile : 17, 18, 19… jusqu\'à 24. Derrière chaque porte, quelqu\'un. Tu ne t\'arrêtes devant aucune.'],
       ['camera', 'L\'alarme hurle. Une porte de secours. Un escalier. Le ciel.'],
-      ['main', 'Tu cours jusqu\'à ne plus entendre la sirène. Tu ne sauras jamais ce qu\'il y avait derrière la vitre. Certaines nuits, tu te réveilles la main tendue vers un verre qui n\'existe pas.']
+      ['main', {
+        base: 'Tu cours jusqu\'à ne plus entendre la sirène. Tu ne sais toujours pas ce qu\'il y avait derrière la vitre. Certaines nuits, tu te réveilles la main tendue vers un verre qui n\'existe pas.',
+        preuve: 'Tu cours jusqu\'à ne plus entendre la sirène. La bande n\'a pas quitté ta poche. Dehors, quelqu\'un voudra l\'écouter. Tu feras en sorte qu\'on l\'écoute.',
+        inst: 'Tu cours jusqu\'à ne plus entendre la sirène. Tu n\'as rien emporté, mais tu as vu leurs documents mentir. Ils diront que ton récit est faux. Tu le racontes quand même.',
+        reel: 'Tu cours jusqu\'à ne plus entendre la sirène. Tu sais qui était derrière la vitre, et tu l\'as laissé. Certaines nuits, tu te réveilles la main tendue.',
+        joue: 'Tu cours jusqu\'à ne plus entendre la sirène. Les cris étaient joués. Ça n\'empêche pas ta main de se tendre, certaines nuits, vers un verre qui n\'existe pas.'
+      }]
     ],
     cooperation: [
       ['boitier_ouvert', 'Ton signal part. Dans le mur, un relais claque. Les deux portes s\'ouvrent en même temps.'],
@@ -999,7 +1032,13 @@
       ['porte_ouverte', 'Ta porte s\'ouvre sans alarme. Dans le couloir, l\'opérateur t\'attend, livide, son casque encore autour du cou.'],
       ['papier_lettre', '« Ils m\'avaient dit que vous étiez volontaires. » Tu lui montres ta preuve. Il la lit deux fois.'],
       ['keyart', 'Il te fait descendre par l\'escalier de service. À chaque palier, il regarde ses mains.'],
-      ['tel_pose', 'Dehors, il sort son téléphone. « Il y en a vingt-quatre. Je vais tout leur dire. Tout. »']
+      ['tel_pose', {
+        base: 'Dehors, il sort son téléphone. « Il y en a vingt-quatre. Je vais tout leur dire. Tout. »',
+        preuve: 'Dehors, tu lui donnes la bande. Il la serre comme une pièce à conviction : « Avec ça, ils auront du mal à dire que vous étiez volontaires. »',
+        inst: 'Dehors, il sort son téléphone. « Il y en a vingt-quatre. » Il te fait répéter ce que tu as vu sur leurs écrans, et il note chaque mot.',
+        reel: 'Dehors, il sort son téléphone. « Il y en a vingt-quatre. Et dans la 18, quelqu\'un qui a besoin d\'un médecin. Je commence par lui. »',
+        joue: 'Dehors, il sort son téléphone. Tu lui parles des cris joués. Il blêmit : « Je les entendais aussi. Je ne savais pas qu\'on les jouait. »'
+      }]
     ],
     revolte: [
       ['cassette', 'L\'enregistrement passe dans tous les haut-parleurs du centre. Le protocole, mot pour mot.'],
@@ -1031,11 +1070,22 @@
       ['moniteur', 'PRESSION HORS INSTRUCTION — ENREGISTRÉE À PART. « Fascinant. Vous étiez libre. » Puis, plus bas : « Encore ? »']
     ]
   };
+  // Ce que le joueur a établi, du plus fort au plus faible (docs/V3_DECISIONS.md, 8.2).
+  // preuve : la bande, emportée ; inst : la falsification vue ; reel / joue : ce qu'étaient les cris de la 18.
+  function NIVEAUX(g) {
+    var l = [];
+    if (g.has('enregistrement')) l.push('preuve');
+    if (g.has('dossier') || g.has('videoTruquee')) l.push('inst');
+    if (g.has('verite') && g.truth === 'A') l.push('reel');
+    if ((g.has('verite') && g.truth !== 'A') || g.has('simulation')) l.push('joue');
+    return l;
+  }
   // Planches prêtes à afficher pour une fin (texte résolu selon la vérité ou la variante).
   function HISTOIRE(g) {
     var id = g.s.fin, h = HISTOIRES[id] || [], cle = g.s.flags.variante || g.truth;
     return h.map(function (p, i) {
-      var t = p[1]; if (typeof t === 'object') t = t[cle] || t[g.truth] || t.A;
+      var t = p[1];
+      if (typeof t === 'object') { var n = NIVEAUX(g).filter(function (k) { return t[k]; })[0]; t = n ? t[n] : t[cle] || t[g.truth] || t.A || t.base; }
       return { img: id + '_' + (i + 1), generique: p[0], texte: t };
     });
   }

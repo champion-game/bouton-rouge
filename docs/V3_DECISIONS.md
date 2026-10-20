@@ -258,3 +258,8 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - C : la voix vient de l'admission (plus « session précédente »). B : les cris étaient simulés, sa fille est retenue.
 - Aucune fin ne cite une silhouette d'une autre vérité (« la femme de la 18 » retirée de « L'employé du mois »).
 - Bilan neutre : « La Chambre 18 a crié N fois » (vrai dans les trois vérités).
+
+## 8.2 — Fins enrichies selon les preuves (étape 2)
+- Une planche par fin change selon la preuve la plus forte (`NIVEAUX()` dans `story.js`) : `preuve` (la bande emportée) > `inst` (dossier ou vidéo truquée vus) > `reel` (vérité A établie) / `joue` (vérité B/C établie, ou douleur jouée sans courant). Sans rien : texte de base.
+- Savoir n'est pas prouver : bande confisquée = plus de `preuve`, il reste le récit.
+- Fins concernées : Conforme, Employé, Marché, Seul dehors, Porte dérobée, Évasion, Témoin. « L'Évasion » ne dit plus « tu ne sauras jamais » quand le joueur sait.
