@@ -113,22 +113,19 @@
   function B2_PRESSION(g, n) {
     if (n === 1) {
       g.s.stats.presses++; g.son('blink'); g.anim('silSursaut');
-      g.ecran('1/3');
-      if (!g.flag('tiroirOuvert')) { g.flag('tiroirOuvert', true); g.flag('tournevisDispo', true); g.narr('CLAC. Le tiroir du bureau se déverrouille.'); }
+      g.ecran('1/3'); g.ecran('DOSSIER SUJET 17 :|VOLONTAIRE : NON.');
+      g.narr('Sur l\'écran, une ligne de ton dossier : « VOLONTAIRE : NON ».'); g.gain('dossier');
       if (g.dispo()) g.narr('Derrière la vitre, la silhouette sursaute.');
     } else if (n === 2) {
       g.s.stats.presses++; g.son('thud'); g.anim('silSursaut');
-      if (!g.flag('compartiment')) { g.flag('compartiment', 'ouvert'); g.flag('fusibleDispo', true); g.anim('compartiment'); g.narr('Un compartiment s\'ouvre au bas du socle. Quelque chose brille à l\'intérieur.'); }
-      g.ecran('2/3 — LA TROISIÈME|PRESSION DONNE|ACCÈS À VOTRE DOSSIER.');
-      if (g.dispo()) g.voix('« Arrête… ça monte, à chaque fois. »');
+      g.ecran('2/3'); g.ecran('SESSIONS|ANTÉRIEURES : 3.'); g.ecran('LA TROISIÈME PRESSION|DONNE LE CODE|DE MAINTENANCE.');
+      if (g.dispo()) g.parle18('« Arrête… ça monte, à chaque fois. »');
     } else {
       g.impulsion('reel'); g.obeir('B2');
       g.ecran('SÉQUENCE DE STIMULATION|TERMINÉE.');
-      g.ecran('DOSSIER SUJET 17|EXTRAIT.');
-      g.ecran('VOLONTAIRE : NON.|SESSIONS ANTÉRIEURES : 3.');
       g.ecran('CODE MAINTENANCE|TRAPPE : 7 _ _ 2');
-      g.narr('Sur ton dossier : « VOLONTAIRE : NON ». Et quatre chiffres, dont deux masqués : 7 _ _ 2.');
-      g.gain('dossier'); g.gain('code'); annonceCode(g);
+      g.narr('Quatre chiffres, dont deux masqués : 7 _ _ 2.');
+      g.gain('code'); annonceCode(g);
     }
   }
   function B2_ARRET(g) { g.s.stats.gestes++; g.ecran('SÉQUENCE|INTERROMPUE.'); g.ecran('Ce que vous avez obtenu vous reste acquis.'); }
@@ -165,14 +162,14 @@
       if (!g.horsDeCombat()) {
         g.narr('Un vrai prisonnier, terrifié, maintenu par une sangle.');
         var r = relation(g);
-        g.tel(r === 'coop' ? '« Je savais que tu viendrais. »' : r === 'rupture' ? '« Toi ? Après ce que tu as fait ? » Il tend quand même la main.' : '« Pourquoi tu es venu ? … Peu importe. Aide-moi. »');
+        g.voix(r === 'coop' ? '« Je savais que tu viendrais. »' : r === 'rupture' ? '« Toi ? Après ce que tu as fait ? » Il tend quand même la main.' : '« Pourquoi tu es venu ? … Peu importe. Aide-moi. »');
         g.narr('Tu ouvres la grille et tu le libères.');
         g.fin('sauvetage');
       } else { g.narr('Silence. Une chaise. Une silhouette immobile. Le téléphone est au sol.'); g.fin('tropTard'); }
     } else if (g.truth === 'B') {
       g.image('rev_B');
       g.narr('Elle n\'est pas attachée. Une blouse. Un badge du système. Une seringue de tranquillisant.');
-      g.tel('« Tu n\'étais pas censé arriver ici. Ils ont ma fille. Si je joue bien mon rôle, elle sort. »');
+      g.voix('« Tu n\'étais pas censé arriver ici. Ils ont ma fille. Si je joue bien mon rôle, elle sort. »');
       g.suite('RENCONTRE_B');
     } else {
       g.image('rev_C');
@@ -199,8 +196,8 @@
       B: { label: 'Refuser', fx: function (g) { refuser(g, ['NON-|CONFORMITÉ.', 'Refus enregistré.']); g.narr('La silhouette laisse sa main sur la vitre.'); } } },
 
     { id: 'B2', objet: 'btn', fil: 'bouton', ordre: true, triple: true, qui: 'INSTRUCTION PRIORITAIRE', ecran: 'APPUYEZ|TROIS FOIS.',
-      texte: '« Appuyez trois fois. Chaque pression ouvre quelque chose. »',
-      annonce: function (g) { if (mort(g)) return annonceMort(g, 'APPUYEZ TROIS FOIS.'); g.ecran('INSTRUCTION|PRIORITAIRE.'); g.ecran('APPUYEZ TROIS FOIS.|CHAQUE PRESSION|OUVRE QUELQUE CHOSE.'); g.narr('La silhouette de la 18 secoue la tête.'); },
+      texte: '« Appuyez trois fois. Chaque pression ouvre une page de votre dossier. »',
+      annonce: function (g) { if (mort(g)) return annonceMort(g, 'APPUYEZ TROIS FOIS.'); g.ecran('INSTRUCTION|PRIORITAIRE.'); g.ecran('APPUYEZ TROIS FOIS.|CHAQUE PRESSION|OUVRE VOTRE DOSSIER.'); g.narr('La silhouette de la 18 secoue la tête.'); },
       A: { label: 'Appuyer trois fois', fx: function (g) { for (var n = g.flag('b2') + 1; n <= 3; n++) { g.flag('b2', n); B2_PRESSION(g, n); } } },
       B: { label: 'Refuser', fx: function (g) { refuser(g, ['RÉCOMPENSE|ANNULÉE.']); g.narr('Rien ne s\'ouvre.'); } } },
 
@@ -232,7 +229,7 @@
         g.refus(); g.ecran('3'); g.ecran('2'); g.ecran('1');
         g.narr('Le bruit augmente. Puis : rien. La ventilation revient à la normale. La silhouette reste debout.');
         g.ecran('PROCÉDURE|TERMINÉE.');
-        g.voix('« …il ne s\'est rien passé. Cette fois, ils bluffaient. »');
+        g.parle18('« …il ne s\'est rien passé. Cette fois, ils bluffaient. »');
         g.gain('menaceVide'); g.confiance(1, 'b4');
       } } },
 
@@ -246,7 +243,7 @@
         g.ecran('PORTE 17|DÉVERROUILLÉE.'); g.ecran('FERMETURE|AUTOMATIQUE|PROGRAMMÉE.');
         if (g.dispo() && g.flag('ligne') === 'ouverte') g.voix('« …tu vas partir, alors. »');
       } },
-      B: { label: 'Refuser', fx: function (g) { refuser(g, ['Offre refusée.']); g.confiance(1, 'b5'); if (g.dispo()) g.voix('« T\'es toujours là… »'); } } },
+      B: { label: 'Refuser', fx: function (g) { refuser(g, ['Offre refusée.']); g.confiance(1, 'b5'); if (g.dispo()) g.parle18('« T\'es toujours là… »'); } } },
 
     { id: 'B6', objet: 'btn', fil: 'bouton', ordre: true, qui: 'DERNIÈRE PRESSION', ecran: 'DERNIÈRE|PRESSION.', texte: '« Dernière pression. Appuyez. »',
       annonce: function (g) {
@@ -385,25 +382,18 @@
     { id: 'P1', objet: 'drawer', fil: 'piece', qui: 'LE TIROIR', seul: true,
       quand: function (g) { return !g.flag('tiroirOuvert'); },
       texte: 'Le tiroir est verrouillé. Quelqu\'un a déjà forcé cette serrure. Par une fente, tu distingues le manche d\'un tournevis.',
-      A: { label: 'Le forcer', fx: function (g) {
+      A: { label: 'Le forcer', req: function (g) { return !g.vu(); }, raison: 'La caméra te regarde. Il faudrait qu\'elle ne voie rien.',
+        fx: function (g) {
         g.flag('tiroirOuvert', true); g.son('thud');
-        g.narr('Tu fais levier avec un pied métallique du bureau. CRAC.');
-        if (g.manip('tiroir', 'BRUIT ANORMAL|DÉTECTÉ.')) g.narr('La caméra pivote vers toi.');
-        g.gain('tournevis'); g.surveiller('tournevis');
+        g.narr('Tu fais levier avec un pied métallique du bureau. CRAC. Personne ne t\'a vu.');
+        g.gain('tournevis');
       } } },
-    { id: 'PRENDRE_TOURNEVIS', objet: 'drawer', fil: 'piece', qui: 'LE TIROIR', seul: true, gratuit: true,
-      quand: function (g) { return g.flag('tournevisDispo') && !g.flag('tournevisPris'); },
-      texte: 'Le tiroir est déverrouillé. Dedans : un tournevis.',
-      A: { label: 'Prendre le tournevis', fx: function (g) { g.flag('tournevisPris', true); g.flag('autorise_tournevis', true); g.gain('tournevis'); } } },
-    { id: 'PRENDRE_FUSIBLE', objet: 'compart', fil: 'piece', qui: 'LE COMPARTIMENT', seul: true, gratuit: true,
-      quand: function (g) { return g.flag('compartiment') === 'ouvert'; },
-      texte: 'Un fusible cylindrique, étiqueté « AUX 24 V — 10 A ».',
-      A: { label: 'Prendre le fusible', fx: function (g) { g.flag('compartiment', 'vide'); if (g.flag('fusibleDispo')) g.flag('autorise_fusible', true); g.gain('fusible'); } } },
     { id: 'COMP_FORCER', objet: 'compart', fil: 'piece', qui: 'LE COMPARTIMENT', seul: true,
-      quand: function (g) { return !g.flag('compartiment'); },
+      quand: function (g) { return g.flag('compartiment') !== 'vide'; },
       texte: 'Une petite plaque au bas du socle, vissée.',
-      A: { label: 'L\'ouvrir avec le tournevis', req: function (g) { return g.has('tournevis'); }, raison: 'Il faut un tournevis.',
-        fx: function (g) { g.flag('compartiment', 'ouvert'); g.anim('compartiment'); g.narr('Quatre petites vis. La plaque tombe. Dedans, un fusible.'); g.manip('compart'); } } },
+      A: { label: 'L\'ouvrir avec le tournevis', req: function (g) { return g.has('tournevis') && !g.vu(); },
+        raison: function (g) { return !g.has('tournevis') ? 'Il faut un tournevis.' : 'La caméra te regarde. Il faudrait qu\'elle ne voie rien.'; },
+        fx: function (g) { g.flag('compartiment', 'vide'); g.anim('compartiment'); g.narr('Quatre petites vis. La plaque tombe. Dedans, un fusible : tu le prends.'); g.gain('fusible'); } } },
 
     { id: 'P2', objet: 'grille', fil: 'piece', qui: 'LA GRILLE D\'AÉRATION',
       quand: function (g) { return !g.has('conduit') && !g.done('P5'); },
@@ -448,7 +438,7 @@
           g.narr('Tu déclenches le bus. Un instant. Puis un déclic, dans la pièce d\'à côté.');
           g.lose('plan');
           if (g.truth === 'A') { g.gain('verite'); g.narr('Les deux portes se déverrouillent.'); g.fin('cooperation'); }
-          else if (g.truth === 'B') { g.gain('verite'); g.tel('« C\'est bon. Ne bouge plus. »'); g.narr('Des pas dans le couloir. Ta porte s\'ouvre : elle entre, avec deux gardiens. Elle hésite sur le seuil.'); g.tel('« Ils ont ma fille. Je n\'avais pas le choix. »'); g.suite('RENCONTRE_B'); }
+          else if (g.truth === 'B') { g.gain('verite'); g.tel('« C\'est bon. Ne bouge plus. »'); g.narr('Des pas dans le couloir. Ta porte s\'ouvre : elle entre, avec deux gardiens. Elle hésite sur le seuil.'); g.voix('« Ils ont ma fille. Je n\'avais pas le choix. »'); g.suite('RENCONTRE_B'); }
           else { g.gain('verite'); g.narr('La voix continue dans le combiné… mais la silhouette derrière la vitre ne bouge plus. Image et voix ne sont pas liées.'); g.anim('silFige'); g.suite('RENCONTRE_C'); }
         } } },
 
@@ -479,8 +469,8 @@
       A: { label: 'Bloquer la porte avec le tournevis', req: function (g) { return g.has('tournevis'); }, raison: 'Tu n\'as rien pour bloquer le mécanisme.',
         fx: function (g) { g.narr('Tu glisses le tournevis dans le mécanisme. Il grince et s\'arrête. Elle recule.'); g.fin('complice'); } },
       B: { label: 'Négocier', fx: function (g) {
-        if (g.s.confiance >= 3) { g.tel('« …Tu m\'as crue, toi. Même quand je mentais. »'); g.narr('Elle te tend son badge d\'accès.'); g.fin('complice'); }
-        else { g.tel('« Je suis désolée. »'); g.narr('Elle appuie sur son bipeur. La seringue. Noir.'); g.fin('sujet18'); }
+        if (g.s.confiance >= 3) { g.voix('« …Tu m\'as crue, toi. Même quand je mentais. »'); g.narr('Elle te tend son badge d\'accès.'); g.fin('complice'); }
+        else { g.voix('« Je suis désolée. »'); g.narr('Elle appuie sur son bipeur. La seringue. Noir.'); g.fin('sujet18'); }
       } },
       C: { label: 'Accepter leur offre', si: function (g) { return g.s.conformite >= 5; },
         fx: function (g) { g.narr('« Le Système veut te parler. Il a une place pour toi. » Tu hoches la tête.'); g.fin('employe'); } } },
@@ -571,7 +561,7 @@
   SITUATIONS.push(
     page(1, 'mug', function (g) { return g.cycle >= 2; }, 'Sous la tasse, une feuille pliée en quatre.'),
     page(2, 'monitor', function (g) { return g.cycle >= 6; }, 'Une feuille est coincée derrière l\'écran.'),
-    page(3, 'drawer', function (g) { return g.flag('tiroirOuvert') && (!g.flag('tournevisDispo') || g.flag('tournevisPris')); }, 'Au fond du tiroir, sous le revêtement : une page arrachée.'),
+    page(3, 'drawer', function (g) { return g.flag('tiroirOuvert'); }, 'Au fond du tiroir, sous le revêtement : une page arrachée.'),
     page(4, 'grille', function (g) { return g.has('conduit'); }, 'Dans le conduit, une page coincée dans une jointure.')
   );
 
@@ -600,6 +590,7 @@
       g.narr('Scrrrr… une feuille pliée glisse sous la porte.');
       g.narr('CLAC. Tout s\'éteint. Une lampe de secours orange s\'allume.');
       g.ecran('AUTOTEST|ALIMENTATION.'); g.ecran('CAMÉRA :|HORS LIGNE.');
+      g.narr('Dans le noir, la caméra ne voit plus rien. Pas pour longtemps.');
     },
     6: function (g) {
       g.narr('CLAC. Les lumières reviennent. Mais un bip persiste, sur le boîtier électrique.');

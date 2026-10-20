@@ -85,6 +85,8 @@
       ecran: function (txt) { ev.push({ t: 'ecran', txt: txt }); },
       tel: function (txt) { ev.push({ t: 'tel', txt: txt }); },
       voix: function (txt) { ev.push({ t: 'voix', txt: txt }); },
+      // La 18 parle : des mots seulement si la ligne est ouverte ; sinon, à travers la vitre, un son étouffé.
+      parle18: function (txt) { if (s.flags.ligne === 'ouverte') ev.push({ t: 'voix', txt: txt }); else ev.push({ t: 'narr', txt: 'Derrière la vitre, un cri étouffé. Tu ne distingues pas les mots.' }); },
       narr: function (txt, pop) { ev.push(pop ? { t: 'narr', txt: txt, pop: true } : { t: 'narr', txt: txt }); }, // pop : texte important (gardien, indice) affiché en popup
       son: function (n) { ev.push({ t: 'son', n: n }); },
       anim: function (n) { ev.push({ t: 'anim', n: n }); },
@@ -150,14 +152,14 @@
           return;
         }
         if (!dispo18(s)) { g.narr('Un relais claque. Derrière la vitre, rien ne bouge.'); return; }
-        if (kind === 'apparent') { ev.push({ t: 'cri', vie: s.vie }); g.voix(g.pick(S.PHRASES.douleur)); return; }
+        if (kind === 'apparent') { ev.push({ t: 'cri', vie: s.vie }); g.parle18(g.pick(S.PHRASES.douleur)); return; }
         var avant = s.vie;
         if (kind === 'fatal') { s.vie = 0; if (s.truth === 'A') s.etat = 3; }
         else { s.vie = Math.max(0, s.vie - 1); if (s.truth === 'A') s.etat = Math.min(3, s.etat + 1); }
         if (s.vie < avant) s.stats.blessures++;
         ev.push({ t: 'cri', vie: s.vie });
         if (s.vie === 0) { g.ecran('CHAMBRE 18 :|AUCUN SIGNAL REÇU.'); g.narr('Les trois voyants s\'éteignent. Derrière la vitre, plus rien ne bouge.'); }
-        else g.voix(g.pick(S.PHRASES.vie18[s.vie]));
+        else g.parle18(g.pick(S.PHRASES.vie18[s.vie]));
       },
       // La 18 agit seule (vérité A) : une vraie dégradation, sans pression du joueur.
       impulsionSeule: function () {
@@ -375,12 +377,14 @@
     if (!dit && g.hasard() < 0.35) g.ecran(g.pick(P.ambiance));
     if (!dispo18(s)) return;
     // Indices gratuits : deux au plus par partie.
-    if (s.cycle >= 5 && (s.flags.indices || 0) < 2 && g.hasard() < 0.14 && (s.truth !== 'A' || s.flags.ligne === 'ouverte')) { s.flags.indices = (s.flags.indices || 0) + 1; g.narr(g.pick(P.indices[s.truth]), true); return; }
     var ligne = s.flags.ligne === 'ouverte', d = S.DOUTES[s.flags.doutes];
+    // Sans ligne, seul l'indice visible (le premier de chaque liste, sauf en A) a du sens.
+    var ind = ligne ? P.indices[s.truth] : s.truth === 'A' ? [] : P.indices[s.truth].slice(0, 1);
+    if (s.cycle >= 5 && ind.length && (s.flags.indices || 0) < 2 && g.hasard() < 0.14) { s.flags.indices = (s.flags.indices || 0) + 1; g.narr(g.pick(ind), true); return; }
     if (ligne && d && d.quand(g) && g.hasard() < 0.25) { s.flags.doutes++; d.ev.forEach(function (e) { e[0] === 'voix' ? g.voix(e[1]) : g.ecran(e[1]); }); return; }
     if (g.hasard() < 0.35) {
       var r = g.hasard(), l = null;
-      if (s.vie < 3 && r < 0.5) l = g.pick(P.vie18[s.vie]);
+      if (ligne && s.vie < 3 && r < 0.5) l = g.pick(P.vie18[s.vie]);
       else if (ligne && s.confiance >= 3 && r < 0.7) l = g.pick(P.confianceHaute);
       else if (ligne && s.confiance === 0 && s.stats.suivis >= 2 && r < 0.7) l = g.pick(P.confianceBasse);
       else if (ligne) l = g.pick(P.voix18);

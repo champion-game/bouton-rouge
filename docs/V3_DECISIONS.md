@@ -161,3 +161,11 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - **Indice à recouper** : le premier appel libre au 18 (`APP18`) donne une réplique propre à la vérité (`PHRASES.recoupe`). A ne connaît que sa pièce, B en sait trop sur toi, C devance tes pensées.
 - **Mini-histoires** : chaque fin (et Curiosité) se raconte en 4 planches image + texte avant le bilan (`HISTOIRES` dans `story.js`, affichage `histoireFin()` dans `game.js`). Toucher l'image ou « Suite » pour avancer, « Passer » pour aller au bilan. Illustrations attendues dans `assets/img/fins/<fin>_<n>.webp` ; en attendant, image provisoire du pack, grisée et marquée « ILLUSTRATION À VENIR ». Liste : `docs/ILLUSTRATIONS_FINS.md`.
 - Textes de fin enrichis : Coopération, Briser la boucle, L'Évasion.
+
+## Version 6.2 — cohérence des enchaînements
+
+- **Pendant un ordre**, toucher un autre objet rouvre l'ordre (Appuyer / Refuser). **Pendant un appel**, seul le téléphone répond (« Le téléphone sonne. Décroche, ou laisse sonner. »). Les poches ne lancent plus d'action pendant un ordre ou un appel.
+- **Le Système ne donne plus d'outils.** B2 : chaque pression ouvre une page du dossier (1 : « VOLONTAIRE : NON » → preuve `dossier` ; 2 : sessions antérieures ; 3 : code 7 _ _ 2). Le tiroir et le compartiment ne s'ouvrent plus seuls.
+- **Forcer le tiroir et le compartiment** exige que la caméra ne voie pas : coupure (moment 5, « Dans le noir, la caméra ne voit plus rien »), veste, caméra coupée ou tournée, ou angle mort (sous le bureau). Sinon : « La caméra te regarde. Il faudrait qu'elle ne voie rien. » Le compartiment donne directement le fusible.
+- **La 18 ne parle qu'avec la ligne ouverte** (`parle18` dans `engine.js`) : sans contact, à travers la vitre, un cri étouffé sans mots. Indices sans ligne : seulement ce qui se voit (rien en vérité A). En face à face (conduit, porte), sa voix n'arrive plus « au téléphone ».
+- Le toast « Un papier glisse sous la porte » au moment 4 est retiré : le mot de 16 arrive au moment 5, comme le dit le texte.

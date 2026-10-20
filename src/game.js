@@ -231,7 +231,6 @@
       if (t.sonne) ringT = setTimeout(function () { ringT = null; A.ring(false); if (!busy) R.render(s, roomInfo()); }, E.DUREES.appel * 1000);
     }
     else if (!lastEcran) R.ecran('TEST EN|COURS.');
-    if (s.cycle === 4 && !s.done.H1) { A.sfx('paper'); toast('Un papier glisse sous la porte.'); addHist('Un papier glisse sous la porte.'); }
     lastEcran = '';
     timeTotal = timeLeft = (t.duree || 0) * 1000; lastTick = performance.now(); lastSec = -1;
     if (tuto && s.cycle > 3) { tuto = false; try { localStorage.setItem(TUTO_KEY, '1'); } catch (e) {} }
@@ -267,7 +266,7 @@
   $('bag').addEventListener('click', function (e) {
     var b = e.target.closest('button.slot'); if (!b || !s || s.fin || paused) return;
     A.init();
-    var k = b.dataset.k, o = POCHE_OBJET[k], list = !busy && t && o ? t.objets[o] : null;
+    var k = b.dataset.k, o = POCHE_OBJET[k], list = !busy && t && o && !forcedKind() ? t.objets[o] : null;
     flashItems = flashItems.filter(function (x) { return x !== k; }); renderBag();
     if (list && list.length) { sel = o; objetPop(nomPoche(k), '', list, true); }
     else if (k === 'journal') { openPop('<div class="who"><span>' + esc(nomPoche(k)) + '</span><button class="x" data-close="1" aria-label="Fermer">×</button></div>' + (s.flags.journal || []).slice().sort(function (a, b) { return a.n - b.n; }).map(function (p) { return lettreHtml({ titre: p.titre, recto: p.lignes, signature: '—16' }); }).join(''), null); }
@@ -290,6 +289,9 @@
       if (!kind || kind === 'ordre') return act({ type: 'appuyer' });
       return toast('Le téléphone sonne.');
     }
+    // Pendant un ordre ou un appel, on ne fait pas ce qu'on veut : toucher autre chose ramène à la décision en cours.
+    if (kind === 'ordre' && k !== 'btn') { sel = t.forced.objet; objetPop('', '', [t.forced], true); return; }
+    if (kind === 'appel' && k !== 'phone') return toast('Le téléphone sonne. Décroche, ou laisse sonner.');
     if (k === 'phone' && (kind === 'appel' || (t.sonne && ringT))) { sel = 'phone'; A.ring(false); A.sfx('pickup'); objetPop('', '', t.objets.phone, kind === 'appel' ? false : true); R.render(s, roomInfo()); return; }
     if (t.objets[k]) { sel = k; objetPop(t.objets[k].length > 1 ? (TITRES[k] || '') : '', '', t.objets[k], true); if (k === 'phone') R.render(s, roomInfo()); return; }
     var txt = E.regarder(s, k);
