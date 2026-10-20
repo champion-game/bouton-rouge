@@ -166,6 +166,20 @@
   function estGratuit(id) { var ok = false; Object.keys(t.objets).forEach(function (o) { t.objets[o].forEach(function (x) { if (x.id === id && x.gratuit) ok = true; }); }); return ok; }
 
   // ---------- lecture des événements du moteur ----------
+  // Caméra du joueur sur le moniteur, quelques secondes. Seulement si elle a été autorisée au premier lancement :
+  // jamais de demande en pleine partie (si le navigateur a oublié l'accord, on passe).
+  async function cameraDirect(txt, my) {
+    if (!reglages.camera || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return true;
+    try { if (navigator.permissions) { var st = await navigator.permissions.query({ name: 'camera' }); if (st.state !== 'granted') return true; } } catch (e) {}
+    var flux = null;
+    try { flux = await Promise.race([navigator.mediaDevices.getUserMedia({ video: true }), new Promise(function (r) { setTimeout(function () { r(null); }, 2500); })]); } catch (e) { flux = null; }
+    if (!flux) return true;
+    if (my !== run) { flux.getTracks().forEach(function (k) { k.stop(); }); return false; }
+    R.camera(flux, txt); A.sfx('glitch'); addHist(ecranTxt(txt), 'ecr');
+    var ok = await wait(4500, my);
+    R.camera(null); flux.getTracks().forEach(function (k) { k.stop(); });
+    return ok;
+  }
   async function play(events, my, auto) {
     var lines = [];
     for (var i = 0; i < events.length; i++) {
@@ -179,6 +193,9 @@
           var n = R.ecran(e.txt, { glitch: 250 }); lastEcran = e.txt; A.sfx('glitch'); addHist(ecranTxt(e.txt), 'ecr'); await wait(tempsEcran(n), my); break;
         case 'tel': case 'narr': case 'voix': lines.push(e); addHist(e.txt, e.t === 'narr' ? '' : 'tel'); break;
         case 'image': lines.push(e); break;
+        case 'camera':
+          if (lines.length) { R.render(s, roomInfo()); renderBag(); var l1 = lines; lines = []; if (!(await montrer(l1, my, auto))) return false; }
+          if (!(await cameraDirect(e.txt, my))) return false; break;
         case 'papier': lines.push(e); addHist((e.p.titre ? e.p.titre + ' : ' : '') + e.p.recto.join(' '), 'tel'); break;
         case 'press': R.press(); A.sfx('clac'); await wait(250, my); break;
         case 'cri': R.harm(e.vie); A.sfx('cry'); await wait(700, my); break;
@@ -532,9 +549,10 @@
     $('timer').hidden = true; $('hintcap').hidden = true;
     var sv = lire(SAVE_KEY);
     $('contBtn').hidden = !(sv && sv.s);
-    panneau(null); $('intro').hidden = false;
+    // Premier lancement : on demande une fois l'accord pour la caméra.
+    panneau(reglages.camera == null ? 'camPanel' : null); $('intro').hidden = false;
   }
-  function panneau(id) { ['menuMain', 'finsPanel', 'setPanel'].forEach(function (p) { $(p).hidden = p !== (id || 'menuMain'); }); }
+  function panneau(id) { ['menuMain', 'finsPanel', 'setPanel', 'camPanel'].forEach(function (p) { $(p).hidden = p !== (id || 'menuMain'); }); }
   function entrer(f) {
     A.init(); A.startAmbience(); $('intro').hidden = true;
     // Sur téléphone : plein écran et paysage, quand le navigateur le permet.
@@ -566,9 +584,19 @@
   function majReglages() {
     Array.prototype.forEach.call(document.querySelectorAll('[data-vit]'), function (b) { b.setAttribute('aria-pressed', b.dataset.vit === reglages.vitesse); });
     $('sonSet').textContent = reglages.muet ? 'Non' : 'Oui'; $('sonSet').setAttribute('aria-pressed', !reglages.muet);
+    $('camSet').textContent = reglages.camera ? 'Oui' : 'Non'; $('camSet').setAttribute('aria-pressed', !!reglages.camera);
     $('passSet').textContent = reglages.passer ? 'Oui' : 'Non'; $('passSet').setAttribute('aria-pressed', !!reglages.passer);
   }
   Array.prototype.forEach.call(document.querySelectorAll('[data-vit]'), function (b) { b.onclick = function () { reglages.vitesse = b.dataset.vit; ecrire(REGLAGES_KEY, reglages); appliquer(); majReglages(); }; });
+  // Caméra : l'accord du navigateur est demandé ici (au menu), jamais en pleine partie. Le flux est coupé aussitôt.
+  function demanderCamera(fini) {
+    function garder(v) { reglages.camera = v; ecrire(REGLAGES_KEY, reglages); majReglages(); fini(); }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return garder(false);
+    navigator.mediaDevices.getUserMedia({ video: true }).then(function (f) { f.getTracks().forEach(function (k) { k.stop(); }); garder(true); }, function () { garder(false); });
+  }
+  $('camOui').onclick = function () { demanderCamera(function () { panneau(null); }); };
+  $('camNon').onclick = function () { reglages.camera = false; ecrire(REGLAGES_KEY, reglages); panneau(null); };
+  $('camSet').onclick = function () { if (reglages.camera) { reglages.camera = false; ecrire(REGLAGES_KEY, reglages); majReglages(); } else demanderCamera(function () {}); };
   $('passSet').onclick = function () { reglages.passer = !reglages.passer; ecrire(REGLAGES_KEY, reglages); majReglages(); };
   // Remise à zéro explicite de la mémoire du Système (et des fins découvertes).
   $('oubliSet').onclick = function () { ecrire(SESSION_KEY, null); ecrire(FOUND_KEY, null); this.textContent = 'Mémoire effacée'; };

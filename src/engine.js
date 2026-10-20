@@ -101,6 +101,8 @@
       son: function (n) { ev.push({ t: 'son', n: n }); },
       anim: function (n) { ev.push({ t: 'anim', n: n }); },
       image: function (n) { ev.push({ t: 'image', n: n }); },
+      // Image réelle de la caméra du joueur sur le moniteur (seulement s'il l'a autorisée), avec un texte.
+      camera: function (txt) { ev.push({ t: 'camera', txt: txt }); },
       papier: function (p) { ev.push({ t: 'papier', p: p }); },
       fin: function (id) { if (!s.fin) { s.fin = id; ev.push({ t: 'fin', id: id }); } },
       aveugle: function () { return cameraAveugle(s); },

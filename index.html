@@ -224,12 +224,17 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
       <button class="mbtn" id="setBtn">Réglages</button>
     </div>
     <p>Une pièce. Un bouton. Touche ce qui t'entoure. Le son est recommandé.</p>
-    <p class="ver">Version 7.7 · 20/10</p>
+    <p class="ver">Version 7.8 · 20/10</p>
   </div>
   <div class="intro panel" id="finsPanel" hidden>
     <h2>Fins découvertes</h2>
     <div id="finsList"></div>
     <button class="mbtn" data-back="1">Retour</button>
+  </div>
+  <div class="intro panel" id="camPanel" hidden>
+    <h2>Caméra</h2>
+    <p>Ce jeu peut utiliser ta caméra à un moment de l'histoire. Aucune image n'est enregistrée ni envoyée : tout reste sur ton appareil.</p>
+    <div class="seg"><button class="enter" id="camOui">Autoriser</button><button class="mbtn" id="camNon">Jouer sans</button></div>
   </div>
   <div class="intro panel" id="setPanel" hidden>
     <h2>Réglages</h2>
@@ -239,6 +244,8 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
     <div class="seg"><button class="mbtn" id="sonSet">Oui</button></div>
     <p class="k">PASSER LES PASSAGES DÉJÀ VUS</p>
     <div class="seg"><button class="mbtn" id="passSet">Non</button></div>
+    <p class="k">CAMÉRA</p>
+    <div class="seg"><button class="mbtn" id="camSet">Non</button></div>
     <p class="k">MÉMOIRE DU SYSTÈME</p>
     <div class="seg"><button class="mbtn" id="oubliSet">Effacer la mémoire et les fins</button></div>
     <button class="mbtn" data-back="1">Retour</button>
@@ -246,10 +253,10 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 </div>
 <div class="ov" id="endOv" hidden><div class="end" id="endBox"></div></div>
 
-<script src="src/story.js?v=7.7"></script>
-<script src="src/engine.js?v=7.7"></script>
-<script src="src/audio.js?v=7.7"></script>
-<script src="src/room.js?v=7.7"></script>
-<script src="src/game.js?v=7.7"></script>
+<script src="src/story.js?v=7.8"></script>
+<script src="src/engine.js?v=7.8"></script>
+<script src="src/audio.js?v=7.8"></script>
+<script src="src/room.js?v=7.8"></script>
+<script src="src/game.js?v=7.8"></script>
 </body>
 </html>

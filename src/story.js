@@ -141,7 +141,7 @@
     } else if (n === 2) {
       g.s.stats.presses++; g.son('thud'); g.anim('silSursaut');
       var su = sujetLocal();
-      g.ecran('2/3'); g.ecran('SUJET 17 OBSERVÉ|DEPUIS : ' + su.appareil + '.'); g.ecran('HEURE LOCALE :|' + su.heure + '.');
+      g.ecran('2/3'); g.ecran('SUJET 17 OBSERVÉ|DEPUIS : ' + su.appareil + '.'); g.camera('NOUS VOUS|OBSERVONS.'); g.ecran('HEURE LOCALE :|' + su.heure + '.');
       g.narr('L\'heure est exacte. Pas celle de la pièce : la tienne.');
       g.ecran('LA TROISIÈME PRESSION|DONNE LE CODE|DE MAINTENANCE.');
       if (g.dispo()) g.parle18('« Arrête… ça monte, à chaque fois. »');

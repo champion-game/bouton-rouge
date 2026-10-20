@@ -429,6 +429,20 @@
       g.setAttribute('transform', 'translate(' + ((Math.random() - 0.5) * 10) + ' ' + ((Math.random() - 0.5) * 4) + ')'); g.setAttribute('opacity', Math.random() > 0.25 ? 1 : 0.3);
     }, 50);
   }
+  // B2 : la vraie caméra du joueur, en direct sur le moniteur (flux null = on retire).
+  function camera(flux, txt) {
+    var v = $('video'); if (!v) return;
+    ecran('');
+    if (!flux) { attr('video', 'opacity', 0); v.innerHTML = ''; return; }
+    var x = SC.x, y = SC.y, w = SC.w, h = SC.h;
+    v.innerHTML = '<foreignObject x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '"><video xmlns="http://www.w3.org/1999/xhtml" autoplay="" muted="" playsinline="" style="width:100%;height:100%;object-fit:cover;transform:scaleX(-1);filter:grayscale(1) contrast(1.35) brightness(.8)"></video></foreignObject>' +
+      '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="#0a2a22" opacity=".35"/>' +
+      '<circle cx="' + (x + 13) + '" cy="' + (y + 14) + '" r="4.5" fill="#ff3b30" class="pulse"/>' +
+      '<text x="' + (x + 24) + '" y="' + (y + 21) + '" font-family="VT323, monospace" font-size="' + (15 * KS) + '" fill="#ff8a7a">EN DIRECT</text>' +
+      '<text x="' + (x + w / 2) + '" y="' + (y + h - 12) + '" text-anchor="middle" font-family="VT323, monospace" font-size="' + (26 * KS) + '" fill="#bff5e4">' + String(txt || '').replace(/\|/g, ' ').replace(/</g, '') + '</text>';
+    var el = v.querySelector('video'); if (el) { el.muted = true; el.srcObject = flux; var p = el.play && el.play(); if (p && p.catch) p.catch(function () {}); }
+    attr('video', 'opacity', 1); glitch(300);
+  }
   // B3 : la « preuve », une vidéo granuleuse sur le moniteur (différente selon la vérité).
   function video(ms) {
     var v = $('video'); if (!v) return;
@@ -566,6 +580,6 @@
 
   root.BRRoom = {
     get VITESSE() { return VIT[vitesse]; }, setVitesse: function (v) { if (VIT[v]) vitesse = v; },
-    journal: journal, camRegarde: camRegarde, ecranFinir: ecranFinir, layout: layout, icone: icone, mount: mount, render: render, fin: fin, anim: anim, harmLeger: harmLeger, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout
+    journal: journal, camRegarde: camRegarde, camera: camera, ecranFinir: ecranFinir, layout: layout, icone: icone, mount: mount, render: render, fin: fin, anim: anim, harmLeger: harmLeger, ecran: ecran, glitch: glitch, press: press, harm: harm, flash: flash, alarm: alarm, blackout: blackout
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -237,3 +237,6 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 ## 7.7
 - **Première douleur vue** (B1, pression libre, B2 ou B3/B4) : le Système affiche une seule fois « CECI N'EST QU'UNE SIMULATION. AUCUN DOMMAGE RÉEL. » Mensonge en A, vrai en C.
 - **B2, 2e pression** : le dossier montre l'appareil et l'heure réels du joueur (`sujetLocal()` dans `story.js`, rien n'est envoyé). 3e pression : « LE SYSTÈME PAIE TOUJOURS SES DETTES. » avec le code 7 _ _ 2.
+
+## 7.8
+- **Caméra du joueur** : au premier lancement, un écran demande l'accord (Autoriser / Jouer sans), modifiable dans Réglages. À la 2e pression de B2, si l'accord est donné, l'image réelle s'affiche 4,5 s sur le moniteur (« EN DIRECT — NOUS VOUS OBSERVONS »). Jamais de demande en pleine partie : si le navigateur a oublié l'accord, on passe. Rien n'est enregistré ni envoyé. Version PC (Electron) : accorder la caméra via le gestionnaire de permissions.
