@@ -210,3 +210,9 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 
 - Un moment libre sans geste pendant 60 s (chrono invisible) passe tout seul : le moniteur affiche « REPRISE DU PROTOCOLE DE TEST. ». Chaque geste relance l'attente ; lire un texte la met en pause. (18 sans signal : 30 s, puis l'évaluation se termine, inchangé.)
 - Mode test (`TEST = true` dans `game.js`, à passer à `false` pour la version finale) : un bouton dans la barre du bas affiche le temps restant de tout chrono ; le toucher accélère le temps (×1 / ×5).
+
+## 7.1
+
+- Plan commun en vérité B : elle entre seule, seringue et bipeur (plus de gardiens présents puis oubliés).
+- Le 00 (opérateur) se compose dès que la caméra l'a montré, même sans ligne ouverte avec la 18.
+- Le badge et l'enregistrement de l'inventaire s'utilisent aussi pendant un ordre (agir ailleurs = refuser, comme pour les objets de la pièce).

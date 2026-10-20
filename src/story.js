@@ -382,7 +382,7 @@
       quand: function (g) { return g.flag('ligne') === 'ouverte' && !g.done('APP17'); }, texte: 'Ton propre numéro.',
       A: { label: 'Composer le 17', fx: function (g) { g.narr('Une tonalité. Puis ta propre respiration, avec deux secondes de retard.'); if (g.truth === 'C') { g.tel('Ta voix, enregistrée : « Tu m\'entends ? »'); g.narr('Coupure.'); } else g.narr('Une boucle du micro. Coupure.'); } } },
     { id: 'APP00', objet: 'phone', fil: 'telephone', qui: 'COMPOSER LE 00 — CONTRÔLE', seul: true,
-      quand: function (g) { return g.flag('ligne') === 'ouverte' && g.has('operateur') && !g.flag('operateurOk'); }, texte: 'Le numéro que l\'opérateur t\'a laissé voir.',
+      quand: function (g) { return g.has('operateur') && !g.flag('operateurOk'); }, texte: 'Le numéro que l\'opérateur t\'a laissé voir.',
       A: { label: 'Composer le 00', fx: operateur } },
 
     // ---------- La pièce ----------
@@ -445,7 +445,7 @@
           g.narr('Tu déclenches le bus. Un instant. Puis un déclic, dans la pièce d\'à côté.');
           g.lose('plan');
           if (g.truth === 'A') { g.gain('verite'); g.narr('Les deux portes se déverrouillent.'); g.fin('cooperation'); }
-          else if (g.truth === 'B') { g.gain('verite'); g.tel('« C\'est bon. Ne bouge plus. »'); g.narr('Des pas dans le couloir. Ta porte s\'ouvre : elle entre, avec deux gardiens. Elle hésite sur le seuil.'); g.voix('« Ils ont ma fille. Je n\'avais pas le choix. »'); g.suite('RENCONTRE_B'); }
+          else if (g.truth === 'B') { g.gain('verite'); g.tel('« C\'est bon. Ne bouge plus. »'); g.narr('Des pas dans le couloir. Ta porte s\'ouvre : elle entre, seule, une seringue à la main. À sa ceinture, un bipeur. Elle hésite sur le seuil.'); g.voix('« Ils ont ma fille. Je n\'avais pas le choix. »'); g.suite('RENCONTRE_B'); }
           else { g.gain('verite'); g.narr('La voix continue dans le combiné… mais la silhouette derrière la vitre ne bouge plus. Image et voix ne sont pas liées.'); g.anim('silFige'); g.suite('RENCONTRE_C'); }
         } } },
 

@@ -283,7 +283,7 @@
   $('bag').addEventListener('click', function (e) {
     var b = e.target.closest('button.slot'); if (!b || !s || s.fin || paused) return;
     A.init();
-    var k = b.dataset.k, o = POCHE_OBJET[k], list = !busy && t && o && !forcedKind() && !verrou() ? t.objets[o] : null;
+    var k = b.dataset.k, o = POCHE_OBJET[k], list = !busy && t && o && forcedKind() !== 'impose' && !verrou() ? t.objets[o] : null;
     flashItems = flashItems.filter(function (x) { return x !== k; }); renderBag();
     if (list && list.length) { sel = o; objetPop(nomPoche(k), '', list, true); }
     else if (k === 'journal') { openPop('<div class="who"><span>' + esc(nomPoche(k)) + '</span><button class="x" data-close="1" aria-label="Fermer">×</button></div>' + (s.flags.journal || []).slice().sort(function (a, b) { return a.n - b.n; }).map(function (p) { return lettreHtml({ titre: p.titre, recto: p.lignes, signature: '—16' }); }).join(''), null); }
