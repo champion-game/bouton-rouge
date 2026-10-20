@@ -178,3 +178,10 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - **Trappe toujours visible**, verrouillée ; étiquette « DÉVERROUILLAGE — AUX 24 V » (indice du fusible). Le boîtier en défaut dit « AUX 24 V — HORS SERVICE ».
 - **Impression** : le moniteur note chaque geste vu (« 14:03:12 — SUJET 17 : TIROIR »), la caméra réagit (moteur, voyant), la 18 frappe à la vitre après 25 s sans geste (une fois par moment), la lumière baisse un peu à chaque pression et la lampe grésille.
 - Bouton « Attendre » gardé pendant les tests.
+
+## Corrections (20/10, version 6.4)
+
+- **Coupure** : la pièce reste éclairée jusqu'à « ALIMENTATION INSTABLE », et ne se rallume qu'à « RÉSEAU RÉTABLI ».
+- **La 18 hors téléphone** : ses phrases spontanées passent en bandeau « À travers la cloison : … », jamais en popup. Ses questions (`voix18`) ne viennent qu'au téléphone.
+- **Téléphone en deux temps** : décrocher → « Qui appeler ? » (liste des numéros) → la conversation et ses réponses. Un simple numéro se compose directement.
+- **Moniteur** : chaque manipulation interdite vue par la caméra s'affiche (« TRAPPE DÉVERROUILLÉE : ACTION NON AUTORISÉE. », `MANIP_ECRAN` dans `story.js`). Hors caméra, rien.

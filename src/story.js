@@ -85,6 +85,12 @@
     { quand: function (g) { return g.has('fusible'); }, ev: [['voix', '« Tu as récupéré le fusible ? »'], ['ecran', 'LE SUJET 18 CONNAÎT DES INFORMATIONS AUXQUELLES IL NE DEVRAIT PAS AVOIR ACCÈS.']] },
     { quand: function (g) { return g.s.items.length >= 3; }, ev: [['voix', '« Ils voient ce que tu ramasses. »'], ['ecran', 'FAUX.']] }
   ];
+  // Ce que le moniteur affiche quand la caméra voit une manipulation interdite.
+  var MANIP_ECRAN = {
+    grille: 'GRILLE DÉMONTÉE :|ACTION NON|AUTORISÉE.', boitier: 'BOÎTIER OUVERT :|ACTION NON|AUTORISÉE.',
+    fusible: 'FUSIBLE REMPLACÉ :|ACTION NON|AUTORISÉE.', trappe: 'TRAPPE OUVERTE :|ACTION NON|AUTORISÉE.',
+    sortie: 'TRAPPE DÉVERROUILLÉE :|ACTION NON|AUTORISÉE.', cache: 'MUR ALTÉRÉ :|ACTION NON|AUTORISÉE.'
+  };
   var REPLIQUES_OBJETS = {
     tournevis: { sys: ['TOURNEVIS OBTENU.', 'Veuillez reposer l\'outil.'] },
     badge: { sys: ['Identifiant expiré.', 'Veuillez détruire cet objet.'] },
@@ -241,7 +247,7 @@
         g.narr('Le bouton s\'enfonce. Cette fois, rien derrière la vitre : seulement un CLONK, dans ta porte.');
         g.ouvrirPorte('b5', 15);
         g.ecran('PORTE 17|DÉVERROUILLÉE.'); g.ecran('FERMETURE|AUTOMATIQUE|PROGRAMMÉE.');
-        if (g.dispo() && g.flag('ligne') === 'ouverte') g.voix('« …tu vas partir, alors. »');
+        if (g.dispo() && g.flag('ligne') === 'ouverte') g.parle18('« …tu vas partir, alors. »');
       } },
       B: { label: 'Refuser', fx: function (g) { refuser(g, ['Offre refusée.']); g.confiance(1, 'b5'); if (g.dispo()) g.parle18('« T\'es toujours là… »'); } } },
 
@@ -288,7 +294,7 @@
         } },
       B: { label: function (g) { return g.has('objectif') || g.has('plan') ? 'Abandonner' : 'Refuser'; },
         fx: function (g) {
-          if (g.has('objectif') || g.has('plan')) { g.annulerPromesse(); g.ecran('Engagement abandonné.'); if (g.dispo() && g.flag('ligne') === 'ouverte') g.voix('« …je m\'en doutais. »'); }
+          if (g.has('objectif') || g.has('plan')) { g.annulerPromesse(); g.ecran('Engagement abandonné.'); if (g.dispo() && g.flag('ligne') === 'ouverte') g.parle18('« …je m\'en doutais. »'); }
           else g.ecran('Refus enregistré.');
         } } },
 
@@ -448,9 +454,9 @@
       A: { label: 'Descendre aux archives', double: true,
         req: function (g) { return trappeOuvrable(g) && g.libreSuivant(); },
         raison: function (g) { return !trappeOuvrable(g) ? 'Le verrou est fermé : il faudrait le verrou manuel, le code ou le courant.' : 'Un ordre arrive bientôt : en descendant maintenant, tu le manquerais. Attends un peu.'; },
-        fx: function (g) { g.flag('awayCycle', g.cycle + 1); g.narr('Tu descends. Là-haut, la pièce continue sans toi.'); if (g.vu()) g.ecran('SUJET 17|NON VISIBLE.'); g.manip('trappe'); } },
+        fx: function (g) { g.flag('awayCycle', g.cycle + 1); g.narr('Tu descends. Là-haut, la pièce continue sans toi.'); if (g.manip('trappe') || g.vu()) g.ecran('SUJET 17|NON VISIBLE.'); } },
       B: { label: 'Préparer une sortie dérobée', req: function (g) { return trappeOuvrable(g); }, raison: 'Le verrou est fermé : il faudrait le verrou manuel, le code ou le courant.',
-        fx: function (g) { g.narr('Tu inspectes le mécanisme latéral : la trappe donne sur un vide technique, derrière la porte sécurisée. Tu retires une goupille.'); g.gain('sortieCachee'); g.ecran('SORTIE DÉROBÉE|PRÉPARÉE.'); g.manip('sortie'); } } },
+        fx: function (g) { g.narr('Tu inspectes le mécanisme latéral : la trappe donne sur un vide technique, derrière la porte sécurisée. Tu retires une goupille.'); g.gain('sortieCachee'); g.manip('sortie'); } } },
 
     { id: 'P5', objet: 'grille', fil: 'piece', qui: 'LE CONDUIT',
       quand: function (g) { return g.has('conduit') && !g.done('P5'); },
@@ -891,7 +897,7 @@
   };
 
   var api = {
-    FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, PREUVES: PREUVES, VERITES: VERITES, PHRASES: PHRASES, MEMOIRE: MEMOIRE, DOUTES: DOUTES,
+    FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, PREUVES: PREUVES, VERITES: VERITES, PHRASES: PHRASES, MEMOIRE: MEMOIRE, DOUTES: DOUTES, MANIP_ECRAN: MANIP_ECRAN,
     REPLIQUES_OBJETS: REPLIQUES_OBJETS, SITUATIONS: SITUATIONS, JOURNAL: JOURNAL, MOMENTS: MOMENTS, FINS: FINS, REGARDS: REGARDS,
     DESCRIPTIONS: DESCRIPTIONS, LETTRES: LETTRES, AIDES: AIDES, SESSIONS: SESSIONS,
     B2_PRESSION: B2_PRESSION, B2_ARRET: B2_ARRET, SEULE: SEULE, ARCHIVES: ARCHIVES, BILAN: BILAN, HISTOIRES: HISTOIRES, HISTOIRE: HISTOIRE, INTRO_EVENTS: INTRO_EVENTS

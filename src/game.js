@@ -22,6 +22,8 @@
   var s = null, t = null, run = 0, busy = true, paused = false, sel = null, tuto = false;
   var timeLeft = 0, timeTotal = 0, lastTick = 0, lastSec = -1, lastEcran = '', popDone = null, flashItems = [];
   var hist = [], introSil = false, confirmer = false, ringT = null;
+  // Coupure : la pièce ne s'éteint qu'à l'animation « panne », et ne se rallume qu'à « lumiere » (pas avant les messages).
+  var noirVu = false;
 
   function ecranTxt(t) { return t.replace(/-\|/g, '-').replace(/\|/g, ' '); }
   // Une lettre affichée comme un vrai papier (recto, et verso si on l'a gardée).
@@ -131,6 +133,19 @@
     });
     openPop(h, function () { sel = null; if (s && !s.fin) R.render(s, roomInfo()); });
   }
+  // Le combiné décroché : la liste des numéros, sans rien de la conversation.
+  function composerPop() {
+    var h = '<div class="who"><span>LE TÉLÉPHONE</span><button class="x" data-close="1" aria-label="Fermer">×</button></div><p>Qui appeler ?</p><div class="ab">';
+    t.objets.phone.forEach(function (x) { var q = String(x.qui).toLowerCase(); h += '<button class="ch" data-dial="' + x.id + '">' + esc(q.charAt(0).toUpperCase() + q.slice(1)) + '</button>'; });
+    openPop(h + '</div>', function () { sel = null; if (s && !s.fin) R.render(s, roomInfo()); });
+  }
+  function composer(id) {
+    var x = t.objets.phone.filter(function (y) { return y.id === id; })[0]; if (!x) return;
+    popDone = null;
+    // Un simple numéro à composer : on compose tout de suite. Sinon, la conversation et ses réponses.
+    if (!x.B && !x.C && x.A.ok && /^Composer/.test(x.A.label)) { $('pop').hidden = true; return act({ type: 'situation', id: x.id, choix: 'A' }); }
+    objetPop('', '', [x], true);
+  }
   $('pop').addEventListener('click', function (e) {
     var b = e.target.closest('button');
     if (!b) { if (e.target.id === 'pop' && $('card').querySelector('[data-go], [data-close]')) closePop(); return; }
@@ -138,6 +153,7 @@
     A.init();
     if (b.dataset.go && typer) return typer.finir(); // premier toucher : tout afficher
     if (b.dataset.go || b.dataset.close) return closePop();
+    if (b.dataset.dial) return composer(b.dataset.dial);
     if (b.dataset.ok) { confirmer = false; var a0 = JSON.parse(b.dataset.ok); popDone = null; $('pop').hidden = true; return act(a0); }
     if (b.dataset.no) { confirmer = false; return closePop(); }
     if (b.dataset.sit) {
@@ -179,6 +195,7 @@
         case 'cycle': if (e.n === 5 || e.n === 6) R.render(s, roomInfo()); break;
         case 'anim':
           if (e.n === 'silArrive') introSil = false;
+          if (e.n === 'panne') noirVu = true; else if (e.n === 'lumiere') noirVu = false;
           R.anim(e.n);
           if (e.n === 'silFrappe') A.sfx('knock'); else if (e.n === 'lumiere') A.sfx('lock'); else if (e.n === 'panne') A.sfx('gresil'); else if (e.n === 'camTourne') A.sfx('blink');
           await wait(e.n === 'lumiere' ? 900 : e.n === 'panne' ? 1100 : e.n === 'video' ? 5200 : 500, my); break;
@@ -206,14 +223,14 @@
   function roomInfo() {
     var k = forcedKind();
     return {
-      cameraAveugle: E.cameraAveugle(s), porteOuverte: E.porteOuverte(s), urgence: s.cycle === 5, silCachee: introSil,
+      cameraAveugle: E.cameraAveugle(s), porteOuverte: E.porteOuverte(s), urgence: noirVu, silCachee: introSil,
       ordre: !busy && k === 'ordre', sonne: sonne(), decroche: sel === 'phone' && !$('pop').hidden, ecoute: E.ecoute(s)
     };
   }
 
   function startCycle(my) {
     if (my !== run) return;
-    t = E.turn(s); busy = false; sel = null; confirmer = false;
+    t = E.turn(s); busy = false; sel = null; confirmer = false; noirVu = s.cycle === 5;
     var k = forcedKind();
     clearTimeout(ringT); ringT = null;
     if (k === 'ordre') R.ecran(t.forced.ecran, { color: '#ff8a7a' });
@@ -288,6 +305,8 @@
     }
     // Pendant un ordre ou un appel, on peut toucher autre chose : agir ailleurs vaut refus (le moteur le dit sur le moniteur).
     if (k === 'phone' && (kind === 'appel' || (t.sonne && ringT))) { sel = 'phone'; A.ring(false); A.sfx('pickup'); objetPop('', '', t.objets.phone, kind === 'appel' ? false : true); R.render(s, roomInfo()); return; }
+    // Téléphone : d'abord choisir qui appeler, ensuite quoi dire.
+    if (k === 'phone' && t.objets.phone && t.objets.phone.length > 1) { sel = 'phone'; A.sfx('pickup'); composerPop(); R.render(s, roomInfo()); return; }
     if (t.objets[k]) { sel = k; objetPop(t.objets[k].length > 1 ? (TITRES[k] || '') : '', '', t.objets[k], true); if (k === 'phone') R.render(s, roomInfo()); return; }
     var txt = E.regarder(s, k);
     if (txt) objetPop(TITRES[k] || '', txt, null, true);

@@ -85,8 +85,9 @@
       ecran: function (txt) { ev.push({ t: 'ecran', txt: txt }); },
       tel: function (txt) { ev.push({ t: 'tel', txt: txt }); },
       voix: function (txt) { ev.push({ t: 'voix', txt: txt }); },
-      // La 18 parle : des mots seulement si la ligne est ouverte ; sinon, à travers la vitre, un son étouffé.
-      parle18: function (txt) { if (s.flags.ligne === 'ouverte') ev.push({ t: 'voix', txt: txt }); else ev.push({ t: 'narr', txt: 'Derrière la vitre, un cri étouffé. Tu ne distingues pas les mots.' }); },
+      // La 18 parle hors téléphone : à travers la cloison (sa tasse contre le mur), en bandeau, jamais en popup.
+      // Sans ligne ouverte, seulement un son étouffé.
+      parle18: function (txt) { ev.push({ t: 'narr', txt: s.flags.ligne === 'ouverte' ? 'À travers la cloison : ' + txt : 'Derrière la vitre, un cri étouffé. Tu ne distingues pas les mots.' }); },
       narr: function (txt, pop) { ev.push(pop ? { t: 'narr', txt: txt, pop: true } : { t: 'narr', txt: txt }); }, // pop : texte important (gardien, indice) affiché en popup
       son: function (n) { ev.push({ t: 'son', n: n }); },
       anim: function (n) { ev.push({ t: 'anim', n: n }); },
@@ -128,7 +129,8 @@
         return true;
       },
       // Une manipulation interdite : +1 si la vidéo la voit.
-      manip: function (id, txt) { if (g.vu()) return g.incident(id, 1, txt); g.narr(cameraAveugle(s) ? 'La caméra n\'a rien vu.' : 'Angle mort : la caméra n\'a rien vu.'); return false; },
+      // Le moniteur affiche ce que la caméra voit : l'action est signalée à chaque fois.
+      manip: function (id, txt) { if (g.vu()) { if (S.MANIP_ECRAN[id]) g.ecran(S.MANIP_ECRAN[id]); return g.incident(id, 1, txt); } g.narr(cameraAveugle(s) ? 'La caméra n\'a rien vu.' : 'Angle mort : la caméra n\'a rien vu.'); return false; },
       // G1 : un objet interdit pris sous les yeux de la caméra sera repris au moment suivant.
       surveiller: function (k) { if (g.vu()) (s.flags.aConfisquer = s.flags.aConfisquer || []).push(k); },
       cacher: function () {
@@ -382,14 +384,13 @@
     // Sans ligne, seul l'indice visible (le premier de chaque liste, sauf en A) a du sens.
     var ind = ligne ? P.indices[s.truth] : s.truth === 'A' ? [] : P.indices[s.truth].slice(0, 1);
     if (s.cycle >= 5 && ind.length && (s.flags.indices || 0) < 2 && g.hasard() < 0.14) { s.flags.indices = (s.flags.indices || 0) + 1; g.narr(g.pick(ind), true); return; }
-    if (ligne && d && d.quand(g) && g.hasard() < 0.25) { s.flags.doutes++; d.ev.forEach(function (e) { e[0] === 'voix' ? g.voix(e[1]) : g.ecran(e[1]); }); return; }
+    if (ligne && d && d.quand(g) && g.hasard() < 0.25) { s.flags.doutes++; d.ev.forEach(function (e) { e[0] === 'voix' ? g.parle18(e[1]) : g.ecran(e[1]); }); return; }
     if (g.hasard() < 0.35) {
       var r = g.hasard(), l = null;
       if (ligne && s.vie < 3 && r < 0.5) l = g.pick(P.vie18[s.vie]);
       else if (ligne && s.confiance >= 3 && r < 0.7) l = g.pick(P.confianceHaute);
       else if (ligne && s.confiance === 0 && s.stats.suivis >= 2 && r < 0.7) l = g.pick(P.confianceBasse);
-      else if (ligne) l = g.pick(P.voix18);
-      if (l) g.voix(l);
+      if (l) g.parle18(l); // les questions de la 18 (voix18) restent pour le téléphone
     }
   }
 
