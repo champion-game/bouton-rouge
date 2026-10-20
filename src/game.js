@@ -441,7 +441,7 @@
   function texteFin(F) { return (s.flags.variante && F.variante && F.variante[s.flags.variante]) || F.texte; }
   async function finale(my) {
     var F = E.FINS[s.fin];
-    ecrire(SAVE_KEY, null);
+    if (!TEST) ecrire(SAVE_KEY, null);
     A.ring(false); A.ambiance({ actif: false }); $('timer').hidden = true; $('hintcap').hidden = true;
     R.ecran(F.crt === '_' ? '' : F.crt, { glitch: 500 });
     R.fin(s.fin);
@@ -477,8 +477,8 @@
   function loadFound() { try { return JSON.parse(localStorage.getItem(FOUND_KEY) || '{}') || {}; } catch (e) { return {}; } }
   function endScreen() {
     var found = loadFound(); found[s.fin] = 1;
-    try { localStorage.setItem(FOUND_KEY, JSON.stringify(found)); } catch (e) {}
-    ecrireMemoire({ sessions: s.memoire.session, dernier: E.souvenir(s) });
+    if (!TEST) { try { localStorage.setItem(FOUND_KEY, JSON.stringify(found)); } catch (e) {} }
+    if (!TEST) ecrireMemoire({ sessions: s.memoire.session, dernier: E.souvenir(s) });
     var F = E.FINS[s.fin];
     var ids = E.FIN_IDS.slice().sort(function (a, b) { return (E.FINS[a].bonus ? 99 : E.FINS[a].n) - (E.FINS[b].bonus ? 99 : E.FINS[b].n); });
     var nb = ids.filter(function (k) { return found[k] && !E.FINS[k].bonus; }).length;
@@ -578,11 +578,18 @@
   $('finsBtn').onclick = function () {
     var found = loadFound(), ids = E.FIN_IDS.slice().sort(function (a, b) { return (E.FINS[a].bonus ? 99 : E.FINS[a].n) - (E.FINS[b].bonus ? 99 : E.FINS[b].n); });
     var nb = ids.filter(function (k) { return found[k] && !E.FINS[k].bonus; }).length;
-    $('finsList').innerHTML = '<p class="k">' + nb + ' / 18</p><ol>' + ids.map(function (k) {
-      var F = E.FINS[k]; return '<li class="' + (found[k] ? 'on' : '') + '"><b>' + (F.bonus ? 'Bonus' : F.n) + '</b>' + (found[k] ? esc(F.titre) : '???') + '</li>';
+    $('finsList').innerHTML = '<p class="k">' + (TEST ? 'TEST : touche une fin pour la voir' : nb + ' / 18') + '</p><ol>' + ids.map(function (k) {
+      var F = E.FINS[k]; return '<li class="' + (found[k] || TEST ? 'on' : '') + '"' + (TEST ? ' data-fin="' + k + '" style="cursor:pointer"' : '') + '><b>' + (F.bonus ? 'Bonus' : F.n) + '</b>' + (found[k] || TEST ? esc(F.titre) : '???') + '</li>';
     }).join('') + '</ol>';
+    if (TEST) Array.prototype.forEach.call($('finsList').querySelectorAll('[data-fin]'), function (li) { li.onclick = function () { entrer(function () { voirFin(li.dataset.fin); }); }; });
     panneau('finsPanel');
   };
+  // Mode test (?test dans l'adresse) : voir directement une fin depuis le panneau « Fins », sans rien enregistrer.
+  var TEST = /[?&]test\b/.test(location.search);
+  function voirFin(k) {
+    run++; s = E.newGame(); s.fin = k; t = null; sel = null; flashItems = []; hist = [];
+    R.render(s, roomInfo()); renderBag(); finale(run);
+  }
   $('setBtn').onclick = function () { majReglages(); panneau('setPanel'); };
   Array.prototype.forEach.call(document.querySelectorAll('[data-back]'), function (b) { b.onclick = function () { panneau(null); }; });
   // Réglages : vitesse du texte et son (gardés dans ce navigateur).
