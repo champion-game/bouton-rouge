@@ -117,6 +117,20 @@
   }
   function refuser(g, lignes) { g.refus(); lignes.forEach(function (l) { g.ecran(l); }); }
 
+  // Données réelles du joueur (heure, appareil), lues sur place. Rien n'est envoyé. Repli neutre hors navigateur (tests).
+  function sujetLocal() {
+    var d = new Date(), h = d.getHours(), m = d.getMinutes();
+    var ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '', app = 'TERMINAL INCONNU';
+    if (/iPhone/.test(ua)) app = 'IPHONE';
+    else if (/iPad/.test(ua) || (/Macintosh/.test(ua) && typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1)) app = 'IPAD';
+    else if (/Android/.test(ua)) app = /Mobile/.test(ua) ? 'TÉLÉPHONE ANDROID' : 'TABLETTE ANDROID';
+    else if (/Windows/.test(ua)) app = 'PC WINDOWS';
+    else if (/Macintosh/.test(ua)) app = 'MAC';
+    else if (/CrOS/.test(ua)) app = 'CHROMEBOOK';
+    else if (/Linux/.test(ua)) app = 'PC LINUX';
+    return { heure: (h < 10 ? '0' : '') + h + ' H ' + (m < 10 ? '0' : '') + m, appareil: app };
+  }
+
   // B2, pression par pression (appelé par le moteur). Les récompenses déjà obtenues restent acquises.
   function B2_PRESSION(g, n) {
     if (n === 1) {
@@ -126,13 +140,17 @@
       if (g.dispo()) g.narr('Derrière la vitre, la silhouette sursaute.');
     } else if (n === 2) {
       g.s.stats.presses++; g.son('thud'); g.anim('silSursaut');
-      g.ecran('2/3'); g.ecran('SESSIONS|ANTÉRIEURES : 3.'); g.ecran('LA TROISIÈME PRESSION|DONNE LE CODE|DE MAINTENANCE.');
+      var su = sujetLocal();
+      g.ecran('2/3'); g.ecran('SUJET 17 OBSERVÉ|DEPUIS : ' + su.appareil + '.'); g.ecran('HEURE LOCALE :|' + su.heure + '.');
+      g.narr('L\'heure est exacte. Pas celle de la pièce : la tienne.');
+      g.ecran('LA TROISIÈME PRESSION|DONNE LE CODE|DE MAINTENANCE.');
       if (g.dispo()) g.parle18('« Arrête… ça monte, à chaque fois. »');
     } else {
       g.impulsion('reel'); g.obeir('B2');
       g.ecran('SÉQUENCE DE STIMULATION|TERMINÉE.');
       g.ecran('CODE MAINTENANCE|TRAPPE : 7 _ _ 2');
-      g.narr('Quatre chiffres, dont deux masqués : 7 _ _ 2.');
+      g.ecran('LE SYSTÈME PAIE|TOUJOURS|SES DETTES.');
+      g.narr('Quatre chiffres, dont deux masqués : 7 _ _ 2. Une sortie, offerte par ceux qui t\'enferment.');
       g.gain('code'); annonceCode(g);
     }
   }

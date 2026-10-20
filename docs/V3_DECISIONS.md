@@ -233,3 +233,7 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - **Boîtier** : on peut couper les deux circuits, et recouper après une réparation.
 - **Refaire une action interdite** compte à nouveau (+1 à chaque fois).
 - Le fusible n'est jamais retiré (il répare une panne du Système).
+
+## 7.7
+- **Première douleur vue** (B1, pression libre, B2 ou B3/B4) : le Système affiche une seule fois « CECI N'EST QU'UNE SIMULATION. AUCUN DOMMAGE RÉEL. » Mensonge en A, vrai en C.
+- **B2, 2e pression** : le dossier montre l'appareil et l'heure réels du joueur (`sujetLocal()` dans `story.js`, rien n'est envoyé). 3e pression : « LE SYSTÈME PAIE TOUJOURS SES DETTES. » avec le code 7 _ _ 2.

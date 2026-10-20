@@ -174,14 +174,16 @@
           return;
         }
         if (!dispo18(s)) { g.narr('Un relais claque. Derrière la vitre, rien ne bouge.'); return; }
-        if (kind === 'apparent') { ev.push({ t: 'cri', vie: s.vie }); g.parle18(g.pick(S.PHRASES.douleur)); return; }
+        if (kind === 'apparent') { ev.push({ t: 'cri', vie: s.vie }); g.parle18(g.pick(S.PHRASES.douleur)); rassurer(); return; }
         var avant = s.vie;
         if (kind === 'fatal') { s.vie = 0; if (s.truth === 'A') s.etat = 3; }
         else { s.vie = Math.max(0, s.vie - 1); if (s.truth === 'A') s.etat = Math.min(3, s.etat + 1); }
         if (s.vie < avant) s.stats.blessures++;
         ev.push({ t: 'cri', vie: s.vie });
         if (s.vie === 0) { plusDeSignal(s, g); g.narr('Les trois voyants s\'éteignent. Derrière la vitre, plus rien ne bouge.'); }
-        else g.parle18(g.pick(S.PHRASES.vie18[s.vie]));
+        else { g.parle18(g.pick(S.PHRASES.vie18[s.vie])); rassurer(); }
+        // Première douleur vue : le Système rassure (mensonge en A, vrai en C).
+        function rassurer() { if (s.flags.rassure) return; s.flags.rassure = true; g.ecran('CECI N\'EST|QU\'UNE SIMULATION.'); g.ecran('AUCUN DOMMAGE|RÉEL.'); }
       },
       // La 18 agit seule (vérité A) : une vraie dégradation, sans pression du joueur.
       impulsionSeule: function () {
