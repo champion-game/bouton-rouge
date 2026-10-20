@@ -341,7 +341,8 @@
     // Téléphone : d'abord choisir qui appeler, ensuite quoi dire.
     if (k === 'phone' && t.objets.phone && t.objets.phone.length > 1) { sel = 'phone'; A.sfx('pickup'); composerPop(); R.render(s, roomInfo()); return; }
     // Le carnet : ce que tu as appris, écrit à la main (gratuit).
-    if (k === 'carnet') { A.sfx('paper'); openPop('<div class="who"><span>LE CARNET</span><button class="x" data-close="1" aria-label="Fermer">×</button></div>' + lettreHtml({ titre: 'TES NOTES', recto: E.carnet(s) }), null); return; }
+    if (k === 'carnet') { A.sfx('paper'); var notes = E.carnet(s), nc = notes.join(' ').length + notes.length * 12, kc = Math.max(0.65, Math.min(1, Math.sqrt(260 / nc)));
+      openPop('<div class="who"><span>LE CARNET</span><button class="x" data-close="1" aria-label="Fermer">×</button></div>' + lettreHtml({ titre: 'TES NOTES', recto: notes }).replace('class="lettre"', 'class="lettre carnet" style="--k:' + kc.toFixed(2) + '"'), null); return; }
     // S'approcher de la vitre : la 18 réagit (recule, s'approche, pose sa paume, se détourne).
     var reac = '';
     if (k === 'window' && reaction18C !== s.seed + ':' + s.cycle) { var r = E.reaction18(s); if (r) { reaction18C = s.seed + ':' + s.cycle; R.anim(r.anim); reac = r.narr; } }

@@ -208,15 +208,10 @@
   '<g id="phone" class="hs" data-k="phone"><rect x="500" y="440" width="172" height="104" fill="transparent"/><g id="phoneInner">' +
   I('telImg', 'tel_pose', 479.3, 445.5, 188.4, 99.6) + I('telImg2', 'tel_decroche', 479.3, 445.5, 188.4, 99.6, ' opacity="0"') + '</g>' +
   '<circle id="ecouteLed" cx="640" cy="520" r="4.5" fill="#ff3b30" class="pulse" opacity="0"/></g>' +
-  // carnet de notes (dessin provisoire : un bloc posé à plat, un crayon)
-  '<g id="carnet" class="hs" data-k="carnet"><rect x="916" y="500" width="80" height="50" fill="transparent"/>' +
-  '<ellipse cx="958" cy="543" rx="38" ry="4" fill="#000" opacity=".55" filter="url(#ombreP)"/>' +
-  '<polygon points="926,542 990,542 990,545 926,545" fill="#6e6655"/>' +
-  '<polygon points="926,542 990,542 983,527 931,527" fill="#d6ccb0"/>' +
-  '<polygon points="926,542 990,542 983,527 931,527" fill="url(#poolG)" opacity=".6"/>' +
-  '<g stroke="#8f8670" stroke-width=".8" opacity=".8"><line x1="934" y1="531" x2="980" y2="531"/><line x1="932" y1="535" x2="983" y2="535"/><line x1="930" y1="539" x2="986" y2="539"/></g>' +
-  '<line x1="931" y1="527.5" x2="983" y2="527.5" stroke="#3a3428" stroke-width="1.6" stroke-dasharray="2 2.4"/>' +
-  '<line x1="944" y1="544" x2="981" y2="533" stroke="#c9a23a" stroke-width="2.4" stroke-linecap="round"/><line x1="979" y1="533.6" x2="983" y2="532.4" stroke="#2b2620" stroke-width="2.4" stroke-linecap="round"/>' +
+  // carnet de notes (dessin de l'artiste, aplati pour suivre la perspective du plateau)
+  '<g id="carnet" class="hs" data-k="carnet"><rect x="916" y="500" width="84" height="50" fill="transparent"/>' +
+  '<ellipse cx="958" cy="544" rx="40" ry="4" fill="#000" opacity=".55" filter="url(#ombreP)"/>' +
+  I('carnetImg', 'carnet', 918, 515, 80, 31) +
   '</g>' +
   '<g class="hs" data-k="mug"><rect x="998" y="452" width="90" height="82" fill="transparent"/>' + I('mugImg', 'tasse', 1010, 468, 65.3, 58) + '</g>' +
   '</g></g>' +

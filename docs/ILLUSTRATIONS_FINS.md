@@ -6,7 +6,7 @@ Chaque fin se raconte en 4 planches avant le bilan. Tant qu'une illustration man
 
 - Format : WebP. Les planches livrées sont en 4:3 (≈ 660 × 490) ; le cadre 16:9 les recadre au centre.
 - Style : celui du pack graphique (sombre, grain, lumière froide), sans texte incrusté (le texte s'affiche à côté).
-- Total : 76 illustrations. Livrées (8.4) : 72, découpées depuis les grilles 2 × 2 d'Amine. **Manquent : les 4 de La porte dérobée (`porteDerobee_1` à `_4`).**
+- Total : 76 illustrations. Toutes livrées (8.6), découpées depuis les grilles 2 × 2 d'Amine.
 
 ## Sujet conforme (fin 1)
 
@@ -192,4 +192,5 @@ Chaque fin se raconte en 4 planches avant le bilan. Tant qu'une illustration man
 
 | Fichier | Provisoire | Ce qu'il montre |
 |---|---|---|
-| `carnet.webp` | dessin SVG dans `room.js` (groupe `carnet`) | Un petit bloc-notes posé à plat sur le plateau, entre le bouton et la tasse, avec un crayon. |
+| `carnet.webp` | livré (8.6), détouré | Le carnet sur le plateau (groupe `carnet` dans `room.js`). |
+| `carnet_page.webp` | livré (8.6) | Le carnet vu de dessus : fond de « TES NOTES » quand on le touche. |

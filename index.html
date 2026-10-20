@@ -119,6 +119,8 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 .gravure{background:url(assets/img/socle.webp) 50% 30%/300% auto;border-radius:4px;padding:22px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:inset 0 0 40px rgba(0,0,0,.7)}
 .gravure b{font-family:"Reenie Beanie",cursive;font-weight:400;font-size:1.9rem;line-height:1;color:#e6e9e4;text-shadow:0 1px 0 #000,0 -1px 0 rgba(255,255,255,.25);letter-spacing:.06em}
 .lettre .sig{text-align:right;font-size:1.7rem;margin-top:6px;color:#7a1d16}
+.lettre.carnet,.card .lettre.carnet{--h:min(440px,calc(100dvh - 96px));box-sizing:border-box;height:var(--h);width:calc(var(--h) * .773);margin:4px auto;background-image:url(assets/img/carnet_page.webp);transform:rotate(-1deg);padding:calc(var(--h) * .07) calc(var(--h) * .19) 0 calc(var(--h) * .16);font-size:calc(var(--h) * .06 * var(--k,1));text-align:left;overflow-y:auto;scrollbar-width:none;box-shadow:none}
+.lettre.carnet > span{margin-top:4px}
 .lettre.verso{transform:rotate(1deg);font-size:1.7rem;margin-top:10px}
 .lettre.verso span{display:block;font-family:var(--f-body);font-size:.62rem;letter-spacing:.14em;color:#8a826f;text-align:left;margin-bottom:4px}
 .card .sep{border-top:1px solid var(--line)}
@@ -227,7 +229,7 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
       <button class="mbtn" id="setBtn">Réglages</button>
     </div>
     <p>Une pièce. Un bouton. Touche ce qui t'entoure. Le son est recommandé.</p>
-    <p class="ver">Version 8.5 · 20/10</p>
+    <p class="ver">Version 8.6 · 20/10</p>
   </div>
   <div class="intro panel" id="finsPanel" hidden>
     <h2>Fins découvertes</h2>
@@ -256,10 +258,10 @@ button.slot.flash{border-color:var(--green);box-shadow:0 0 0 2px rgba(62,224,143
 </div>
 <div class="ov" id="endOv" hidden><div class="end" id="endBox"></div></div>
 
-<script src="src/story.js?v=8.5"></script>
-<script src="src/engine.js?v=8.5"></script>
-<script src="src/audio.js?v=8.5"></script>
-<script src="src/room.js?v=8.5"></script>
-<script src="src/game.js?v=8.5"></script>
+<script src="src/story.js?v=8.6"></script>
+<script src="src/engine.js?v=8.6"></script>
+<script src="src/audio.js?v=8.6"></script>
+<script src="src/room.js?v=8.6"></script>
+<script src="src/game.js?v=8.6"></script>
 </body>
 </html>
