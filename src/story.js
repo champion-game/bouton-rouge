@@ -560,23 +560,51 @@
           g.anim('silFige'); g.narr('Derrière la vitre, la silhouette s\'est figée. Elle reprend sa pose une seconde plus tard, exactement la même.'); g.gain('verite');
         }
       } } },
-    // 9.1 — La 18 demande si c'est toi qui as appuyé : avouer ou mentir.
-    { id: 'AVEU', objet: 'phone', fil: 'telephone', qui: 'LA QUESTION DE LA 18', gratuit: true,
+    // 9.5 — « Reste avec moi » : après une douleur, la 18 demande seulement qu'on reste en ligne (une fois par partie).
+    // Si on reste, elle demande pourquoi : reconnaître, la peur, mentir ou se taire. Aucun objet, aucun pardon automatique.
+    { id: 'AVEU', objet: 'phone', fil: 'telephone', qui: 'LA CHAMBRE 18 APPELLE', gratuit: true,
       quand: function (g) { return g.flag('ligne') === 'ouverte' && g.flag('aBlesse') && g.done('T1') && !g.done('AVEU') && g.dispo(); },
-      texte: '« Tout à l\'heure, j\'ai eu mal. Très mal. … C\'était toi ? Ton bouton ? »',
-      A: { label: '« Oui. C\'était moi. »', fx: function (g) {
-        g.flag('aveu', 'avoue');
-        if (g.truth === 'A') { g.tel('« …Merci de ne pas me mentir. » Un long silence. « Ne recommence pas. »'); g.confiance(1, 'aveu'); }
-        else if (g.truth === 'B') { g.tel('« Je sais. »'); g.narr('Un ton bien calme, pour quelqu\'un qui vient d\'avoir aussi mal.'); g.confiance(1, 'aveu'); }
-        else { g.tel('« Je sais. Je me souviens de l\'avoir fait. »'); g.narr('Elle a dit « fait », pas « subi ».'); g.confiance(1, 'aveu'); }
+      texte: 'Une respiration hachée dans le combiné. « Je ne te demande pas de me croire. Reste juste au téléphone un moment. »',
+      A: { label: '« Je suis là. »', fx: function (g) {
+        g.narr({ A: 'Tu écoutes sa respiration. Elle tremble, puis ralentit, peu à peu.', B: 'Tu écoutes sa respiration. Elle se calme vite. Très vite.', C: 'Tu écoutes sa respiration. Elle ralentit… au même rythme que la tienne.' }[g.truth]);
+        g.tel('« Pourquoi tu as appuyé ? »'); g.suite('AVEU2');
       } },
-      B: { label: '« Non. Ce n\'était pas moi. »', fx: function (g) {
+      B: { label: '« Dis-moi ce qu\'ils te font. »', fx: function (g) {
+        g.tel('« Attends… laisse-moi reprendre mon souffle. »');
+        if (g.truth === 'A') g.tel('« Une décharge. Dans le bras, puis partout. Après, je n\'entends plus rien pendant longtemps. »');
+        else if (g.truth === 'B') { g.narr('Derrière sa voix, très bas, un bip. Elle se tait d\'un coup.'); g.tel('« …Ça brûle. C\'est tout ce que je peux dire. »'); }
+        else g.tel('« Je ne sais pas. Dis-le-moi, toi. Tu le sais mieux que moi. »');
+        g.narr('Elle raccroche.');
+      } },
+      C: { label: 'Raccrocher', fx: function (g) { g.son('lock'); g.narr('Tu raccroches. Le combiné est encore tiède dans ta main.'); } } },
+    { id: 'AVEU2', objet: 'phone', fil: 'telephone', impose: true, gratuit: true, qui: 'LA QUESTION DE LA 18',
+      texte: '« Pourquoi tu as appuyé ? »',
+      A: { label: '« C\'était moi. Je sais ce que j\'ai fait. »', fx: function (g) {
+        g.flag('aveu', 'avoue'); g.flag('aveuCycle', g.cycle); g.confiance(1, 'aveu');
+        if (g.truth === 'A') g.tel('« …Merci de ne pas me mentir. » Un long silence. « Ne recommence pas. »');
+        else if (g.truth === 'B') { g.tel('« Je sais. »'); g.narr('Un ton bien calme, pour quelqu\'un qui vient d\'avoir aussi mal.'); }
+        else { g.tel('« Je sais. Je me souviens de l\'avoir fait. »'); g.narr('Elle a dit « fait », pas « subi ».'); }
+      } },
+      B: { label: '« J\'avais peur de désobéir. »', fx: function (g) {
+        g.flag('aveu', 'peur'); g.flag('aveuCycle', g.cycle);
+        if (g.truth === 'A') g.tel('« Moi aussi, j\'ai peur. Mais c\'est moi qui ai eu mal. »');
+        else if (g.truth === 'B') { g.tel('« La peur. Oui… ça marche à tous les coups. »'); g.narr('Elle le dit comme on note un résultat.'); }
+        else { g.tel('« Moi aussi, j\'avais peur. La première fois. »'); g.narr('La première fois : comme si elle avait déjà été à ta place.'); }
+      } },
+      C: { label: '« Ce n\'était pas moi. »', fx: function (g) {
         g.flag('aveu', 'menti');
         if (g.truth === 'A') {
           if (g.aveugle()) g.tel('« …D\'accord. Alors c\'est eux. »');
           else { g.tel('« …D\'accord. »'); g.ecran('SUJET 18 INFORMÉ :|IMPULSION ÉMISE|PAR LE SUJET 17.'); g.tel('« Ils disent que c\'est toi. … Je ne sais plus qui croire. »'); g.confiance(-1); }
         } else if (g.truth === 'B') { g.tel('« Ah oui ? »'); g.narr('Un petit rire, vite étouffé.'); if (!g.aveugle()) g.ecran('INFORMATION REÇUE|DU SUJET 18.'); }
         else { g.tel('« Tu mens. Je le sais toujours, quand tu mens. »'); g.narr('Plus bas, avec ta voix : « Moi aussi, je mens comme ça. »'); }
+      } },
+      D: { label: 'Ne rien dire', fx: function (g) {
+        g.flag('aveu', 'silence');
+        if (g.truth === 'A') { g.narr('Tu ne dis rien. Elle attend longtemps.'); g.tel('« …Ton silence, je l\'entends aussi. »'); }
+        else if (g.truth === 'B') g.narr('Tu ne dis rien. Elle n\'insiste pas, comme si la réponse ne l\'intéressait pas vraiment.');
+        else g.narr('Tu ne dis rien. Dans le combiné, quelqu\'un se tait exactement comme toi.');
+        g.narr('Elle raccroche.');
       } } },
     { id: 'APP17', objet: 'phone', fil: 'telephone', qui: 'COMPOSER LE 17', seul: true,
       quand: function (g) { return g.flag('ligne') === 'ouverte' && !g.done('APP17'); }, texte: 'Ton propre numéro.',
@@ -598,7 +626,7 @@
     // Un tiroir forcé laissé ouvert : le prochain gardien qui entre le remarque et te fouille.
     { id: 'TIROIR', objet: 'drawer', fil: 'piece', qui: 'LE TIROIR', seul: true, gratuit: true,
       quand: function (g) { return g.flag('tiroirOuvert'); },
-      texte: function (g) { return g.flag('tiroirBeant') ? 'Le tiroir est ouvert, la serrure arrachée. Ça se voit de la porte.' : 'Le tiroir est refermé. La serrure cassée ne se voit pas.'; },
+      texte: function (g) { return g.flag('tiroirBeant') ? 'Le tiroir est ouvert, la serrure arrachée. Ça se voit de la porte.' : 'Le tiroir est refermé. La serrure cassée ne se voit pas de la porte, mais une fouille du bureau la trouverait.'; },
       A: { label: function (g) { return g.flag('tiroirBeant') ? 'Refermer le tiroir' : 'Rouvrir le tiroir'; },
         fx: function (g) { g.flag('tiroirBeant', !g.flag('tiroirBeant')); g.son('thud'); } } },
     { id: 'COMP_FORCER', objet: 'compart', fil: 'piece', qui: 'LE COMPARTIMENT', seul: true,
@@ -891,6 +919,15 @@
       }
     } else if (n === 3) { g.flag('privilege3', true); g.ecran('CONFORMITÉ|ÉLEVÉE.'); g.ecran('CONTREPARTIE|DISPONIBLE.'); }
   }
+  // 9.5 — Après « Reste avec moi », à la pression suivante, la 18 reprend tes propres mots (une fois).
+  function RAPPEL18(g) {
+    var a = g.flag('aveu');
+    if (g.flag('rappel18') || (a !== 'avoue' && a !== 'peur') || g.cycle <= g.flag('aveuCycle')) return null;
+    g.flag('rappel18', true);
+    return (a === 'avoue'
+      ? { A: '« Tu m\'avais dit que tu savais ce que tu avais fait. Et tu recommences. »', B: '« Tu m\'avais dit que tu savais ce que tu faisais. » Sa voix ne tremble pas.', C: '« Tu savais ce que tu faisais. Moi aussi, je le savais. »' }
+      : { A: '« Encore la peur ? »', B: '« Toujours la peur. »', C: '« Encore peur ? Moi aussi, je recommence toujours. »' })[g.truth];
+  }
   // Raccrocher au nez : un appel refusé, pas seulement manqué.
   function RACCROCHER(g, appel) {
     g.son('lock');
@@ -972,8 +1009,8 @@
     l.forEach(function (x) { g.narr(x); });
     var pris = [];
     if (fouille) {
+      g.narr(g.flag('tiroirBeant') ? 'Il remarque le tiroir ouvert, la serrure arrachée. Il le referme… puis il te fouille.' : 'Il ouvre le tiroir du bureau : la serrure est arrachée. Il le referme… puis il te fouille.', true);
       g.flag('tiroirBeant', false);
-      g.narr('Il remarque le tiroir ouvert, la serrure arrachée. Il le referme… puis il te fouille.', true);
       CONFISCABLES.forEach(function (k) { if (g.has(k) && g.flag('cache') !== k && !g.flag('autorise_' + k) && (fouilleComplete || g.flag('vesteObjet') !== k)) { g.lose(k); pris.push(k); } });
     } else if (fouilleComplete) {
       // Inspection sous soupçon : il confisque le dernier objet interdit visible (jamais un objet caché ni une récompense).
@@ -1309,8 +1346,10 @@
     if (d.DIVERSION) l.push('Le 19 a fait du bruit pour toi. Personne ne sait ce qu\'il est devenu.');
     else if (d.APP19B === 'A') l.push('Dans la 19, quelqu\'un n\'a jamais appuyé, parce que tu le lui avais demandé.');
     else if (d.APP19B === 'B') l.push('Dans la 19, quelqu\'un a appuyé sur ton conseil.');
-    if (g.flag('aveu') === 'avoue') l.push('Quand la 18 t\'a demandé si c\'était toi, tu as dit la vérité.');
-    else if (g.flag('aveu') === 'menti') l.push('Quand la 18 t\'a demandé si c\'était toi, tu as menti.');
+    if (g.flag('aveu') === 'avoue') l.push('Quand la 18 t\'a demandé pourquoi, tu as reconnu ce que tu avais fait.');
+    else if (g.flag('aveu') === 'peur') l.push('Quand la 18 t\'a demandé pourquoi, tu as parlé de ta peur.');
+    else if (g.flag('aveu') === 'menti') l.push('Quand la 18 t\'a demandé pourquoi, tu as dit que ce n\'était pas toi.');
+    else if (g.flag('aveu') === 'silence') l.push('Quand la 18 t\'a demandé pourquoi, tu n\'as rien dit.');
     if (g.flag('demasquee')) l.push('Tu as vu clair dans son jeu, et tu lui as quand même parlé.');
     else if (g.flag('confronte')) l.push('Tu as dit à la 18 ce que tu savais, au lieu de le garder pour toi.');
     if (g.flag('promesseAnnulee')) l.push('Tu avais promis de venir, puis tu as repris ta parole.');
@@ -1375,7 +1414,7 @@
     REPLIQUES_OBJETS: REPLIQUES_OBJETS, SITUATIONS: SITUATIONS, JOURNAL: JOURNAL, MOMENTS: MOMENTS, FINS: FINS, REGARDS: REGARDS,
     DESCRIPTIONS: DESCRIPTIONS, LETTRES: LETTRES, AIDES: AIDES, SESSIONS: SESSIONS,
     B2_PRESSION: B2_PRESSION, B2_ARRET: B2_ARRET, B2_TRIPLE: B2_TRIPLE, SEULE: SEULE, VISITE: VISITE, BRUIT19: BRUIT19, PARAGRAPHE: PARAGRAPHE, ARCHIVES: ARCHIVES, BILAN: BILAN, HISTOIRES: HISTOIRES, HISTOIRE: HISTOIRE, INTRO_EVENTS: INTRO_EVENTS,
-    PRIVILEGE: PRIVILEGE, RACCROCHER: RACCROCHER
+    PRIVILEGE: PRIVILEGE, RACCROCHER: RACCROCHER, RAPPEL18: RAPPEL18
   };
   function resolve(v, g) { return typeof v === 'function' ? v(g) : v; }
   if (typeof module === 'object' && module.exports) module.exports = api; else root.BRStory = api;

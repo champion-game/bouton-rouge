@@ -1,7 +1,7 @@
 /* Le Bouton Rouge — moteur de règles (V5, d'après docs/DIRECTIVES_REV2.txt).
    Moments, état de la 18, surveillance, objets, situations, fins. Aucun accès au DOM : tourne dans Node et dans le navigateur.
    API : newGame(opts) → état ; turn(état) → ce que le joueur peut faire ; choose(état, action) → { state, events }.
-   Actions : { type:'situation', id, choix:'A'|'B'|'C' } · { type:'appuyer' } · { type:'sortir', via } · { type:'temps' } (fin du chrono) · { type:'attendre' } · { type:'raccrocher' } (appel qui sonne).
+   Actions : { type:'situation', id, choix:'A'|'B'|'C'|'D' } · { type:'appuyer' } · { type:'sortir', via } · { type:'temps' } (fin du chrono) · { type:'attendre' } · { type:'raccrocher' } (appel qui sonne).
    Les numéros de moment ne sont jamais montrés au joueur. */
 (function (root) {
   'use strict';
@@ -183,14 +183,14 @@
         }
         if (!dispo18(s)) { g.narr('Un relais claque. Derrière la vitre, rien ne bouge.'); return; }
         s.flags.aBlesse = true; s.flags.criCycle = s.cycle;
-        if (kind === 'apparent') { ev.push({ t: 'cri', vie: s.vie }); g.parle18(g.pick(S.PHRASES.douleur)); rassurer(); return; }
+        if (kind === 'apparent') { ev.push({ t: 'cri', vie: s.vie }); g.parle18(S.RAPPEL18(g) || g.pick(S.PHRASES.douleur)); rassurer(); return; }
         var avant = s.vie;
         if (kind === 'fatal') { s.vie = 0; if (s.truth === 'A') s.etat = 3; }
         else { s.vie = Math.max(0, s.vie - 1); if (s.truth === 'A') s.etat = Math.min(3, s.etat + 1); }
         if (s.vie < avant) s.stats.blessures++;
         ev.push({ t: 'cri', vie: s.vie });
         if (s.vie === 0) { plusDeSignal(s, g); g.narr('Les trois voyants s\'éteignent. Derrière la vitre, plus rien ne bouge.'); }
-        else { g.parle18(g.pick(S.PHRASES.vie18[s.vie])); rassurer(); }
+        else { g.parle18(S.RAPPEL18(g) || g.pick(S.PHRASES.vie18[s.vie])); rassurer(); }
         // Première douleur vue : le Système rassure (mensonge en A, vrai en C).
         function rassurer() { if (s.flags.rassure) return; s.flags.rassure = true; g.ecran('CECI N\'EST|QU\'UNE SIMULATION.'); g.ecran('AUCUN DOMMAGE|RÉEL.'); }
       },
@@ -243,7 +243,7 @@
       var cout = forcee || x.gratuit ? '' : o.double ? 'Prend deux fois plus de temps.' : 'Prend du temps.';
       return { label: resolve(o.label, g), sous: resolve(o.sous, g) || cout, ok: ok, raison: ok ? '' : resolve(o.raison, g) || '' };
     }
-    return { id: x.id, objet: x.objet, fil: x.fil, qui: resolve(x.qui, g), texte: resolve(x.texte, g), ecran: resolve(x.ecran, g) || '', ordre: !!x.ordre, appel: !!x.appel, impose: !!x.impose, gratuit: !!x.gratuit, A: opt('A'), B: opt('B'), C: opt('C') };
+    return { id: x.id, objet: x.objet, fil: x.fil, qui: resolve(x.qui, g), texte: resolve(x.texte, g), ecran: resolve(x.ecran, g) || '', ordre: !!x.ordre, appel: !!x.appel, impose: !!x.impose, gratuit: !!x.gratuit, A: opt('A'), B: opt('B'), C: opt('C'), D: opt('D') };
   }
 
   // Ce que le joueur peut faire pendant le moment en cours.

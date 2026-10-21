@@ -129,7 +129,7 @@
     if (texte) h += '<p>' + esc(texte) + '</p>';
     list.forEach(function (x, i) {
       if (i || texte || titre) h += (i || texte ? '<div class="sep"></div>' : '') + '<div class="who"><span>' + esc(x.qui) + '</span></div>';
-      h += (x.id === 'H1' ? lettreHtml('mot16', false) : '<p>' + esc(x.texte) + '</p>') + '<div class="ab' + (x.B ? '' : ' one') + '">' + choiceBtn(x, 'A') + choiceBtn(x, 'B') + choiceBtn(x, 'C') + '</div>';
+      h += (x.id === 'H1' ? lettreHtml('mot16', false) : '<p>' + esc(x.texte) + '</p>') + '<div class="ab' + (x.B ? '' : ' one') + '">' + choiceBtn(x, 'A') + choiceBtn(x, 'B') + choiceBtn(x, 'C') + choiceBtn(x, 'D') + '</div>';
     });
     openPop(h, function () { sel = null; if (s && !s.fin) { R.render(s, roomInfo()); if (sonne()) A.ring(true); } });
   }
