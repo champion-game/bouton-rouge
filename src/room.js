@@ -130,7 +130,7 @@
   '<g id="gCam">' + I('', 'camera_support', 1520, 111, 80, 48.6, ' style="pointer-events:none"') +
   '<g id="camPivot" transform="translate(1560 135)" class="hs" data-k="camera"><g id="camRot">' +
   I('camImg', 'camera', -92.6, -45.5, 117.3, 89.5) +
-  '<circle id="camLed" cx="12" cy="-20" r="3.5" fill="#3b3f3e"/>' +
+  '<circle id="camHalo" cx="12" cy="-20" r="11" fill="#ff2a1f" opacity=".45" filter="url(#flou)" style="pointer-events:none"/><circle id="camLed" cx="12" cy="-20" r="4.5" fill="#ff2a1f"/>' +
   I('camMask', 'camera_drap', -92.6, -45.5, 117.3, 89.5, ' opacity="0"') +
   '</g></g></g>' +
   // porte et mot de 16 glissé dessous
@@ -356,8 +356,8 @@
     attr('camMask', 'opacity', blind && !cut && !tournee ? 1 : 0);
     attr('camImg', 'opacity', cut ? 0.75 : 1);
     attr('auxLed', 'fill', s.flags.aux === 'defaut' ? '#e3262b' : '#3ee08f'); attr('auxLed', 'class', s.flags.aux === 'defaut' ? 'pulse' : '');
-    var led = blind ? '#2a2e2d' : s.cycle < 3 ? '#3b3f3e' : ['#3ee08f', '#3ee08f', '#f2a33a', '#e3262b', '#e3262b'][s.soupcon];
-    attr('camLed', 'fill', led); attr('camLed', 'class', !blind && s.soupcon >= 3 ? 'pulse' : '');
+    var led = blind ? '#2a2e2d' : '#ff2a1f'; // voyant rouge tant que la caméra enregistre
+    attr('camLed', 'fill', led); attr('camHalo', 'opacity', blind ? 0 : 0.45); attr('camLed', 'class', !blind && s.soupcon >= 3 ? 'pulse' : '');
     // objets
     attr('telImg', 'opacity', info.decroche ? 0 : 1); attr('telImg2', 'opacity', info.decroche ? 1 : 0);
     // Le mot de 16 glisse sous la porte au 4e appui (pas d'animation au chargement d'une partie).
@@ -536,7 +536,7 @@
     boucle: function () { ecran(''); attr('screen', 'fill', '#000'); attr('btnGlow', 'opacity', 0); later(500, function () { black(1800, 0.95); }); },
     isolement: function () { black(700); },
     gardien: function () { alarm(2400); attr('camLed', 'fill', '#e3262b'); later(300, function () { door(true); }); later(1600, function () { door(false); }); },
-    temoin: function () { attr('camLed', 'fill', '#3ee08f'); attr('camMask', 'opacity', 0); },
+    temoin: function () { attr('camLed', 'fill', '#ff2a1f'); attr('camMask', 'opacity', 0); },
     revolte: function () { door(true); alarm(2400); later(900, function () { fade('flash', 0.5, 1500, '#f4fbf8'); }); },
     tempsEcoule: function () { light('red'); later(600, function () { door(true); if (vieCourante > 0) harm(0); else glass(0.15, '#fff', false); }); },
     curiosite: function () { door(false); flash(); }
@@ -574,7 +574,7 @@
     if (reduce) return;
     attr('camRot', 'transform', camBase + ' rotate(-6)'); later2(300, function () { attr('camRot', 'transform', camBase); });
     var led = $('camLed'), f = led && led.getAttribute('fill'); if (!led) return;
-    attr('camLed', 'fill', '#ff3b30'); later2(250, function () { attr('camLed', 'fill', f); });
+    attr('camLed', 'fill', '#ffb3ad'); later2(250, function () { attr('camLed', 'fill', f); });
   }
   function later2(ms, f) { setTimeout(f, ms); }
   // Une pose de la silhouette pendant un moment, puis retour à la pose qui suit sa vie.

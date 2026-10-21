@@ -1,6 +1,6 @@
 # Le Bouton Rouge — Fiche d'équilibrage (v8.0, mise à jour 9.0 en tête)
 
-> **Changements 9.0** (détail dans `V3_DECISIONS.md`) : B1 ne blesse plus · privilèges au 1er/2e/3e ordre obéi (question, tournevis autorisé, sursis ou dossier) · inspection ciblée annoncée au moment 8 (fouille complète seulement si soupçon ≥ 2) · tasse (écouter, diversion) · ration et lame de fortune · veste pour cacher · soupçon −1 possible (remise en état, rendre un objet) · raccrocher le téléphone (−1 confiance à l'appel du moment 11). Les tableaux ci-dessous décrivent encore la 8.0.
+> **Changements 9.0** (détail dans `V3_DECISIONS.md`) : B1 ne blesse plus · privilèges au 1er/2e/3e ordre obéi (question, tournevis autorisé — remplacé en 9.8 par « surveillance allégée » : soupçon −1 —, sursis ou dossier) · inspection ciblée annoncée au moment 8 (fouille complète seulement si soupçon ≥ 2) · tasse (écouter, diversion) · ration et lame de fortune · veste pour cacher · soupçon −1 possible (remise en état, rendre un objet) · raccrocher le téléphone (−1 confiance à l'appel du moment 11). Les tableaux ci-dessous décrivent encore la 8.0.
 
 Tiré du code (`src/engine.js`, `src/story.js`), le 21/10/2026. Sert à repenser l'équilibrage : chaque règle est donnée avec ses chiffres exacts.
 

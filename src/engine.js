@@ -120,7 +120,7 @@
         s.items.push(k); if (first) s.found.push(k); ev.push({ t: 'objet', k: k, gain: true });
         if (s.flags.cacheVide && S.CONFISCABLES.indexOf(k) >= 0 && !s.flags['autorise_' + k]) { s.flags.cacheVide = false; s.flags.cache = k; g.narr('Tu glisses l\'objet sous la plaque desserrée : ' + S.OBJETS[k].toLowerCase() + '.'); }
         var r = S.REPLIQUES_OBJETS[k];
-        if (r && first && !cameraAveugle(s) && !s.flags['autorise_' + k]) r.sys.forEach(function (l) { g.ecran(l); });
+        if (r && first && g.vu() && !s.flags['autorise_' + k]) /* angle mort compris */ r.sys.forEach(function (l) { g.ecran(l); });
       },
       lose: function (k) { var i = s.items.indexOf(k); if (i >= 0) { s.items.splice(i, 1); ev.push({ t: 'objet', k: k, gain: false }); } },
       // Confiance : un gain par motif, une seule fois.
