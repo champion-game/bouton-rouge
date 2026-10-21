@@ -216,7 +216,7 @@
   '<ellipse cx="958" cy="544" rx="40" ry="4" fill="#000" opacity=".55" filter="url(#ombreP)"/>' +
   I('carnetImg', 'carnet', 918, 515, 80, 31) +
   '</g>' +
-  '<g class="hs" data-k="mug"><rect x="998" y="452" width="90" height="82" fill="transparent"/>' + I('mugImg', 'tasse', 1010, 468, 65.3, 58) + '</g>' +
+  '<g class="hs" data-k="mug"><rect x="998" y="452" width="90" height="82" fill="transparent"/>' + I('mugImg', 'tasse', 1010, 468, 65.3, 58) + I('mugCasse', 'tasse_cassee', 993, 455, 94, 83, ' opacity="0"') + '</g>' +
   '</g></g>' +
   // ombre des coins, lumière et alarme
   // carte d'ombre tirée de l'image de référence : seule la lampe éclaire vraiment la pièce
@@ -337,7 +337,7 @@
     for (var i = 1; i <= 3; i++) { var on = s.vie >= i; attr('vie' + i, 'opacity', on ? 1 : 0); attr('vieGlow' + i, 'opacity', on ? 0.8 : 0); }
     // Le dernier voyant allumé vacille ; la pièce garde les traces : doigts sur le bouton, main sur la vitre.
     attr('vie1', 'class', s.vie === 1 ? 'vacille' : ''); attr('vieGlow1', 'class', s.vie === 1 ? 'vacille' : '');
-    attr('mugImg', 'opacity', s.flags.tasseCassee ? 0 : 1); // la tasse brisée pour faire diversion
+    attr('mugImg', 'opacity', s.flags.tasseCassee ? 0 : 1); attr('mugCasse', 'opacity', s.flags.tasseCassee ? 1 : 0); // la tasse brisée pour faire diversion
     attr('traces', 'opacity', Math.min(1, (s.stats.presses || 0) * 0.18).toFixed(2));
     attr('mainTrace', 'opacity', s.stats.blessures ? Math.min(0.24, 0.1 + 0.05 * s.stats.blessures) : 0);
     // La silhouette se courbe avec sa vie ; la lumière de la 18 rougit quand le soupçon est élevé.
