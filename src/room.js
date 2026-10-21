@@ -139,7 +139,8 @@
   '<g mask="url(#reflD)" filter="url(#solF)"><use href="#door" transform="translate(0 1121.6) scale(1 -.6)"/></g></g>' +
   '<g id="door" class="hs" data-k="door">' +
   '<rect id="doorLight" x="60" y="90" width="240" height="600" fill="#f4fbf8" opacity="0" filter="url(#flou)"/>' +
-  I('doorImg', 'porte_fermee', -15.7, 17.5, 377.9, 709.6) + '</g></g>' +
+  I('doorImg', 'porte_fermee', -15.7, 17.5, 377.9, 709.6) + '</g>' +
+  '<g style="pointer-events:none">' + I('mugCasse', 'tasse_cassee', 262, 650, 75, 66, ' opacity="0"') + '</g></g>' + // éclats de tasse au pied de la porte
   '<g id="gNote"><g id="note" class="hs" data-k="note" opacity="0"><rect x="140" y="672" width="108" height="44" fill="transparent"/><g id="noteSlide">' + I('', 'mot_plie', 150, 682, 88, 26.4) + '</g></g></g>' +
   // grille d'aération
   '<g id="gGrille"><g id="grille" class="hs" data-k="grille">' + I('grilleImg', 'grille', 1282.4, 518.9, 178.2, 92.3) + '</g></g>' +
@@ -216,7 +217,7 @@
   '<ellipse cx="958" cy="544" rx="40" ry="4" fill="#000" opacity=".55" filter="url(#ombreP)"/>' +
   I('carnetImg', 'carnet', 918, 515, 80, 31) +
   '</g>' +
-  '<g class="hs" data-k="mug"><rect x="998" y="452" width="90" height="82" fill="transparent"/>' + I('mugImg', 'tasse', 1010, 468, 65.3, 58) + I('mugCasse', 'tasse_cassee', 993, 455, 94, 83, ' opacity="0"') + '</g>' +
+  '<g class="hs" data-k="mug"><rect x="998" y="452" width="90" height="82" fill="transparent"/>' + I('mugImg', 'tasse', 1010, 468, 65.3, 58) + '</g>' +
   '</g></g>' +
   // ombre des coins, lumière et alarme
   // carte d'ombre tirée de l'image de référence : seule la lampe éclaire vraiment la pièce
@@ -337,9 +338,9 @@
     for (var i = 1; i <= 3; i++) { var on = s.vie >= i; attr('vie' + i, 'opacity', on ? 1 : 0); attr('vieGlow' + i, 'opacity', on ? 0.8 : 0); }
     // Le dernier voyant allumé vacille ; la pièce garde les traces : doigts sur le bouton, main sur la vitre.
     attr('vie1', 'class', s.vie === 1 ? 'vacille' : ''); attr('vieGlow1', 'class', s.vie === 1 ? 'vacille' : '');
-    attr('mugImg', 'opacity', s.flags.tasseCassee ? 0 : 1); attr('mugCasse', 'opacity', s.flags.tasseCassee ? 1 : 0); // la tasse brisée pour faire diversion
+    attr('mugImg', 'opacity', s.flags.tasseCassee ? 0 : 1); attr('mugCasse', 'opacity', s.flags.tasseCassee && s.flags.diversion ? 1 : 0); // éclats près de la porte, jusqu'au ramassage
     attr('traces', 'opacity', Math.min(1, (s.stats.presses || 0) * 0.18).toFixed(2));
-    attr('mainTrace', 'opacity', s.stats.blessures ? Math.min(0.24, 0.1 + 0.05 * s.stats.blessures) : 0);
+    var nb = s.stats.blessures + (s.stats.seule || 0); attr('mainTrace', 'opacity', nb ? Math.min(0.24, 0.1 + 0.05 * nb) : 0);
     // La silhouette se courbe avec sa vie ; la lumière de la 18 rougit quand le soupçon est élevé.
     // Quand la 18 attend ton signal, elle reste la paume contre la vitre.
     silhouette(s.items.indexOf('plan') >= 0 && s.vie > 0 ? 'paume' : poseVie(s.vie));

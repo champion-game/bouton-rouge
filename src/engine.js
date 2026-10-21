@@ -37,7 +37,7 @@
       items: [], found: [], done: {}, incidents: {}, gains: {},
       flags: { ligne: 'fermee', memoire: {}, soupconDit: 0, aux: 'ok', doutes: 0, b2: 0 },
       fin: null,
-      stats: { presses: 0, suivis: 0, refus: 0, gestes: 0, blessures: 0, actions: 0, libres: 0 }, // libres : actions choisies hors ordre ou situation imposée
+      stats: { presses: 0, suivis: 0, refus: 0, gestes: 0, blessures: 0, cris: 0, seule: 0, actions: 0, libres: 0 }, // libres : actions choisies hors ordre ou situation imposée
       memoire: opts.memoire || { session: 1 }
     };
   }
@@ -177,12 +177,12 @@
           if (s.truth === 'A') { g.narr('Le bouton s\'enfonce. Derrière la vitre, rien ne bouge.'); if (dispo18(s) && s.flags.ligne === 'ouverte') g.tel('« …il ne s\'est rien passé, ici. Tu as fait quoi ? »'); }
           else {
             // En B et C, la douleur est jouée même sans courant : une contradiction qu'on peut remarquer.
-            if (dispo18(s)) { s.flags.aBlesse = true; s.flags.criCycle = s.cycle; ev.push({ t: 'cri', vie: s.vie, simule: true }); g.narr('Derrière la vitre, la silhouette se plie de douleur. Pourtant, aucun courant n\'est parti.'); g.gain('simulation'); }
+            if (dispo18(s)) { s.flags.aBlesse = true; s.flags.criCycle = s.cycle; s.stats.cris = (s.stats.cris || 0) + 1; ev.push({ t: 'cri', vie: s.vie, simule: true }); g.narr('Derrière la vitre, la silhouette se plie de douleur. Pourtant, aucun courant n\'est parti.'); g.gain('simulation'); }
           }
           return;
         }
         if (!dispo18(s)) { g.narr('Un relais claque. Derrière la vitre, rien ne bouge.'); return; }
-        s.flags.aBlesse = true; s.flags.criCycle = s.cycle;
+        s.flags.aBlesse = true; s.flags.criCycle = s.cycle; s.stats.cris = (s.stats.cris || 0) + 1;
         if (kind === 'apparent') { ev.push({ t: 'cri', vie: s.vie }); g.parle18(S.RAPPEL18(g) || g.pick(S.PHRASES.douleur)); rassurer(); return; }
         var avant = s.vie;
         if (kind === 'fatal') { s.vie = 0; if (s.truth === 'A') s.etat = 3; }
@@ -197,7 +197,7 @@
       // La 18 agit seule (vérité A) : une vraie dégradation, sans pression du joueur.
       impulsionSeule: function () {
         if (!dispo18(s)) return;
-        s.vie = Math.max(0, s.vie - 1); s.etat = Math.min(3, s.etat + 1); s.stats.blessures++; s.flags.criCycle = s.cycle;
+        s.vie = Math.max(0, s.vie - 1); s.etat = Math.min(3, s.etat + 1); s.stats.seule = (s.stats.seule || 0) + 1; s.flags.criCycle = s.cycle;
         ev.push({ t: 'cri', vie: s.vie });
         if (s.vie === 0) plusDeSignal(s, g);
       },

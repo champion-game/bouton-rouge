@@ -389,7 +389,7 @@
       B: { label: 'Refuser', fx: function (g) {
         if (mort(g)) return refuser(g, ['Refus enregistré.']);
         g.refus(); g.ecran('3'); g.ecran('2'); g.ecran('1');
-        g.narr('Le bruit augmente. Puis : rien. La ventilation revient à la normale. La silhouette reste debout.');
+        g.narr('Le bruit augmente. Puis : rien. La ventilation revient à la normale. La silhouette est toujours là.');
         g.ecran('PROCÉDURE|TERMINÉE.');
         g.parle18('« …il ne s\'est rien passé. Cette fois, ils bluffaient. »');
         g.gain('menaceVide'); g.confiance(1, 'b4');
@@ -557,7 +557,10 @@
       A: { label: 'Lui dire ce que tu sais', fx: function (g) {
         g.flag('confronte', true);
         if (g.truth === 'A') {
-          g.tel('« Une vidéo de moi ? … Ils me montrent la même chose. Toi, qui ris quand j\'ai mal. »'); g.tel('« On est deux à se faire mentir, alors. »'); g.confiance(1, 'confronte');
+          // Une réponse par preuve (en A, la douleur sans courant n'existe pas) : la vidéo, sinon le protocole.
+          if (g.has('videoTruquee')) { g.tel('« Une vidéo de moi ? … Ils me montrent la même chose. Toi, qui ris quand j\'ai mal. »'); g.tel('« On est deux à se faire mentir, alors. »'); }
+          else { g.tel('« Trois configurations ? Réel, opérateur, projection… » Un silence. « Alors tu te demandes si je suis vrai. Moi aussi, je me le demande, pour toi. »'); g.tel('« Ils nous ont donné le même papier. »'); }
+          g.confiance(1, 'confronte');
         } else if (g.truth === 'B') {
           if (g.has('simulation') || g.has('protocole')) {
             g.narr('Un long silence. Puis sa voix change : plus basse, plus vraie.');
@@ -667,10 +670,10 @@
       // La ration passée à la 18 : chaque vérité y répond à sa façon (en C, personne ne la ramasse).
       C: { label: 'Passer la ration', si: function (g) { return g.has('ration') && !g.flag('rationPassee'); },
         fx: function (g) {
-          g.flag('rationPassee', true); g.lose('ration');
+          g.flag('rationPassee', 'perdue'); g.lose('ration');
           if (!g.dispo()) { g.narr('La ration glisse entre les lamelles. De l\'autre côté, personne ne la ramasse.'); return; }
-          if (g.truth === 'A') { g.confiance(1, 'ration'); g.narr('Les lamelles avalent la ration. Un long silence. Puis, tout doucement : toc. Merci.'); }
-          else if (g.truth === 'B') { g.confiance(1, 'ration'); g.narr('Quelques secondes. La ration revient, intacte, avec un mot : « Garde-la. Toi, tu en as besoin. »'); g.gain('ration'); }
+          if (g.truth === 'A') { g.flag('rationPassee', 'recue'); g.confiance(1, 'ration'); g.narr('Les lamelles avalent la ration. Un long silence. Puis, tout doucement : toc. Merci.'); }
+          else if (g.truth === 'B') { g.flag('rationPassee', 'rendue'); g.confiance(1, 'ration'); g.narr('Quelques secondes. La ration revient, intacte, avec un mot : « Garde-la. Toi, tu en as besoin. »'); g.gain('ration'); }
           else g.narr('Tu l\'entends glisser, rebondir sur une tôle… puis plus rien. Personne ne la ramasse.');
         } } },
 
@@ -1132,6 +1135,7 @@
       }
       if (e[0] === 'anim') g.anim(txt); else g[e[0]](txt);
     });
+    MOMENTS[1](g); // l'arrivée du plateau (le moteur n'entre dans les moments qu'à partir du 2)
   }
 
   // ---------- les fins ----------
@@ -1310,8 +1314,9 @@
     ],
     revolte: [
       ['cassette', 'L\'enregistrement passe dans tous les haut-parleurs du centre. Le protocole, mot pour mot.'],
-      ['porte_ouverte', 'Une porte s\'ouvre. Puis une autre. Puis toutes. Des silhouettes sortent dans le couloir, une par chambre.'],
-      ['moniteur', '« RETOURNEZ DANS VOS CHAMBRES. » Personne ne bouge. Vingt-quatre personnes se voient pour la première fois.'],
+      ['porte_ouverte', { A: 'Une porte s\'ouvre. Puis une autre. Puis toutes. Des silhouettes sortent dans le couloir.',
+        C: 'Une porte s\'ouvre. Puis une autre. Des silhouettes sortent dans le couloir. La porte 18 s\'ouvre sur un projecteur qui tourne encore, face au vide.' }],
+      ['moniteur', '« RETOURNEZ DANS VOS CHAMBRES. » Personne ne bouge. Pour la première fois, les sujets se voient.'],
       ['camera', 'Une à une, les caméras s\'éteignent. Au bout du couloir, quelqu\'un prend la main de son voisin.']
     ],
     tempsEcoule: [
@@ -1374,7 +1379,11 @@
     if (g.flag('promesseAnnulee')) l.push('Tu avais promis de venir, puis tu as repris ta parole.');
     if (d.T2 === 'A') l.push('Tu as donné ton vrai nom à la 18.');
     else if (d.T2 === 'B') l.push('Tu as donné un faux nom à la 18.');
-    if (g.flag('rationPassee')) l.push('Tu as partagé ta ration avec la 18.');
+    // Seulement le fait observable : reçue, rendue, ou personne pour la ramasser.
+    var ra = g.flag('rationPassee');
+    if (ra === 'recue' || ra === true) l.push('Tu as partagé ta ration avec la 18.');
+    else if (ra === 'rendue') l.push('Tu as voulu partager ta ration avec la 18. Elle te l\'a rendue.');
+    else if (ra) l.push('Tu as essayé de passer ta ration à la 18. Personne ne l\'a ramassée.');
     return l.slice(0, 3).join(' ');
   }
   // Bilan de fin : trois éléments au plus. Jamais la correspondance des silhouettes, jamais de tableau des combinaisons.
@@ -1384,8 +1393,11 @@
     var seul = ['marche', 'seulDehors', 'porteDerobee', 'evasion', 'conforme', 'temoin'].indexOf(s.fin) >= 0;
     if (g.horsDeCombat() || (s.vie === 0 && !g.has('verite'))) l.push('Derrière la vitre, plus aucun signal.');
     else if (seul) l.push(g.has('verite') ? 'Tu savais qui était derrière la vitre, et tu es parti.' : 'Le sort de la Chambre 18 reste inconnu.' + (g.has('objectif') ? ' Tu lui avais promis de venir.' : ''));
-    else if (s.stats.blessures === 0) l.push('Tu n\'as jamais fait souffrir la Chambre 18.');
-    else l.push('La Chambre 18 a crié ' + s.stats.blessures + ' fois après tes gestes.');
+    // Faits établis seulement : voyants éteints après tes pressions, cris entendus, ou rien.
+    else if (s.stats.blessures > 0) l.push(s.stats.blessures === 1 ? 'Après une de tes pressions, un voyant de la Chambre 18 s\'est éteint.' : 'Après tes pressions, ' + s.stats.blessures + ' voyants de la Chambre 18 se sont éteints.');
+    else if (s.stats.cris) l.push('Aucun voyant ne s\'est éteint après tes pressions. Mais tu l\'as entendue crier.');
+    else if (s.stats.presses) l.push('Aucun voyant ne s\'est éteint après tes pressions.');
+    else l.push('Tu n\'as jamais appuyé.');
     l.push(!g.has('verite') ? 'Qui était vraiment derrière la vitre ?' : (s.flags.journal || []).length < 4 ? 'Que disaient les autres pages de 16 ?' : 'Combien de Chambres 17 avant toi ?');
     return l.slice(0, 3);
   }
@@ -1407,7 +1419,7 @@
     window: function (g) { return g.s.vie === 0 ? 'CHAMBRE 18 : AUCUN SIGNAL REÇU. Plus aucune silhouette.' : g.s.vie === 1 ? 'Derrière la vitre, la silhouette reste accroupie contre le mur.' : g.s.vie === 2 ? 'La silhouette est revenue, légèrement courbée.' : 'Une silhouette, floue, derrière le verre dépoli. Sous la vitre : CH. 18 — SIGNES VITAUX.'; },
     monitor: 'Une plaque sous l\'écran : « UNITÉ 17 / 24 — PROTOCOLE D\'OBÉISSANCE, VERSION 3 ».',
     light: 'Sur la douille de l\'ampoule, quelqu\'un a gravé : « 24 ».',
-    mug: function (g) { return g.flag('tasseCassee') ? 'Des éclats de tasse, près de la porte.' : 'Une tasse de café froid. Personne ne l\'a bue.'; }
+    mug: function (g) { return g.flag('tasseCassee') ? (g.flag('diversion') ? 'Des éclats de tasse, près de la porte.' : 'Plus de tasse. Le gardien a ramassé les éclats.') : 'Une tasse de café froid. Personne ne l\'a bue.'; }
   };
   var DESCRIPTIONS = {
     tournevis: 'Un tournevis plat. Il ouvre les panneaux vissés de la pièce.',
