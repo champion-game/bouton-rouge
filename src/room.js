@@ -617,15 +617,8 @@
   function blackout(on) { attr('dark', 'opacity', on ? 0.96 : 0); lueur(); attr('cone', 'opacity', on ? 0 : 0.6); attr('bulb', 'opacity', on ? 0 : 1); svg.querySelectorAll('.lit').forEach(function (e) { e.setAttribute('opacity', on ? 0 : 1); }); }
 
   // ---------- objets de l'inventaire (dessins de l'artiste) ----------
-  var ICONES = { tournevis: 'tournevis', fusible: 'fusible', code: 'papier_carre', mot16: 'carte_pliee', badge: 'badge', enregistrement: 'cassette', journal: 'papier_lettre' };
-  // Objets sans dessin de l'artiste (9.0) : petits dessins provisoires en SVG.
-  var DESSINS = {
-    cuillere: '<ellipse cx="13" cy="12" rx="6" ry="8.5" transform="rotate(-40 13 12)" fill="#b9bcb8" stroke="#6d716e" stroke-width="1.2"/><path d="M17 16 L33 33" stroke="#9da19e" stroke-width="3.2" stroke-linecap="round"/>',
-    outil: '<path d="M8 8 L20 14 L18 18 Z" fill="#d7dad6" stroke="#6d716e" stroke-width="1"/><path d="M18 16 L33 33" stroke="#9da19e" stroke-width="3.2" stroke-linecap="round"/><path d="M9 9 L19 15" stroke="#fff" stroke-width=".8" opacity=".7"/>',
-    ration: '<rect x="6" y="14" width="28" height="12" rx="2" fill="#6f7a52" stroke="#3d4430" stroke-width="1.2"/><rect x="12" y="17" width="16" height="6" fill="#d9d2b6"/><path d="M6 16 l-2 -2 M6 24 l-2 2 M34 16 l2 -2 M34 24 l2 2" stroke="#3d4430" stroke-width="1"/>'
-  };
+  var ICONES = { tournevis: 'tournevis', fusible: 'fusible', code: 'papier_carre', mot16: 'carte_pliee', badge: 'badge', enregistrement: 'cassette', journal: 'papier_lettre', cuillere: 'cuillere', outil: 'outil', ration: 'ration' };
   function icone(k, code) {
-    if (DESSINS[k]) return '<svg viewBox="0 0 40 40" aria-hidden="true">' + DESSINS[k] + '</svg>';
     var h = '<svg viewBox="0 0 40 40" aria-hidden="true"><image href="' + IMG + ICONES[k] + '.webp" x="2" y="2" width="36" height="36" preserveAspectRatio="xMidYMid meet"/>';
     if (k === 'code') h += '<text x="20" y="24" text-anchor="middle" font-family="VT323, monospace" font-size="11" fill="#2b2620">' + (code || '7__2') + '</text>';
     if (k === 'mot16') h += '<text x="27" y="27" font-family="Reenie Beanie, cursive" font-size="11" fill="#7a1d16">16</text>';
