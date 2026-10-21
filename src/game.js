@@ -498,6 +498,7 @@
     if (F.crt !== '_') h += '<div class="crt">' + esc(F.crt) + '</div>';
     h += '<p>' + esc(texteFin(F)) + '</p>';
     h += '<p class="truth">' + (E.has(s, 'verite') ? esc(E.VERITES[s.truth].texte) : 'Ce que cachait la Chambre 18 : tu ne l\'as pas découvert.') + '</p>';
+    var recit = E.paragraphe(s); if (recit) h += '<p class="recit">' + esc(recit) + '</p>';
     // Trois éléments au plus : un acte décisif, sa conséquence, une question encore ouverte.
     h += '<ul class="bilan">' + E.bilan(s).map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul>';
     // Une piste vers une fin encore inconnue : donner envie de revenir, sans livrer la recette.

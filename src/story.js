@@ -541,6 +541,25 @@
       texte: '« Tu veux ton bruit ? Dis-moi quand. Je tiendrai le temps qu\'il faut. Après… ils viendront pour moi. »',
       A: { label: '« Maintenant »', sous: 'Au moment suivant, les caméras du secteur regarderont la 19.',
         fx: function (g) { g.flag('bruit19', g.cycle + 1); g.tel('« Compte jusqu\'à dix. »'); g.narr('CLAC.'); } } },
+    // 9.2 — Confronter la 18 avec ce qu'on sait (une preuve sur ce qu'on te montre d'elle).
+    { id: 'CONFRONTER', objet: 'phone', fil: 'telephone', qui: 'CONFRONTER LA 18',
+      quand: function (g) { return g.flag('ligne') === 'ouverte' && g.done('T1') && g.dispo() && !g.done('CONFRONTER') && (g.has('simulation') || g.has('videoTruquee') || g.has('protocole')); },
+      texte: function (g) { return g.has('simulation') ? 'Tu as vu la silhouette se plier de douleur alors qu\'aucun courant n\'était parti.' : g.has('videoTruquee') ? 'Ils t\'ont montré une vidéo de la 18 qui rit avec un gardien. L\'heure ne colle pas.' : 'Le protocole parle de trois configurations du sujet adjacent : réel, opérateur, projection.'; },
+      A: { label: 'Lui dire ce que tu sais', fx: function (g) {
+        g.flag('confronte', true);
+        if (g.truth === 'A') {
+          g.tel('« Une vidéo de moi ? … Ils me montrent la même chose. Toi, qui ris quand j\'ai mal. »'); g.tel('« On est deux à se faire mentir, alors. »'); g.confiance(1, 'confronte');
+        } else if (g.truth === 'B') {
+          if (g.has('simulation') || g.has('protocole')) {
+            g.narr('Un long silence. Puis sa voix change : plus basse, plus vraie.');
+            g.tel('« …Ils ont ma fille. Ils me disent quoi crier, et quand. Je n\'avais pas le choix. »');
+            g.flag('demasquee', true); g.gain('verite');
+          } else g.tel('« Une vidéo truquée ? Tu vois, ils mentent sur tout. »');
+        } else {
+          g.tel('Un silence. Puis ta propre voix, dans le combiné : « ' + (g.has('simulation') ? 'Tu n\'avais pas mal.' : 'Tu n\'es pas réelle.') + ' »');
+          g.anim('silFige'); g.narr('Derrière la vitre, la silhouette s\'est figée. Elle reprend sa pose une seconde plus tard, exactement la même.'); g.gain('verite');
+        }
+      } } },
     // 9.1 — La 18 demande si c'est toi qui as appuyé : avouer ou mentir.
     { id: 'AVEU', objet: 'phone', fil: 'telephone', qui: 'LA QUESTION DE LA 18', gratuit: true,
       quand: function (g) { return g.flag('ligne') === 'ouverte' && g.flag('aBlesse') && g.done('T1') && !g.done('AVEU') && g.dispo(); },
@@ -688,7 +707,8 @@
       A: { label: 'Bloquer la porte avec le tournevis', req: function (g) { return g.has('tournevis'); }, raison: 'Tu n\'as rien pour bloquer le mécanisme.',
         fx: function (g) { g.narr('Tu glisses le tournevis dans le mécanisme. Il grince et s\'arrête. Elle recule.'); g.fin('complice'); } },
       B: { label: 'Négocier', fx: function (g) {
-        if (g.s.confiance >= 3) { g.voix('« …Tu m\'as crue, toi. Même quand je mentais. »'); g.narr('Elle te tend son badge d\'accès.'); g.fin('complice'); }
+        if (g.flag('demasquee')) { g.voix('« Tu savais. Et tu m\'as quand même parlé. »'); g.narr('Elle te tend son badge d\'accès.'); g.fin('complice'); }
+        else if (g.s.confiance >= 3) { g.voix('« …Tu m\'as crue, toi. Même quand je mentais. »'); g.narr('Elle te tend son badge d\'accès.'); g.fin('complice'); }
         else { g.voix('« Je suis désolée. »'); g.narr('Elle appuie sur son bipeur. La seringue. Noir.'); g.fin('sujet18'); }
       } },
       C: { label: 'Accepter leur offre', si: function (g) { return g.s.conformite >= 5; },
@@ -1283,6 +1303,22 @@
     });
   }
 
+  // 9.2 — Paragraphe de fin : ce que tu as été pour les autres (trois phrases au plus, seulement ce qui a eu lieu).
+  function PARAGRAPHE(g) {
+    var s = g.s, d = s.done, l = [];
+    if (d.DIVERSION) l.push('Le 19 a fait du bruit pour toi. Personne ne sait ce qu\'il est devenu.');
+    else if (d.APP19B === 'A') l.push('Dans la 19, quelqu\'un n\'a jamais appuyé, parce que tu le lui avais demandé.');
+    else if (d.APP19B === 'B') l.push('Dans la 19, quelqu\'un a appuyé sur ton conseil.');
+    if (g.flag('aveu') === 'avoue') l.push('Quand la 18 t\'a demandé si c\'était toi, tu as dit la vérité.');
+    else if (g.flag('aveu') === 'menti') l.push('Quand la 18 t\'a demandé si c\'était toi, tu as menti.');
+    if (g.flag('demasquee')) l.push('Tu as vu clair dans son jeu, et tu lui as quand même parlé.');
+    else if (g.flag('confronte')) l.push('Tu as dit à la 18 ce que tu savais, au lieu de le garder pour toi.');
+    if (g.flag('promesseAnnulee')) l.push('Tu avais promis de venir, puis tu as repris ta parole.');
+    if (d.T2 === 'A') l.push('Tu as donné ton vrai nom à la 18.');
+    else if (d.T2 === 'B') l.push('Tu as donné un faux nom à la 18.');
+    if (g.flag('rationPassee')) l.push('Tu as partagé ta ration avec la 18.');
+    return l.slice(0, 3).join(' ');
+  }
   // Bilan de fin : trois éléments au plus. Jamais la correspondance des silhouettes, jamais de tableau des combinaisons.
   function BILAN(g) {
     var s = g.s, l = [];
@@ -1338,7 +1374,7 @@
     FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, PREUVES: PREUVES, VERITES: VERITES, PHRASES: PHRASES, MEMOIRE: MEMOIRE, SOUVENIRS: SOUVENIRS, SOUVENIR: SOUVENIR, PISTE: PISTE, CARNET: CARNET, REACTION18: REACTION18, DOUTES: DOUTES, MANIP_ECRAN: MANIP_ECRAN,
     REPLIQUES_OBJETS: REPLIQUES_OBJETS, SITUATIONS: SITUATIONS, JOURNAL: JOURNAL, MOMENTS: MOMENTS, FINS: FINS, REGARDS: REGARDS,
     DESCRIPTIONS: DESCRIPTIONS, LETTRES: LETTRES, AIDES: AIDES, SESSIONS: SESSIONS,
-    B2_PRESSION: B2_PRESSION, B2_ARRET: B2_ARRET, B2_TRIPLE: B2_TRIPLE, SEULE: SEULE, VISITE: VISITE, BRUIT19: BRUIT19, ARCHIVES: ARCHIVES, BILAN: BILAN, HISTOIRES: HISTOIRES, HISTOIRE: HISTOIRE, INTRO_EVENTS: INTRO_EVENTS,
+    B2_PRESSION: B2_PRESSION, B2_ARRET: B2_ARRET, B2_TRIPLE: B2_TRIPLE, SEULE: SEULE, VISITE: VISITE, BRUIT19: BRUIT19, PARAGRAPHE: PARAGRAPHE, ARCHIVES: ARCHIVES, BILAN: BILAN, HISTOIRES: HISTOIRES, HISTOIRE: HISTOIRE, INTRO_EVENTS: INTRO_EVENTS,
     PRIVILEGE: PRIVILEGE, RACCROCHER: RACCROCHER
   };
   function resolve(v, g) { return typeof v === 'function' ? v(g) : v; }

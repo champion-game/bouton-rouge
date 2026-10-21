@@ -451,6 +451,7 @@
 
   // Bilan de fin : trois éléments au plus (un acte décisif, sa conséquence, une question encore ouverte).
   function bilan(s) { return S.BILAN(ctx(s, [], null)); }
+  function paragraphe(s) { return S.PARAGRAPHE(ctx(s, [], null)); }
   // Mini-histoire de fin : quatre planches (image + texte).
   function histoire(s) { return S.HISTOIRE(ctx(s, [], null)); }
 
@@ -460,7 +461,7 @@
     reaction18: function (s) { return S.REACTION18(ctx(s, [], null)); },
     piste: function (s, found) { return S.PISTE(ctx(s, [], null), found); },
     souvenir: function (s) { return S.SOUVENIR(ctx(s, [], null)); },
-    newGame: newGame, intro: function (s) { var ev = []; S.INTRO_EVENTS(ctx(s, ev, null)); return ev; }, turn: turn, choose: choose, regarder: regarder, decrire: decrire, bilan: bilan, histoire: histoire,
+    newGame: newGame, intro: function (s) { var ev = []; S.INTRO_EVENTS(ctx(s, ev, null)); return ev; }, turn: turn, choose: choose, regarder: regarder, decrire: decrire, bilan: bilan, paragraphe: paragraphe, histoire: histoire,
     forcedId: forcedId, cameraAveugle: cameraAveugle, porteOuverte: porteOuverte, ecoute: ecoute, has: has, horsDeCombat: horsDeCombat,
     DUREES: DUREES, DERNIER_CYCLE: DERNIER,
     LETTRES: S.LETTRES, JOURNAL: S.JOURNAL, AIDES: S.AIDES, DESCRIPTIONS: S.DESCRIPTIONS, PHRASES: S.PHRASES,
