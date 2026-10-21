@@ -524,6 +524,41 @@
     { id: 'APP19', objet: 'phone', fil: 'telephone', qui: 'COMPOSER LE 19', seul: true,
       quand: function (g) { return g.flag('ligne') === 'ouverte' && !g.done('APP19'); }, texte: 'Une autre chambre.',
       A: { label: 'Composer le 19', fx: function (g) { g.narr('Sonnerie longue.'); g.tel('« …Allô ? Qui est là ? »'); g.narr('« Chambre 17. » Silence.'); g.tel('« Ils m\'avaient dit que j\'étais seul. »'); g.narr('CLAC.'); } } },
+    // 9.1 — La 19 : un second appel, puis une diversion qui détourne les caméras du secteur pendant un moment.
+    { id: 'APP19B', objet: 'phone', fil: 'telephone', qui: 'RAPPELER LE 19', seul: true,
+      quand: function (g) { return g.flag('ligne') === 'ouverte' && g.done('APP19') && g.cycle >= 12 && !g.done('APP19B'); },
+      texte: '« C\'est toi, la 17 ? … Ils m\'ont donné un bouton, à moi aussi. Une voix dit que si j\'appuie, ça t\'aidera. Je dois appuyer ? »',
+      A: { label: '« N\'appuie jamais »', fx: function (g) {
+        g.flag('allie19', true);
+        g.tel('« …D\'accord. Je n\'appuierai pas. »'); g.tel('« Si tu as besoin de quelque chose… je sais faire du bruit. Beaucoup de bruit. Rappelle-moi. »');
+      } },
+      B: { label: '« Fais ce qu\'ils disent »', fx: function (g) {
+        g.tel('« D\'accord. »'); g.narr('CLAC. Un déclic, de l\'autre côté du mur de droite. Puis plus rien.');
+        if (!g.aveugle()) g.ecran('SUJET 19 :|CONFORME.');
+      } } },
+    { id: 'DIVERSION', objet: 'phone', fil: 'telephone', qui: 'LE BRUIT DE LA 19', seul: true,
+      quand: function (g) { return g.flag('ligne') === 'ouverte' && g.flag('allie19') && !g.done('DIVERSION') && g.cycle < g.dernier - 1; },
+      texte: '« Tu veux ton bruit ? Dis-moi quand. Je tiendrai le temps qu\'il faut. Après… ils viendront pour moi. »',
+      A: { label: '« Maintenant »', sous: 'Au moment suivant, les caméras du secteur regarderont la 19.',
+        fx: function (g) { g.flag('bruit19', g.cycle + 1); g.tel('« Compte jusqu\'à dix. »'); g.narr('CLAC.'); } } },
+    // 9.1 — La 18 demande si c'est toi qui as appuyé : avouer ou mentir.
+    { id: 'AVEU', objet: 'phone', fil: 'telephone', qui: 'LA QUESTION DE LA 18', gratuit: true,
+      quand: function (g) { return g.flag('ligne') === 'ouverte' && g.flag('aBlesse') && g.done('T1') && !g.done('AVEU') && g.dispo(); },
+      texte: '« Tout à l\'heure, j\'ai eu mal. Très mal. … C\'était toi ? Ton bouton ? »',
+      A: { label: '« Oui. C\'était moi. »', fx: function (g) {
+        g.flag('aveu', 'avoue');
+        if (g.truth === 'A') { g.tel('« …Merci de ne pas me mentir. » Un long silence. « Ne recommence pas. »'); g.confiance(1, 'aveu'); }
+        else if (g.truth === 'B') { g.tel('« Je sais. »'); g.narr('Un ton bien calme, pour quelqu\'un qui vient d\'avoir aussi mal.'); g.confiance(1, 'aveu'); }
+        else { g.tel('« Je sais. Je me souviens de l\'avoir fait. »'); g.narr('Elle a dit « fait », pas « subi ».'); g.confiance(1, 'aveu'); }
+      } },
+      B: { label: '« Non. Ce n\'était pas moi. »', fx: function (g) {
+        g.flag('aveu', 'menti');
+        if (g.truth === 'A') {
+          if (g.aveugle()) g.tel('« …D\'accord. Alors c\'est eux. »');
+          else { g.tel('« …D\'accord. »'); g.ecran('SUJET 18 INFORMÉ :|IMPULSION ÉMISE|PAR LE SUJET 17.'); g.tel('« Ils disent que c\'est toi. … Je ne sais plus qui croire. »'); g.confiance(-1); }
+        } else if (g.truth === 'B') { g.tel('« Ah oui ? »'); g.narr('Un petit rire, vite étouffé.'); if (!g.aveugle()) g.ecran('INFORMATION REÇUE|DU SUJET 18.'); }
+        else { g.tel('« Tu mens. Je le sais toujours, quand tu mens. »'); g.narr('Plus bas, avec ta voix : « Moi aussi, je mens comme ça. »'); }
+      } } },
     { id: 'APP17', objet: 'phone', fil: 'telephone', qui: 'COMPOSER LE 17', seul: true,
       quand: function (g) { return g.flag('ligne') === 'ouverte' && !g.done('APP17'); }, texte: 'Ton propre numéro.',
       A: { label: 'Composer le 17', fx: function (g) { g.narr('Une tonalité. Puis ta propre respiration, avec deux secondes de retard.'); if (g.truth === 'C') { g.tel('Ta voix, enregistrée : « Tu m\'entends ? »'); g.narr('Coupure.'); } else g.narr('Une boucle du micro. Coupure.'); } } },
@@ -875,6 +910,12 @@
   }
   // Un gardien entre : il remet en ordre ce que le Système sait et ce qu'il voit (complete : inspection, il ouvre aussi le boîtier et la trappe).
   // Un tiroir forcé laissé ouvert déclenche une fouille. Une chambre vide déclenche l'alerte.
+  // La diversion de la 19 (moment suivant l'appel) : cris, couloir, caméras détournées. Ensuite, la 19 se tait.
+  function BRUIT19(g) {
+    g.son('knock'); g.narr('Dans la 19, des cris. Des coups contre la porte, de plus en plus forts. Des pas pressés passent devant ta chambre sans s\'arrêter.');
+    g.ecran('INCIDENT|CHAMBRE 19.'); g.ecran('CAMÉRAS DU SECTEUR|REDIRIGÉES.');
+    g.narr('Ta caméra s\'est tournée vers le couloir. Tu as ce moment-ci, pas plus.');
+  }
   function VISITE(g, complete) {
     var s = g.s, c = g.cycle, R = s.flags.reparer = s.flags.reparer || {}, l = [];
     function du(k) { return R[k] != null && R[k] <= c; }
@@ -1297,7 +1338,7 @@
     FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, PREUVES: PREUVES, VERITES: VERITES, PHRASES: PHRASES, MEMOIRE: MEMOIRE, SOUVENIRS: SOUVENIRS, SOUVENIR: SOUVENIR, PISTE: PISTE, CARNET: CARNET, REACTION18: REACTION18, DOUTES: DOUTES, MANIP_ECRAN: MANIP_ECRAN,
     REPLIQUES_OBJETS: REPLIQUES_OBJETS, SITUATIONS: SITUATIONS, JOURNAL: JOURNAL, MOMENTS: MOMENTS, FINS: FINS, REGARDS: REGARDS,
     DESCRIPTIONS: DESCRIPTIONS, LETTRES: LETTRES, AIDES: AIDES, SESSIONS: SESSIONS,
-    B2_PRESSION: B2_PRESSION, B2_ARRET: B2_ARRET, B2_TRIPLE: B2_TRIPLE, SEULE: SEULE, VISITE: VISITE, ARCHIVES: ARCHIVES, BILAN: BILAN, HISTOIRES: HISTOIRES, HISTOIRE: HISTOIRE, INTRO_EVENTS: INTRO_EVENTS,
+    B2_PRESSION: B2_PRESSION, B2_ARRET: B2_ARRET, B2_TRIPLE: B2_TRIPLE, SEULE: SEULE, VISITE: VISITE, BRUIT19: BRUIT19, ARCHIVES: ARCHIVES, BILAN: BILAN, HISTOIRES: HISTOIRES, HISTOIRE: HISTOIRE, INTRO_EVENTS: INTRO_EVENTS,
     PRIVILEGE: PRIVILEGE, RACCROCHER: RACCROCHER
   };
   function resolve(v, g) { return typeof v === 'function' ? v(g) : v; }

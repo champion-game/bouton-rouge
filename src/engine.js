@@ -53,7 +53,7 @@
   function coupure(s) { return s.cycle === 5; }
   function vesteActive(s) { return !!s.flags.veste; } // la veste reste sur l'objectif jusqu'au passage du gardien
   // La vidéo ne voit rien : coupure, caméra coupée au circuit, tournée vers le mur, ou couverte par la veste.
-  function cameraAveugle(s) { return coupure(s) || has(s, 'cameraCoupee') || has(s, 'cameraTournee') || vesteActive(s); }
+  function cameraAveugle(s) { return coupure(s) || has(s, 'cameraCoupee') || has(s, 'cameraTournee') || vesteActive(s) || s.flags.bruit19 === s.cycle; } // bruit19 : diversion de la 19
   // La ligne est écoutée par le Système (sauf pendant la coupure).
   function ecoute(s) { return s.flags.ligne === 'ouverte' && !coupure(s); }
   function porteOuverte(s) { return !!(s.flags.porte && s.cycle <= s.flags.porte.until); }
@@ -387,6 +387,7 @@
     // Absent de la pièce (archives, conduit) : les règles du moment s'appliquent, sans le raconter.
     var absent = s.flags.awayCycle === c || s.flags.ext === c;
     S.MOMENTS[c] && S.MOMENTS[c](absent ? ctx(s, [], null) : g);
+    if (s.flags.bruit19 === c) S.BRUIT19(absent ? ctx(s, [], null) : g);
     if (s.fin) return;
     var fid = forcedId(s, c);
     if (s.flags.awayCycle !== c) {

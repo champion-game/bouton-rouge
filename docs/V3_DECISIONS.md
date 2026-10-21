@@ -275,3 +275,8 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - **Veste** : envelopper un objet interdit, protégé des fouilles ordinaires, pas de la fouille complète. Alors la veste ne peut plus couvrir la caméra.
 - **Faire baisser le soupçon** (−1, jamais à 4) : remettre le boîtier en état quand le Système sait (caméra coupée ou sabotage vu), une fois ; rendre un objet interdit à la caméra, une fois.
 - **Téléphone qui sonne** : décrocher, raccrocher ou laisser sonner. Raccrocher au premier appel : le moment continue, on peut rappeler. Raccrocher à l'appel du moment 11 : −1 confiance.
+
+## 9.1 — La 19, la diversion, avouer ou mentir
+- **La 19** : après le premier appel au 19, on peut le rappeler à partir du moment 12 (après la toux). Il a un bouton lui aussi : « N'appuie jamais » en fait un allié ; « Fais ce qu'ils disent » : il appuie (déclic, « SUJET 19 : CONFORME »).
+- **Plan par diversion** : l'allié 19 fait du bruit sur demande (une fois, pas au dernier moment). Au moment suivant, les caméras du secteur regardent la 19 : la caméra du joueur est aveugle pendant ce seul moment (gestes non vus, signal du plan possible sans couvrir la caméra). Ensuite la 19 se tait.
+- **Avouer ou mentir** : dès que la 18 a eu mal et que la ligne est ouverte, elle demande « C'était toi ? » (réponse sans perte de temps). Avouer : +1 confiance (une fois). Mentir : en A, cru si la caméra est aveugle, sinon le Système la renseigne (−1 confiance) ; en B, petit rire et « INFORMATION REÇUE DU SUJET 18 » si vu ; en C, « Tu mens », avec ta voix. Choix gardé dans `flags.aveu` pour les paragraphes de fin (9.2).
