@@ -660,9 +660,9 @@
       B: { label: 'Passer un mot', si: function (g) { return !g.flag('motPasse'); },
         fx: function (g) {
           g.flag('motPasse', true);
-          if (!g.dispo()) { g.narr('Tu arraches un feuillet du carnet et tu écris au crayon « TU M\'ENTENDS ? » et tu glisses le papier entre les lamelles. Tu attends. Aucun coup. Aucun papier ne revient.'); return; }
+          if (!g.dispo()) { g.narr('Tu arraches un feuillet du carnet et tu écris au crayon « TU M\'ENTENDS ? », puis tu glisses le papier entre les lamelles. Tu attends. Aucun coup. Aucun papier ne revient.'); return; }
           g.confiance(1, 'mot');
-          g.narr('Tu arraches un feuillet du carnet et tu écris au crayon « TU M\'ENTENDS ? » et tu glisses le papier entre les lamelles. Quelques secondes. TOC. TOC. TOC.'); g.son('knock');
+          g.narr('Tu arraches un feuillet du carnet et tu écris au crayon « TU M\'ENTENDS ? », puis tu glisses le papier entre les lamelles. Quelques secondes. TOC. TOC. TOC.'); g.son('knock');
           // En C, aucun papier ne peut revenir : seulement un son enregistré.
           if (g.truth === 'C') g.narr('Puis, très bas, dans le conduit, une voix qui ressemble à la tienne : « Je suis là. » Aucun papier ne revient.');
           else { g.narr('Un papier revient :'); g.papier({ recto: [g.pick(PHRASES.motsRetour)], signature: '' }); }
