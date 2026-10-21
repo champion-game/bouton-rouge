@@ -32,7 +32,7 @@ HTML/CSS/JS sans framework ni build (`index.html` suffit). Pièce en SVG vue de 
 
 ## État actuel
 
-- Version **9.5** (contenu de base décrit en 6.3) : 20 moments (12 libres, 8 imposés), 6 ordres, appels, archives, 18 fins + 2 bonus (Curiosité, Les mains propres). Pack graphique v1 placé d'après le modèle d'Amine.
+- Version **9.6** (contenu de base décrit en 6.3) : 20 moments (12 libres, 8 imposés), 6 ordres, appels, archives, 18 fins + 2 bonus (Curiosité, Les mains propres). Pack graphique v1 placé d'après le modèle d'Amine.
 - Silhouette de la 18 selon la vérité : victime = homme, complice = femme, illusion = enfant (`SIL_PAR_VERITE` dans `room.js`). Bureau modulaire (pack 20/10) : `bureau3_*`, `tiroir3_*`, `compart3_*`, canevas 2000 × 1000 réduit d’un bloc (×0,4725) ; tiroir et compartiment ouverts changent aussi de taille (`taille()` dans `render()`).
 - Rendu 5.5 : mur de fond `mur_fond.webp` reconstruit d'après le modèle (`tools/fond-mur.py`), profondeur (sol en perspective `sol()`, murs latéraux, ombres portées `ombre()`, liserés de lampe `lisere()`), carte d'ombre `ombre.webp` tirée de `keyart.webp` (`tools/carte-lumiere.py 0.2 38 0.56`), lampe lumineuse, vitre embrumée, grain `grain.webp`, sol mouillé (reflet du bureau et de la porte), tuyaux, reflets vitre et écran (classe `lit`, éteints avec la lampe). 7.6 : néon froid au-dessus de la vitre (`gNeon`, grésille plus souvent avec le soupçon, `neon()`), ombres de contact et reflets des objets sur le plateau (masque `mPlat`), lueur de l’écran, lueur du bouton au sol pendant un ordre.
 - Fins 6.1 : chaque fin = mini-histoire de 4 planches (`HISTOIRES` dans `story.js`), illustrations attendues dans `assets/img/fins/` (liste `docs/ILLUSTRATIONS_FINS.md`), image provisoire tant qu'elles manquent.

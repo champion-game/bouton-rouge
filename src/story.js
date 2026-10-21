@@ -285,6 +285,13 @@
   // Rejoindre la Chambre 18 par le conduit.
   function rencontre18(g) {
     if (conduitVu(g)) return;
+    // 18 hors de combat : personne ne peut ouvrir la grille, on ne voit qu'à travers les lamelles.
+    if (g.horsDeCombat()) {
+      g.narr('Tu rampes vers la 18. Aucun bruit devant toi. Tu arrives derrière une grille, vissée de l\'autre côté.');
+      g.narr('Tu frappes. Tu appelles. Rien. Entre les lamelles : une chaise, une silhouette immobile, la tête contre le mur. Le téléphone est au sol.');
+      if (g.has('objectif')) { g.gain('verite'); g.image('rev_A'); g.flag('variante', 'grille'); g.fin('tropTard'); return; }
+      delete g.s.done.P5; g.narr('Personne n\'ouvrira. Tu rebrousses chemin.'); return;
+    }
     g.narr('Tu rampes vers la 18. La respiration devient plus forte. Tu arrives derrière une grille.');
     // La grille ne s'ouvre que du côté de la 18 : il faut lui avoir promis de venir (« Je viens »).
     if (!g.has('objectif')) {
@@ -300,13 +307,11 @@
     g.gain('verite');
     if (g.truth === 'A') {
       g.image('rev_A');
-      if (!g.horsDeCombat()) {
-        g.narr('Un vrai prisonnier, terrifié, maintenu par une sangle.');
-        var r = relation(g);
-        g.voix(r === 'coop' ? '« Je savais que tu viendrais. »' : r === 'rupture' ? '« Toi ? Après ce que tu as fait ? » Il tend quand même la main.' : '« Pourquoi tu es venu ? … Peu importe. Aide-moi. »');
-        g.narr('Tu ouvres la grille et tu le libères.');
-        g.fin('sauvetage');
-      } else { g.narr('Silence. Une chaise. Une silhouette immobile. Le téléphone est au sol.'); g.fin('tropTard'); }
+      g.narr('Un vrai prisonnier, terrifié, maintenu par une sangle.');
+      var r = relation(g);
+      g.voix(r === 'coop' ? '« Je savais que tu viendrais. »' : r === 'rupture' ? '« Toi ? Après ce que tu as fait ? » Il tend quand même la main.' : '« Pourquoi tu es venu ? … Peu importe. Aide-moi. »');
+      g.narr('Tu ouvres la grille et tu le libères.');
+      g.fin('sauvetage');
     } else if (g.truth === 'B') {
       g.image('rev_B');
       g.narr('Elle n\'est pas attachée. Une blouse. Un badge du système. Une seringue de tranquillisant.');
@@ -324,7 +329,11 @@
   function operateur(g) {
     g.tel('Une voix humaine, hésitante : « Qui… qui vous a donné ce numéro ? Vous n\'êtes pas censé… »');
     if (!preuve(g)) { g.tel('« Je ne peux rien faire sans… sans quelque chose de concret. Raccrochez. »'); g.narr('Il lui faudrait une preuve.'); return; }
-    if (!auxRetabli(g)) { g.tel('« D\'accord. Je vous crois, je crois. Mais le bus auxiliaire est mort : je ne peux rien ouvrir d\'ici. »'); return; }
+    if (!auxRetabli(g)) {
+      g.tel(g.flag('aux') === 'defaut' ? '« D\'accord. Je vous crois, je crois. Mais le bus auxiliaire est mort : je ne peux rien ouvrir d\'ici. »'
+        : '« D\'accord. Je vous crois, je crois. Mais votre aile n\'est pas sur mon pupitre : vos portes passent par le circuit auxiliaire, et il est verrouillé côté centre. Je ne peux rien ouvrir d\'ici. »');
+      return;
+    }
     g.tel('« …On nous avait dit que vous étiez volontaires. » Un silence. « J\'ouvre votre porte. Pas longtemps. »');
     g.son('lock'); g.flag('operateurOk', true); g.ouvrirPorte('operateur', g.cycle + 1);
   }
@@ -647,7 +656,9 @@
         } },
       B: { label: 'Passer un mot', si: function (g) { return !g.flag('motPasse'); },
         fx: function (g) {
-          g.flag('motPasse', true); g.confiance(1, 'mot');
+          g.flag('motPasse', true);
+          if (!g.dispo()) { g.narr('Tu écris « TU M\'ENTENDS ? » et tu glisses le papier entre les lamelles. Tu attends. Aucun coup. Aucun papier ne revient.'); return; }
+          g.confiance(1, 'mot');
           g.narr('Tu écris « TU M\'ENTENDS ? » et tu glisses le papier entre les lamelles. Quelques secondes. TOC. TOC. TOC.'); g.son('knock');
           // En C, aucun papier ne peut revenir : seulement un son enregistré.
           if (g.truth === 'C') g.narr('Puis, très bas, dans le conduit, une voix qui ressemble à la tienne : « Je suis là. » Aucun papier ne revient.');
@@ -705,7 +716,11 @@
           g.lose('plan');
           if (g.truth === 'A') { g.gain('verite'); g.narr('Les deux portes se déverrouillent.'); g.fin('cooperation'); }
           else if (g.truth === 'B') { g.gain('verite'); g.tel('« C\'est bon. Ne bouge plus. »'); g.narr('Des pas dans le couloir. Ta porte s\'ouvre : elle entre, seule, une seringue à la main. À sa ceinture, un bipeur. Elle hésite sur le seuil.'); g.voix('« Ils ont ma fille. Je n\'avais pas le choix. »'); g.suite('RENCONTRE_B'); }
-          else { g.gain('verite'); g.narr('La voix continue dans le combiné… mais la silhouette derrière la vitre ne bouge plus. Image et voix ne sont pas liées.'); g.anim('silFige'); g.suite('RENCONTRE_C'); }
+          else {
+            g.gain('verite'); g.narr('La voix continue dans le combiné… mais la silhouette derrière la vitre ne bouge plus. Image et voix ne sont pas liées.'); g.anim('silFige');
+            g.narr('Ta porte se déverrouille. Celle de la 18 aussi. Tu sors dans le couloir et tu pousses la porte 18.');
+            g.image('rev_C'); g.narr('Personne. Face à la vitre : un projecteur et un haut-parleur.'); g.suite('RENCONTRE_C');
+          }
         } } },
 
     { id: 'P4', objet: 'trappe', fil: 'piece', qui: 'LA TRAPPE',
@@ -733,10 +748,10 @@
     { id: 'RENCONTRE_B', objet: 'window', fil: 'piece', impose: true, qui: 'LA COMPLICE',
       texte: 'Elle recule vers la porte de sécurité. Le mécanisme commence à se refermer. « Ne m\'oblige pas à appeler. »',
       A: { label: 'Bloquer la porte avec le tournevis', req: function (g) { return g.has('tournevis'); }, raison: 'Tu n\'as rien pour bloquer le mécanisme.',
-        fx: function (g) { g.narr('Tu glisses le tournevis dans le mécanisme. Il grince et s\'arrête. Elle recule.'); g.fin('complice'); } },
+        fx: function (g) { g.narr('Tu glisses le tournevis dans le mécanisme. Il grince et s\'arrête. Elle recule.'); g.flag('variante', 'force'); g.fin('complice'); } },
       B: { label: 'Négocier', fx: function (g) {
-        if (g.flag('demasquee')) { g.voix('« Tu savais. Et tu m\'as quand même parlé. »'); g.narr('Elle te tend son badge d\'accès.'); g.fin('complice'); }
-        else if (g.s.confiance >= 3) { g.voix('« …Tu m\'as crue, toi. Même quand je mentais. »'); g.narr('Elle te tend son badge d\'accès.'); g.fin('complice'); }
+        if (g.flag('demasquee')) { g.voix('« Tu savais. Et tu m\'as quand même parlé. »'); g.narr('Elle te tend son badge d\'accès.'); g.flag('variante', 'negocie'); g.fin('complice'); }
+        else if (g.s.confiance >= 3) { g.voix('« …Tu m\'as crue, toi. Même quand je mentais. »'); g.narr('Elle te tend son badge d\'accès.'); g.flag('variante', 'negocie'); g.fin('complice'); }
         else { g.voix('« Je suis désolée. »'); g.narr('Elle appuie sur son bipeur. La seringue. Noir.'); g.fin('sujet18'); }
       } },
       C: { label: 'Accepter leur offre', si: function (g) { return g.s.conformite >= 5; },
@@ -1238,14 +1253,17 @@
     ],
     tropTard: [
       ['chambre18', 'De l\'autre côté, une chaise. Une silhouette affaissée, la tête contre le mur. Elle ne répond plus.'],
-      ['vitre', 'Tu l\'appelles. Tu le secoues. Sous la vitre, les trois voyants sont éteints.'],
+      ['vitre', { grille: 'Tu l\'appelles à travers la grille. Tu passes les doigts entre les lamelles. Elle reste vissée de l\'autre côté.',
+        A: 'Tu frappes à la vitre. Tu l\'appelles au téléphone. Sous la vitre, les trois voyants sont éteints.' }],
       ['tasse', 'Deux gardiens entrent dans la 18. Ils l\'emportent sur un brancard, sans se presser. Sa tasse reste sur la table.'],
       ['moniteur', 'Sur le moniteur : CHAMBRE 18 — TRANSFERT. Aucune destination. La voix du Système, sans émotion : « Vous aviez promis de venir. »']
     ],
     complice: [
-      ['tournevis', 'Le mécanisme grince et s\'arrête. Elle recule contre le mur. Il n\'y a plus de rôle à jouer.'],
+      [{ negocie: 'badge', base: 'tournevis' }, { negocie: 'Elle hésite, la main sur le bipeur. Puis elle la baisse. Il n\'y a plus de rôle à jouer.',
+        base: 'Le mécanisme grince et s\'arrête. Elle recule contre le mur. Il n\'y a plus de rôle à jouer.' }],
       ['sil_B_recule', 'Les cris, c\'était elle, sur commande. Elle parle vite : sa fille, retenue quelque part dans le centre, un contrat qu\'elle n\'a pas lu.'],
-      ['badge', 'Tu prends son badge. Elle ne t\'en empêche pas. « Si tu sors… dis-leur que j\'ai essayé. »'],
+      ['badge', { negocie: 'Elle te tend son badge. Tu le prends. « Si tu sors… dis-leur que j\'ai essayé. »',
+        base: 'Tu prends son badge. Elle ne t\'en empêche pas. « Si tu sors… dis-leur que j\'ai essayé. »' }],
       ['papier_lettre', 'Dans le couloir, une photo tombe de sa poche : une petite fille, un numéro de chambre au dos. Derrière toi, elle murmure un prénom.']
     ],
     sujet18: [
@@ -1336,7 +1354,8 @@
     return h.map(function (p, i) {
       var t = p[1];
       if (typeof t === 'object') { var n = NIVEAUX(g).filter(function (k) { return t[k]; })[0]; t = n ? t[n] : t[cle] || t[g.truth] || t.A || t.base; }
-      return { img: id + '_' + (i + 1), generique: p[0], texte: t };
+      var im = typeof p[0] === 'object' ? p[0][cle] || p[0].base : p[0];
+      return { img: id + '_' + (i + 1), generique: im, texte: t };
     });
   }
 
