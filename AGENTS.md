@@ -8,7 +8,7 @@ Le créateur, Amine, ne code pas. Le code est écrit par Claude (voir `CLAUDE.md
 
 - Dépose les images dans `assets/img/` (ou `assets/img/fins/` pour les planches de fin), **en WebP**, avec le nom exact demandé.
 - Style : suis `docs/BRIEF_ARTISTE.md` (clinique, sombre, grain, lumière froide, un seul rouge vif : le bouton). Inspire-toi des images déjà présentes dans `assets/img/` pour rester cohérent avec le pack de l'artiste.
-- Pas de texte incrusté dans les images (le jeu écrit lui-même les textes).
+- **Jamais de texte ni de titre dans aucune image**, y compris les visuels Steam (le titre du jeu peut changer ; le texte est ajouté à part). Pas de `library_logo` avec le titre écrit.
 - Planches de fin : format 4:3 (≈ 660 × 490), noms et sujets dans `docs/ILLUSTRATIONS_FINS.md`.
 - Poids raisonnable : viser moins de 150 Ko par image (le jeu tourne aussi sur téléphone).
 - Ne remplace pas une image existante sans qu'Amine l'ait demandé explicitement.
