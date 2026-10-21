@@ -265,3 +265,13 @@ Décisions d'Amine (19/10) : la confirmation avant de manquer un ordre met le ch
 - Fins concernées : Conforme, Employé, Marché, Seul dehors, Porte dérobée, Évasion, Témoin. « L'Évasion » ne dit plus « tu ne sauras jamais » quand le joueur sait.
 
 - 8.3 : le Système parle sur un ton de procès-verbal, sans émotion ni ironie. Il ne cite jamais le contenu des appels ; il dit seulement « Ne faites pas confiance au téléphone. » ou « Suivez le protocole et tout ira bien pour vous. » Exception gardée : « INFORMATION REÇUE DU SUJET 18 » (indice vérité B).
+
+## 9.0 — Plus de choix (d'après le document d'Amine « Ajouts, impacts, conséquences »)
+- **B1 ne blesse plus** : douleur jouée, comme B3. La 18 tient plus longtemps (B1 + B2 complet = 2 voyants).
+- **Privilèges d'obéissance** (`PRIVILEGE()`), au 1er, 2e et 3e ordre entièrement obéi : une question au Système (porte, inspection ou alimentation) ; tournevis autorisé (le tiroir s'ouvre seul s'il est fermé, jamais confisqué, autorisation retirée si un sabotage est découvert) ; au choix un sursis (retarde de 2 moments l'intervention ou la maintenance) ou une information sur le protocole (preuve « protocole »).
+- **Inspection ciblée** : au moment 8, le Système annonce une cible (boîtier, grille, trappe ou bureau ; ce qui est en place, sinon au hasard). Au moment 10, si soupçon < 2, le gardien remet la caméra en ordre et ne vérifie que la cible ; si soupçon ≥ 2, fouille complète comme avant. Cible « bureau » : un tiroir forcé, même refermé, est trouvé.
+- **Tasse** : écouter contre le mur (une fois : un indice selon la vérité et la prochaine ronde) ou la briser avant le moment 10 (diversion : l'inspection ne vérifie pas sa cible ; +1 soupçon quand le gardien trouve les éclats).
+- **Ration** (moment 1, plateau sous la porte) : la manger ou la garder ; la passer à la 18 par la grille (+1 confiance en A et B ; en C personne ne la ramasse ; en B elle revient). La cuillère, aiguisée deux moments sans tournevis, devient une **lame de fortune** : ouvre seulement la grille d'aération, +1 soupçon (bruit).
+- **Veste** : envelopper un objet interdit, protégé des fouilles ordinaires, pas de la fouille complète. Alors la veste ne peut plus couvrir la caméra.
+- **Faire baisser le soupçon** (−1, jamais à 4) : remettre le boîtier en état quand le Système sait (caméra coupée ou sabotage vu), une fois ; rendre un objet interdit à la caméra, une fois.
+- **Téléphone qui sonne** : décrocher, raccrocher ou laisser sonner. Raccrocher au premier appel : le moment continue, on peut rappeler. Raccrocher à l'appel du moment 11 : −1 confiance.

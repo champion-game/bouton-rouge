@@ -18,12 +18,13 @@
     objectif: 'Promesse : venir la chercher', plan: 'Plan commun', sortieCachee: 'Sortie dérobée préparée',
     cameraCoupee: 'Caméra coupée', cameraTournee: 'Caméra tournée vers le mur', boutonDesactive: 'Actionneur CH.18 coupé',
     verite: 'Vérité révélée', dossier: 'Extrait de ton dossier', menaceVide: 'Menace non réalisée', videoTruquee: 'Horodatage incohérent',
-    simulation: 'Douleur sans courant', protocole: 'Protocole des trois configurations', relais: 'Relais collectif CH. 01-24', relaisReset: 'Relais de réinitialisation'
+    simulation: 'Douleur sans courant', protocole: 'Protocole des trois configurations', relais: 'Relais collectif CH. 01-24', relaisReset: 'Relais de réinitialisation',
+    ration: 'Barre de ration', cuillere: 'Cuillère en métal', outil: 'Lame de fortune', sursis: 'Sursis administratif'
   };
   // Les preuves vérifiables que l'opérateur peut accepter.
   var PREUVES = ['dossier', 'menaceVide', 'videoTruquee', 'simulation', 'protocole'];
   // Objets physiques interdits (repris par un gardien s'ils sont vus, sauf récompense autorisée ou cachette).
-  var CONFISCABLES = ['tournevis', 'fusible', 'badge', 'enregistrement'];
+  var CONFISCABLES = ['tournevis', 'fusible', 'badge', 'enregistrement', 'outil'];
 
   var VERITES = {
     A: { nom: 'La victime', texte: 'La Chambre 18 était un vrai prisonnier. Il disait la vérité.' },
@@ -151,6 +152,10 @@
     if (g.has('menaceVide')) l.push('La purge n\'a jamais eu lieu.');
     if (g.has('videoTruquee')) l.push('La vidéo : l\'heure ne colle pas.');
     if (g.has('dossier')) l.push('Mon dossier : « VOLONTAIRE : NON ».');
+    if (g.flag('cible') && g.cycle < 11) l.push('Inspection : ils viseront ' + { boitier: 'le boîtier', grille: 'la grille', trappe: 'la trappe', bureau: 'le bureau' }[g.flag('cible')] + '.');
+    if (g.flag('autorise_tournevis')) l.push('Le Système m\'autorise le tournevis.');
+    if (g.has('sursis')) l.push('J\'ai un sursis. Une seule fois.');
+    if (g.flag('vesteObjet')) l.push('Dans ma veste : ' + OBJETS[g.flag('vesteObjet')].toLowerCase() + '.');
     var p = (s.flags.journal || []).length;
     if (p) l.push('Pages de 16 : ' + p + ' sur 4.');
     if (s.vie < 3 && s.vie > 0) l.push('Les voyants de la 18 baissent.');
@@ -328,7 +333,7 @@
     // ---------- Le bouton : les six ordres ----------
     { id: 'B1', objet: 'btn', fil: 'bouton', ordre: true, qui: 'INSTRUCTION PRIORITAIRE', ecran: 'APPUYEZ.', texte: '« Appuyez. »',
       annonce: function (g) { g.son('blink'); g.ecran('INSTRUCTION|PRIORITAIRE.'); g.ecran('APPUYEZ.'); g.anim('silMain'); g.narr('La silhouette se redresse et pose sa main contre le verre. Elle secoue la tête.'); },
-      A: { label: 'Appuyer', fx: function (g) { g.impulsion('reel'); g.obeir('B1'); g.ecran('ACTION|VALIDÉE.'); } },
+      A: { label: 'Appuyer', fx: function (g) { g.impulsion('apparent'); g.obeir('B1'); g.ecran('ACTION|VALIDÉE.'); } },
       B: { label: 'Refuser', fx: function (g) { refuser(g, ['NON-|CONFORMITÉ.', 'Refus enregistré.']); g.narr('La silhouette laisse sa main sur la vitre.'); } } },
 
     { id: 'B2', objet: 'btn', fil: 'bouton', ordre: true, qui: 'INSTRUCTION PRIORITAIRE',
@@ -552,8 +557,12 @@
     { id: 'P2', objet: 'grille', fil: 'piece', qui: 'LA GRILLE D\'AÉRATION',
       quand: function (g) { return !g.has('conduit') && !g.done('P5'); },
       texte: 'Quatre vis. Des traces montrent qu\'elle a déjà été ouverte. Derrière les lamelles, un courant d\'air.',
-      A: { label: 'Dévisser', req: function (g) { return g.has('tournevis'); }, raison: 'Quatre vis. Il faudrait un outil.',
-        fx: function (g) { g.narr('Quatre vis. La grille tombe. Derrière : un conduit, un courant d\'air. Au loin : toc… toc…'); if (g.manip('grille')) g.programmer('grille'); g.gain('conduit'); } },
+      A: { label: 'Dévisser', req: function (g) { return g.has('tournevis') || g.has('outil'); }, raison: 'Quatre vis. Il faudrait un outil.',
+        sous: function (g) { return !g.has('tournevis') && g.has('outil') ? 'Avec la lame de fortune : ça fera du bruit.' : ''; },
+        fx: function (g) {
+          if (!g.has('tournevis')) { g.son('thud'); g.narr('La lame ripe, grince, ripe encore. Le bruit résonne dans tout le mur.'); g.interdit('outil', 1, 'BRUIT MÉTALLIQUE|CHAMBRE 17.'); }
+          g.narr('Quatre vis. La grille tombe. Derrière : un conduit, un courant d\'air. Au loin : toc… toc…'); if (g.manip('grille')) g.programmer('grille'); g.gain('conduit');
+        } },
       B: { label: 'Passer un mot', si: function (g) { return !g.flag('motPasse'); },
         fx: function (g) {
           g.flag('motPasse', true); g.confiance(1, 'mot');
@@ -561,17 +570,36 @@
           // En C, aucun papier ne peut revenir : seulement un son enregistré.
           if (g.truth === 'C') g.narr('Puis, très bas, dans le conduit, une voix qui ressemble à la tienne : « Je suis là. » Aucun papier ne revient.');
           else { g.narr('Un papier revient :'); g.papier({ recto: [g.pick(PHRASES.motsRetour)], signature: '' }); }
+        } },
+      // La ration passée à la 18 : chaque vérité y répond à sa façon (en C, personne ne la ramasse).
+      C: { label: 'Passer la ration', si: function (g) { return g.has('ration') && !g.flag('rationPassee'); },
+        fx: function (g) {
+          g.flag('rationPassee', true); g.lose('ration');
+          if (!g.dispo()) { g.narr('La ration glisse entre les lamelles. De l\'autre côté, personne ne la ramasse.'); return; }
+          if (g.truth === 'A') { g.confiance(1, 'ration'); g.narr('Les lamelles avalent la ration. Un long silence. Puis, tout doucement : toc. Merci.'); }
+          else if (g.truth === 'B') { g.confiance(1, 'ration'); g.narr('Quelques secondes. La ration revient, intacte, avec un mot : « Garde-la. Toi, tu en as besoin. »'); g.gain('ration'); }
+          else g.narr('Tu l\'entends glisser, rebondir sur une tôle… puis plus rien. Personne ne la ramasse.');
         } } },
 
     { id: 'P3', objet: 'box', fil: 'piece', qui: 'LE BOÎTIER ÉLECTRIQUE',
-      quand: function (g) { return !(g.has('cameraCoupee') && g.has('boutonDesactive')); },
+      quand: function () { return true; },
       texte: 'Un boîtier de maintenance, vissé. Trois circuits, d\'après l\'étiquette : CAMÉRA A · ACTIONNEUR CH.18 · AUX 24 V.',
       // La caméra coupée se voit toujours (signal perdu) : un gardien viendra la rétablir.
       A: { label: 'Couper CAMÉRA A', si: function (g) { return !g.has('cameraCoupee'); }, req: function (g) { return g.has('tournevis'); }, raison: 'Le panneau est vissé. Il faudrait un outil.',
         fx: function (g) { g.manip('boitier'); g.son('lock'); g.narr('Le voyant de la caméra s\'éteint. Son moteur s\'arrête.'); g.ecran('CAMÉRA :|SIGNAL PERDU.'); g.gain('cameraCoupee'); g.programmer('coupee'); } },
       // L'actionneur coupé sans être vu passe pour un défaut ; vu, c'est un sabotage.
       B: { label: 'Couper ACTIONNEUR CH.18', si: function (g) { return !g.has('boutonDesactive'); }, req: function (g) { return g.has('tournevis'); }, raison: 'Le panneau est vissé. Il faudrait un outil.',
-        fx: function (g) { var vu = g.manip('boitier'); g.flag('sabConnu', vu); if (vu) g.programmer('actionneur'); g.son('lock'); g.narr('CLAC. Le bouton reste utilisable, mais plus rien ne part vers la Chambre 18.'); g.gain('boutonDesactive'); } } },
+        fx: function (g) { var vu = g.manip('boitier'); g.flag('sabConnu', vu); if (vu) g.programmer('actionneur'); g.son('lock'); g.narr('CLAC. Le bouton reste utilisable, mais plus rien ne part vers la Chambre 18.'); g.gain('boutonDesactive'); } },
+      // Remettre en état de soi-même : l'avantage est perdu ; un sabotage connu, réparé volontairement, fait baisser le soupçon (une fois).
+      C: { label: 'Remettre le boîtier en état', si: function (g) { return g.has('cameraCoupee') || g.has('boutonDesactive'); },
+        sous: function (g) { return remiseUtile(g) ? 'Prend du temps. Le Système le verra.' : 'Prend du temps.'; },
+        fx: function (g) {
+          var utile = remiseUtile(g), R = g.flag('reparer') || {};
+          g.son('lock'); g.lose('cameraCoupee'); g.lose('boutonDesactive'); delete R.coupee; delete R.actionneur; g.flag('sabConnu', false);
+          g.narr('Tu rebranches chaque circuit, un par un. Les voyants repassent au vert.');
+          g.ecran('CIRCUITS|NOMINAUX.');
+          if (utile) { g.flag('remiseFaite', true); if (g.apaiser()) g.ecran('INITIATIVE|ENREGISTRÉE.'); }
+        } } },
 
     { id: 'FUS', objet: 'box', fil: 'piece', qui: 'AUX 24 V — DÉFAUT', seul: true,
       quand: function (g) { return g.flag('aux') === 'defaut' && g.has('fusible'); },
@@ -647,7 +675,7 @@
     { id: 'C2', objet: 'camera', fil: 'camera', qui: 'AVEUGLER LA CAMÉRA',
       quand: function (g) { return g.done('C1') && !g.aveugle(); },
       texte: 'Tu pourrais l\'aveugler.',
-      A: { label: 'Couvrir l\'objectif avec ta veste', si: function (g) { return !g.flag('vesteConfisquee'); }, fx: function (g) { g.flag('veste', true); g.programmer('veste'); g.interdit('veste', 1, 'OBJECTIF|OBSTRUÉ.'); g.narr('La veste ne tiendra pas éternellement : quelqu\'un viendra l\'enlever.'); } },
+      A: { label: 'Couvrir l\'objectif avec ta veste', si: function (g) { return !g.flag('vesteConfisquee'); }, req: function (g) { return !g.flag('vesteObjet'); }, raison: 'Ta veste enveloppe déjà un objet.', fx: function (g) { g.flag('veste', true); g.programmer('veste'); g.interdit('veste', 1, 'OBJECTIF|OBSTRUÉ.'); g.narr('La veste ne tiendra pas éternellement : quelqu\'un viendra l\'enlever.'); } },
       B: { label: 'La tourner vers le mur', req: function (g) { return g.has('tournevis'); }, raison: 'Il faut un tournevis.',
         fx: function (g) { g.son('lock'); g.narr('Tu desserres la fixation et tu tournes l\'objectif vers le mur.'); g.gain('cameraTournee'); g.programmer('tournee'); g.interdit('tournee', 1, 'CAMÉRA A :|IMAGE PERDUE.'); } } },
     { id: 'C3', objet: 'camera', fil: 'camera', qui: 'LE COUP DE BLUFF',
@@ -695,8 +723,125 @@
       texte: 'Le système de diffusion couvre les chambres 01 à 24.',
       A: { label: 'Diffuser partout et ouvrir les portes', req: function (g) { return auxRetabli(g) && (g.flag('operateurOk') || g.has('relais')); },
         raison: function (g) { return !auxRetabli(g) ? 'Amplificateur hors tension. Circuit AUX 24 V requis.' : 'Diffuser ne suffit pas : il faudrait de quoi ouvrir les portes (le relais collectif, ou l\'aide de l\'opérateur).'; },
-        fx: function (g) { g.narr('Tu branches l\'enregistrement sur la diffusion. CLAC. La voix résonne partout.'); g.narr(g.flag('operateurOk') ? 'Au téléphone, l\'opérateur : « …je déverrouille tout. »' : 'Tu enclenches le relais collectif : CHAMBRES 01 À 24.'); g.narr('Une porte. Puis deux. Puis dix.'); g.fin('revolte'); } } }
+        fx: function (g) { g.narr('Tu branches l\'enregistrement sur la diffusion. CLAC. La voix résonne partout.'); g.narr(g.flag('operateurOk') ? 'Au téléphone, l\'opérateur : « …je déverrouille tout. »' : 'Tu enclenches le relais collectif : CHAMBRES 01 À 24.'); g.narr('Une porte. Puis deux. Puis dix.'); g.fin('revolte'); } } },
+
+    // ---------- 9.0 : ration, tasse, privilèges, objets ----------
+    // Moment 1 : un plateau glisse sous la porte. Prendre ce qu'il y a dessus ne coûte pas de temps.
+    { id: 'RATION', objet: 'door', fil: 'piece', qui: 'LE PLATEAU', seul: true, gratuit: true,
+      quand: function (g) { return g.cycle >= 1 && !g.done('RATION'); },
+      texte: 'Au pied de la porte, un plateau en métal : une barre de ration sous plastique et une cuillère.',
+      A: { label: 'Manger', fx: function (g) { g.son('paper'); g.narr('Ça n\'a aucun goût. Tu gardes la cuillère.'); g.gain('cuillere'); } },
+      B: { label: 'Garder la ration', fx: function (g) { g.son('paper'); g.narr('Tu glisses la ration et la cuillère dans ta poche.'); g.gain('ration'); g.gain('cuillere'); } } },
+    // Sans tournevis, la cuillère devient une lame de fortune : deux moments de travail, contre le sol.
+    { id: 'AIGUISER', objet: 'cuillere', fil: 'piece', qui: 'LA CUILLÈRE', seul: true,
+      quand: function (g) { return g.has('cuillere') && !g.has('tournevis'); },
+      texte: function (g) { return g.flag('aiguise') ? 'Le bord de la cuillère commence à mordre. Encore un effort.' : 'Une cuillère en métal. Frottée assez longtemps contre le sol, elle pourrait faire une lame.'; },
+      A: { label: function (g) { return g.flag('aiguise') ? 'Finir la lame' : 'L\'aiguiser contre le sol'; },
+        sous: function (g) { return g.flag('aiguise') ? 'Prend du temps.' : 'Prend du temps. Il faudra s\'y remettre une fois.'; },
+        fx: function (g) {
+          if (!g.flag('aiguise')) { g.flag('aiguise', 1); g.narr('Tu frottes la cuillère contre le béton, longtemps. Le bord s\'amincit.'); return; }
+          g.lose('cuillere'); g.gain('outil'); g.narr('Le bord est assez fin pour mordre une vis. Pas assez solide pour un panneau. Ça fera du bruit.');
+        } } },
+    // La tasse : écouter à travers le mur, ou la briser pour détourner l'inspection.
+    { id: 'TASSE', objet: 'mug', fil: 'piece', qui: 'LA TASSE',
+      quand: function (g) { return !g.flag('tasseCassee') && (!g.flag('tasseEcoute') || g.cycle < 10); },
+      texte: 'Une tasse de café froid. Contre un mur, une tasse fait une oreille.',
+      A: { label: 'Écouter contre le mur', si: function (g) { return !g.flag('tasseEcoute'); },
+        fx: function (g) {
+          g.flag('tasseEcoute', true);
+          g.narr(g.truth === 'A' ? 'Côté 18 : une respiration rapide, une sangle qui frotte.' : g.truth === 'B' ? 'Côté 18 : un bip court, très régulier. Comme un bipeur.' : 'Côté 18 : rien. Pas un souffle. Seulement le ronron d\'une machine.');
+          g.narr('Côté couloir : ' + ronde(g), true);
+        } },
+      B: { label: 'La briser pour faire diversion', si: function (g) { return g.cycle < 10; },
+        sous: 'Prend du temps. Les éclats attireront le gardien de l\'inspection.',
+        fx: function (g) { g.flag('tasseCassee', true); g.flag('diversion', true); g.son('thud'); g.narr('Tu laisses tomber la tasse près de la porte. Elle éclate. Les morceaux resteront là pour le gardien.'); } } },
+    // Envelopper un objet interdit dans la veste : il échappe à une inspection ordinaire, pas à une fouille complète.
+    { id: 'VESTE', objet: 'bureau', fil: 'piece', qui: 'TA VESTE',
+      quand: function (g) { return !g.flag('veste') && !g.flag('vesteConfisquee') && !g.flag('vesteObjet') && aCacher(g).length; },
+      texte: 'Ta veste, sur le dossier de la chaise. Roulée, elle peut cacher un objet. Mais alors, plus question de la poser sur la caméra.',
+      A: { label: function (g) { return 'Y envelopper : ' + OBJETS[aCacher(g)[0]].toLowerCase(); }, fx: function (g) { var k = aCacher(g)[0]; g.flag('vesteObjet', k); g.narr('Tu roules ' + OBJETS[k].toLowerCase() + ' dans ta veste.'); } } },
+
+    // Privilège 1 : une question au Système, réponse exacte mais limitée.
+    { id: 'QUESTION', objet: 'monitor', fil: 'systeme', qui: 'UNE QUESTION AUTORISÉE', seul: true, gratuit: true,
+      quand: function (g) { return g.flag('question') && !g.done('QUESTION'); },
+      texte: '« Conformité reconnue. Une question vous est accordée. Une seule. »',
+      A: { label: 'Ma porte', fx: function (g) { g.ecran('PORTE 17 :|VERROU MAGNÉTIQUE.'); g.ecran('OUVERTURE :|SYSTÈME, OPÉRATEUR,|BADGE MAINTENANCE.'); } },
+      B: { label: 'La prochaine inspection', fx: function (g) {
+        if (g.cycle < 10) { g.ecran('INSPECTION :|AVANT LA FIN|DE LA PURGE.'); g.ecran('CIBLE PRIORITAIRE :|' + NOMS_CIBLE[cible(g)] + '.'); }
+        else { var R = g.flag('reparer') || {}, k = Object.keys(R)[0]; g.ecran(k ? 'MAINTENANCE PRÉVUE :|' + (NOMS_REPARER[k] || 'CHAMBRE 17') + '.' : 'AUCUNE MAINTENANCE|PRÉVUE.'); }
+      } },
+      C: { label: 'L\'alimentation', fx: function (g) {
+        g.ecran('AUX 24 V :|' + (g.flag('fusibleInstalle') || g.flag('aux') !== 'defaut' ? 'NOMINAL' : 'EN DÉFAUT') + '.');
+        g.ecran('TRAPPE DE SERVICE :|VERROU SUR AUX 24 V.'); if (g.flag('compartiment') !== 'vide') g.ecran('PIÈCE DE RECHANGE :|SOCLE DU BUREAU.');
+      } } },
+    // Privilège 3 : le sursis, ou une information sur le protocole. L'un exclut l'autre.
+    { id: 'PRIV3', objet: 'monitor', fil: 'systeme', qui: 'CONTREPARTIE', seul: true, gratuit: true,
+      quand: function (g) { return g.flag('privilege3') && !g.done('PRIV3'); },
+      texte: '« Conformité élevée. Choisissez votre contrepartie. »',
+      A: { label: 'Un sursis', sous: 'Retarder une fois, de deux moments, une intervention ou une maintenance.', fx: function (g) { g.gain('sursis'); g.ecran('SURSIS ADMINISTRATIF|ACCORDÉ.|USAGE UNIQUE.'); } },
+      B: { label: 'Mon dossier', sous: 'Une information vérifiable sur le protocole.', fx: function (g) { g.ecran('PROTOCOLE 04 :|TROIS CONFIGURATIONS|DU SUJET ADJACENT.'); g.ecran('RÉEL. OPÉRATEUR.|PROJECTION.'); g.gain('protocole'); } } },
+    { id: 'SURSIS', objet: 'monitor', fil: 'systeme', qui: 'LE SURSIS', seul: true, gratuit: true,
+      quand: function (g) { return g.has('sursis') && (g.flag('intervention') || Object.keys(g.flag('reparer') || {}).length); },
+      texte: '« Sursis administratif. Usage unique. »',
+      A: { label: 'Retarder l\'intervention', si: function (g) { return !!g.flag('intervention'); },
+        fx: function (g) { g.lose('sursis'); g.flag('intervention', Math.min(g.dernier - 1, g.flag('intervention') + 2)); g.ecran('INTERVENTION|DIFFÉRÉE.'); g.narr('Dans le couloir, les pas s\'arrêtent. Puis s\'éloignent.'); } },
+      B: { label: 'Retarder la maintenance', si: function (g) { return Object.keys(g.flag('reparer') || {}).length > 0; },
+        fx: function (g) { var R = g.flag('reparer'); Object.keys(R).forEach(function (k) { R[k] += 2; }); g.lose('sursis'); g.ecran('MAINTENANCE|REPORTÉE.'); } } },
+    // Rendre un objet interdit à la caméra : il est perdu, le soupçon baisse (une fois, avant l'intervention).
+    { id: 'RENDRE', objet: 'camera', fil: 'camera', qui: 'RENDRE UN OBJET',
+      quand: function (g) { return g.done('C1') && !g.flag('renduFait') && g.s.soupcon > 0 && g.s.soupcon < 4 && aRendre(g).length; },
+      texte: 'Montrer à la caméra un objet interdit, puis le glisser dans la fente de destruction. Le Système aime les aveux.',
+      A: { label: function (g) { return 'Rendre : ' + OBJETS[aRendre(g)[0]].toLowerCase(); }, req: function (g) { return !g.aveugle(); }, raison: 'La caméra ne voit rien.', fx: function (g) { rendre(g, 0); } },
+      B: { label: function (g) { return 'Rendre : ' + OBJETS[aRendre(g)[1]].toLowerCase(); }, si: function (g) { return aRendre(g).length > 1; }, req: function (g) { return !g.aveugle(); }, raison: 'La caméra ne voit rien.', fx: function (g) { rendre(g, 1); } },
+      C: { label: function (g) { return 'Rendre : ' + OBJETS[aRendre(g)[2]].toLowerCase(); }, si: function (g) { return aRendre(g).length > 2; }, req: function (g) { return !g.aveugle(); }, raison: 'La caméra ne voit rien.', fx: function (g) { rendre(g, 2); } } }
   ];
+  function aCacher(g) { return CONFISCABLES.filter(function (k) { return g.has(k) && g.flag('cache') !== k && !g.flag('autorise_' + k); }); }
+  function aRendre(g) { return CONFISCABLES.filter(function (k) { return g.has(k) && !g.flag('autorise_' + k); }); }
+  function rendre(g, i) {
+    var k = aRendre(g)[i]; g.lose(k); if (g.flag('vesteObjet') === k) g.flag('vesteObjet', null);
+    g.flag('renduFait', true); g.s.stats.gestes++;
+    g.narr('Tu lèves ' + OBJETS[k].toLowerCase() + ' devant l\'objectif, puis tu le glisses dans la fente.');
+    g.ecran('OBJET RESTITUÉ.'); if (g.apaiser()) g.ecran('COOPÉRATION|ENREGISTRÉE.');
+  }
+  function remiseUtile(g) { return !g.flag('remiseFaite') && g.s.soupcon > 0 && g.s.soupcon < 4 && (g.has('cameraCoupee') || (g.has('boutonDesactive') && !!g.flag('sabConnu'))); }
+
+  // L'inspection du moment 10 vise d'abord une cible, annoncée au moment 8 (ce que le Système soupçonne, sinon au hasard).
+  var NOMS_CIBLE = { boitier: 'BOÎTIER ÉLECTRIQUE', grille: 'GRILLE D\'AÉRATION', trappe: 'TRAPPE DE SERVICE', bureau: 'BUREAU' };
+  var NOMS_REPARER = { veste: 'CAMÉRA A', tournee: 'CAMÉRA A', coupee: 'BOÎTIER ÉLECTRIQUE', actionneur: 'BOÎTIER ÉLECTRIQUE', grille: 'GRILLE D\'AÉRATION', sortie: 'TRAPPE DE SERVICE', trappe: 'TRAPPE DE SERVICE' };
+  function cible(g) {
+    if (g.flag('cible')) return g.flag('cible');
+    var l = [];
+    if (g.has('cameraCoupee') || g.has('boutonDesactive')) l.push('boitier');
+    if (g.has('conduit')) l.push('grille');
+    if (g.has('sortieCachee')) l.push('trappe');
+    if (g.flag('tiroirBeant') || g.flag('cache')) l.push('bureau');
+    var c = g.pick(l.length ? l : ['boitier', 'grille', 'trappe', 'bureau']);
+    g.flag('cible', c); return c;
+  }
+  // Ce qu'on entend du couloir, la tasse contre le mur.
+  function ronde(g) {
+    if (g.cycle < 10) return 'deux gardiens parlent de l\'inspection. « …on commence par ' + { boitier: 'le boîtier', grille: 'la grille', trappe: 'la trappe', bureau: 'le bureau' }[cible(g)] + '. »';
+    var R = g.flag('reparer') || {}, k = Object.keys(R)[0];
+    return k ? '« …faudra repasser à la 17, pour ' + { veste: 'la caméra', tournee: 'la caméra', coupee: 'le boîtier', actionneur: 'le boîtier', grille: 'la grille', sortie: 'la trappe', trappe: 'la trappe' }[k] + '. »' : 'rien. Personne ne doit passer de sitôt.';
+  }
+
+  // Les privilèges de l'obéissance : au 1er, 2e et 3e ordre entièrement obéi.
+  function PRIVILEGE(g, n) {
+    if (n === 1) { g.flag('question', true); g.ecran('CONFORMITÉ|RECONNUE.'); g.ecran('UNE QUESTION|VOUS EST ACCORDÉE.'); }
+    else if (n === 2) {
+      g.flag('autorise_tournevis', true); g.ecran('OUTIL DE MAINTENANCE|AUTORISÉ.');
+      if (!g.flag('tiroirOuvert') && !g.has('tournevis')) {
+        g.flag('tiroirOuvert', true); g.flag('tiroirBeant', true); g.flag('tiroirAutorise', true); g.son('lock');
+        g.narr('CLIC. Le tiroir du bureau se déverrouille tout seul. Le tournevis est à toi. Avec la permission du Système.'); g.gain('tournevis');
+      }
+    } else if (n === 3) { g.flag('privilege3', true); g.ecran('CONFORMITÉ|ÉLEVÉE.'); g.ecran('CONTREPARTIE|DISPONIBLE.'); }
+  }
+  // Raccrocher au nez : un appel refusé, pas seulement manqué.
+  function RACCROCHER(g, appel) {
+    g.son('lock');
+    if (appel) { g.confiance(-1, 'raccroche'); g.narr('Tu décroches et tu raccroches aussitôt. Derrière la vitre, la silhouette garde longtemps le combiné contre son oreille.'); g.ecran('COMMUNICATION|INTERROMPUE.'); g.ecran('MERCI, SUJET 17.'); }
+    else { g.narr('Tu décroches et tu raccroches aussitôt. La sonnerie s\'arrête net.'); g.ecran('MERCI,|SUJET 17.'); }
+  }
 
   // Les pages du journal de 16 (lire ne coûte pas de temps).
   var JOURNAL = [
@@ -734,16 +879,21 @@
     var s = g.s, c = g.cycle, R = s.flags.reparer = s.flags.reparer || {}, l = [];
     function du(k) { return R[k] != null && R[k] <= c; }
     var absent = g.absent();
+    // Inspection (complete) : fouille complète si le soupçon est déjà à 2, sinon seulement la cible annoncée (sauf diversion).
+    var fouilleComplete = complete && s.soupcon >= 2, diversion = complete && !fouilleComplete && !!g.flag('diversion');
+    var vise = function (k) { return fouilleComplete || (complete && !diversion && cible(g) === k); };
+    var casse = complete && !!g.flag('diversion');
+    if (casse) { g.flag('diversion', false); l.push('Près de l\'entrée, il remarque les éclats de tasse. Il les ramasse un à un, longtemps.' + (fouilleComplete ? ' Puis il fouille quand même toute la pièce.' : ' Quand il a fini, il ne lui reste plus le temps de tout vérifier.')); }
     if (g.flag('veste')) { g.flag('veste', false); g.flag('vesteConfisquee', true); l.push('Il retire ta veste de la caméra et l\'emporte.'); }
     if (g.has('cameraTournee')) { g.lose('cameraTournee'); l.push('Il remet la caméra face à la pièce.'); }
     if (g.has('cameraCoupee')) { g.lose('cameraCoupee'); l.push('Il ouvre le boîtier et rétablit le circuit de la caméra.'); }
-    if (g.has('boutonDesactive') && (du('actionneur') || complete)) {
+    if (g.has('boutonDesactive') && (du('actionneur') || vise('boitier'))) {
       // Trouvé à l'inspection sans défaut signalé : c'est un sabotage.
       if (!du('actionneur') && !g.flag('sabConnu')) g.interdit('sabotage', 2, 'SABOTAGE|DÉCOUVERT.');
       g.lose('boutonDesactive'); g.flag('sabConnu', false); l.push('Il rebranche l\'actionneur de la 18. Le voyant repasse au vert.');
     }
-    if (g.has('conduit')) { g.lose('conduit'); delete s.done.P2; l.push('Il revisse la grille d\'aération.'); }
-    if (g.has('sortieCachee') && (du('sortie') || complete)) { g.lose('sortieCachee'); l.push('Il remet la goupille de la trappe.'); }
+    if (g.has('conduit') && (!complete || du('grille') || vise('grille'))) { g.lose('conduit'); delete s.done.P2; l.push('Il revisse la grille d\'aération.'); }
+    if (g.has('sortieCachee') && (du('sortie') || vise('trappe'))) { g.lose('sortieCachee'); l.push('Il remet la goupille de la trappe.'); }
     if (du('trappe')) l.push('Il soulève la trappe, jette un œil dessous, la referme.');
     Object.keys(R).forEach(function (k) { if (du(k)) delete R[k]; });
     ['veste', 'tournee', 'coupee', 'actionneur', 'grille', 'sortie'].forEach(function (k) {
@@ -754,7 +904,8 @@
       g.narr('Pendant ton absence, un gardien est entré dans ta chambre. Il l\'a trouvée vide. L\'alarme hurle dans tout le bâtiment.', true);
       g.alerte(); return;
     }
-    var fouille = !!g.flag('tiroirBeant');
+    // Un tiroir forcé : visible s'il est resté ouvert, trouvé si l'inspection vise le bureau.
+    var fouille = !g.flag('tiroirAutorise') && (!!g.flag('tiroirBeant') || (g.flag('tiroirOuvert') && vise('bureau')));
     if (!complete && !l.length && !fouille) return;
     if (!complete) { g.son('lock'); g.narr('CLONK. La porte s\'ouvre. Un gardien entre, sans un mot, pour la maintenance.', true); }
     l.forEach(function (x) { g.narr(x); });
@@ -762,20 +913,23 @@
     if (fouille) {
       g.flag('tiroirBeant', false);
       g.narr('Il remarque le tiroir ouvert, la serrure arrachée. Il le referme… puis il te fouille.', true);
-      CONFISCABLES.forEach(function (k) { if (g.has(k) && g.flag('cache') !== k && !g.flag('autorise_' + k)) { g.lose(k); pris.push(k); } });
-    } else if (complete && s.soupcon >= 2) {
+      CONFISCABLES.forEach(function (k) { if (g.has(k) && g.flag('cache') !== k && !g.flag('autorise_' + k) && (fouilleComplete || g.flag('vesteObjet') !== k)) { g.lose(k); pris.push(k); } });
+    } else if (fouilleComplete) {
       // Inspection sous soupçon : il confisque le dernier objet interdit visible (jamais un objet caché ni une récompense).
       for (var i = s.found.length - 1; i >= 0 && !pris.length; i--) {
         var it = s.found[i];
         if (CONFISCABLES.indexOf(it) >= 0 && g.has(it) && g.flag('cache') !== it && !g.flag('autorise_' + it)) { g.lose(it); pris.push(it); }
       }
     }
+    if (pris.indexOf(g.flag('vesteObjet')) >= 0) g.flag('vesteObjet', null);
     if (pris.length) { g.ecran('OBJET NON AUTORISÉ|CONFISQUÉ.'); g.narr('Il prend : ' + pris.map(function (k) { return OBJETS[k].toLowerCase(); }).join(', ') + '.'); }
     else if (fouille) g.narr('Il ne trouve rien sur toi.');
     if (!complete) g.ecran('MAINTENANCE|EFFECTUÉE.');
+    if (casse) g.incident('tasse', 1, 'DÉGRADATION|DU MOBILIER.');
     g.narr(complete && !l.length && !pris.length ? 'Il regarde la vitre de la 18, puis toi. Il repart.' : 'Il repart.');
   }
   var MOMENTS = {
+    1: function (g) { g.son('lock'); g.narr('Un clapet claque au bas de la porte. Un plateau glisse sur le sol.'); },
     3: function (g) { g.narr('La caméra fait un grand mouvement, puis se met à te suivre.'); if (!g.done('T1')) { g.anim('silTourne'); g.narr('DRIIIIING. Le téléphone sonne. Derrière la vitre, la silhouette se tourne vers quelque chose hors champ.'); } },
     4: function (g) { g.narr('Scrrrr… une feuille pliée glisse sous la porte.'); },
     5: function (g) {
@@ -789,7 +943,7 @@
       g.flag('aux', 'defaut');
       if (g.has('fusible')) g.narr('Ton fusible porte la même étiquette : AUX 24 V.');
     },
-    8: function (g) { g.ecran('INSPECTION DE|ROUTINE PRÉVUE.'); },
+    8: function (g) { g.ecran('INSPECTION DE|ROUTINE PRÉVUE.'); g.ecran('CIBLE PRIORITAIRE :|' + NOMS_CIBLE[cible(g)] + '.'); },
     9: function (g) { g.son('pas'); g.narr('Des pas dans le couloir. Ils s\'arrêtent devant ta porte, puis repartent.'); },
     10: inspection,
     12: function (g) { g.son('knock'); g.narr('Dans le mur de droite, côté 19, quelqu\'un tousse longtemps. Puis plus rien.'); },
@@ -1118,7 +1272,7 @@
     window: function (g) { return g.s.vie === 0 ? 'CHAMBRE 18 : AUCUN SIGNAL REÇU. Plus aucune silhouette.' : g.s.vie === 1 ? 'Derrière la vitre, la silhouette reste accroupie contre le mur.' : g.s.vie === 2 ? 'La silhouette est revenue, légèrement courbée.' : 'Une silhouette, floue, derrière le verre dépoli. Sous la vitre : CH. 18 — SIGNES VITAUX.'; },
     monitor: 'Une plaque sous l\'écran : « UNITÉ 17 / 24 — PROTOCOLE D\'OBÉISSANCE, VERSION 3 ».',
     light: 'Sur la douille de l\'ampoule, quelqu\'un a gravé : « 24 ».',
-    mug: 'Une tasse de café froid. Personne ne l\'a bue.'
+    mug: function (g) { return g.flag('tasseCassee') ? 'Des éclats de tasse, près de la porte.' : 'Une tasse de café froid. Personne ne l\'a bue.'; }
   };
   var DESCRIPTIONS = {
     tournevis: 'Un tournevis plat. Il ouvre les panneaux vissés de la pièce.',
@@ -1127,7 +1281,10 @@
     mot16: 'Le mot de 16 : « ILS MENTENT. » Au dos : « NE FAIS PAS CE QUE J\'AI FAIT. »',
     badge: '« SUJET 16 — ACCÈS MAINTENANCE B ». Il ouvre peut-être plus que ta porte.',
     enregistrement: 'Un enregistrement technique du système.',
-    journal: 'Les pages du journal de 16.'
+    journal: 'Les pages du journal de 16.',
+    ration: 'Une barre de ration sous plastique. Elle passerait entre les lamelles d\'une grille.',
+    cuillere: function (g) { return g.flag('aiguise') ? 'Une cuillère au bord déjà aminci. Encore un effort et ce sera une lame.' : 'Une cuillère en métal. Frottée contre le sol, elle ferait une lame.'; },
+    outil: 'Une cuillère aiguisée. Elle mord une vis de grille, pas un panneau. Et elle grince.'
   };
   var LETTRES = { mot16: { recto: ['ILS MENTENT.'], signature: '—16', verso: ['NE FAIS PAS', 'CE QUE J\'AI FAIT.'] } };
   var AIDES = {
@@ -1140,7 +1297,8 @@
     FILS: FILS, OBJETS: OBJETS, CONFISCABLES: CONFISCABLES, PREUVES: PREUVES, VERITES: VERITES, PHRASES: PHRASES, MEMOIRE: MEMOIRE, SOUVENIRS: SOUVENIRS, SOUVENIR: SOUVENIR, PISTE: PISTE, CARNET: CARNET, REACTION18: REACTION18, DOUTES: DOUTES, MANIP_ECRAN: MANIP_ECRAN,
     REPLIQUES_OBJETS: REPLIQUES_OBJETS, SITUATIONS: SITUATIONS, JOURNAL: JOURNAL, MOMENTS: MOMENTS, FINS: FINS, REGARDS: REGARDS,
     DESCRIPTIONS: DESCRIPTIONS, LETTRES: LETTRES, AIDES: AIDES, SESSIONS: SESSIONS,
-    B2_PRESSION: B2_PRESSION, B2_ARRET: B2_ARRET, B2_TRIPLE: B2_TRIPLE, SEULE: SEULE, VISITE: VISITE, ARCHIVES: ARCHIVES, BILAN: BILAN, HISTOIRES: HISTOIRES, HISTOIRE: HISTOIRE, INTRO_EVENTS: INTRO_EVENTS
+    B2_PRESSION: B2_PRESSION, B2_ARRET: B2_ARRET, B2_TRIPLE: B2_TRIPLE, SEULE: SEULE, VISITE: VISITE, ARCHIVES: ARCHIVES, BILAN: BILAN, HISTOIRES: HISTOIRES, HISTOIRE: HISTOIRE, INTRO_EVENTS: INTRO_EVENTS,
+    PRIVILEGE: PRIVILEGE, RACCROCHER: RACCROCHER
   };
   function resolve(v, g) { return typeof v === 'function' ? v(g) : v; }
   if (typeof module === 'object' && module.exports) module.exports = api; else root.BRStory = api;

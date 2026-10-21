@@ -13,8 +13,8 @@
   function lireMemoire() { try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; } }
   function ecrireMemoire(m) { try { localStorage.setItem(SESSION_KEY, JSON.stringify(m)); } catch (e) {} }
   // Les 6 cases de l'inventaire, et l'objet de la pièce auquel chaque objet renvoie (pour agir avec).
-  var POCHES = ['tournevis', 'fusible', 'code', 'mot16', 'badge', 'enregistrement', 'journal'];
-  var POCHE_OBJET = { badge: 'badge', enregistrement: 'cassette' };
+  var POCHES = ['tournevis', 'cuillere', 'fusible', 'code', 'mot16', 'badge', 'enregistrement', 'ration', 'journal'];
+  var POCHE_OBJET = { badge: 'badge', enregistrement: 'cassette', cuillere: 'cuillere' };
   // Indices (connaissances) montrés à la fin.
   // Ce que le joueur a appris (montré dans l'Historique : faits observés seulement).
   var SAVOIRS = ['trappe', 'angleMort', 'operateur', 'objectif', 'plan', 'sortieCachee', 'conduit', 'dossier', 'menaceVide', 'videoTruquee', 'simulation', 'protocole', 'relais', 'relaisReset', 'verite'];
@@ -154,6 +154,12 @@
     if (b.dataset.go && typer) return typer.finir(); // premier toucher : tout afficher
     if (b.dataset.go || b.dataset.close) return closePop();
     if (b.dataset.dial) return composer(b.dataset.dial);
+    if (b.dataset.tel) {
+      var tk = b.dataset.tel; popDone = null;
+      if (tk === 'laisser') { $('pop').hidden = true; sel = null; R.render(s, roomInfo()); if (sonne()) A.ring(true); return; }
+      if (tk === 'rac') { $('pop').hidden = true; A.ring(false); ringT = false; return act({ type: 'raccrocher' }); }
+      A.ring(false); A.sfx('pickup'); sel = 'phone'; objetPop('', '', t.objets.phone, forcedKind() !== 'appel'); R.render(s, roomInfo()); return;
+    }
     if (b.dataset.ok) { confirmer = false; var a0 = JSON.parse(b.dataset.ok); popDone = null; $('pop').hidden = true; return act(a0); }
     if (b.dataset.no) { confirmer = false; return closePop(); }
     if (b.dataset.sit) {
@@ -287,14 +293,14 @@
   }
 
   // ---------- inventaire ----------
-  function possede(k) { return E.has(s, k) || (k === 'code' && E.has(s, 'code41')); }
+  function possede(k) { return E.has(s, k) || (k === 'code' && E.has(s, 'code41')) || (k === 'cuillere' && E.has(s, 'outil')); }
   function codeTexte() { var a = E.has(s, 'code'), b = E.has(s, 'code41'); return a && b ? '7412' : a ? '7__2' : '41'; }
-  function nomPoche(k) { return k === 'code' ? 'Code ' + codeTexte() : E.OBJETS[k]; }
+  function nomPoche(k) { return k === 'code' ? 'Code ' + codeTexte() : k === 'cuillere' && E.has(s, 'outil') ? E.OBJETS.outil : E.OBJETS[k]; }
   function renderBag() {
     $('bag').innerHTML = POCHES.map(function (k) {
       if (!possede(k)) return '<div class="slot"></div>';
       var nom = nomPoche(k);
-      return '<button class="slot' + (flashItems.indexOf(k) >= 0 || (k === 'code' && flashItems.indexOf('code41') >= 0) ? ' flash' : '') + '" data-k="' + k + '" aria-label="' + esc(nom) + '" title="' + esc(nom) + '">' + R.icone(k, codeTexte()) + '</button>';
+      return '<button class="slot' + (flashItems.indexOf(k) >= 0 || (k === 'code' && flashItems.indexOf('code41') >= 0) ? ' flash' : '') + '" data-k="' + k + '" aria-label="' + esc(nom) + '" title="' + esc(nom) + '">' + R.icone(k === 'cuillere' && E.has(s, 'outil') ? 'outil' : k, codeTexte()) + '</button>';
     }).join('');
   }
   $('bag').addEventListener('click', function (e) {
@@ -305,7 +311,7 @@
     if (list && list.length) { sel = o; objetPop(nomPoche(k), '', list, true); }
     else if (k === 'journal') { openPop('<div class="who"><span>' + esc(nomPoche(k)) + '</span><button class="x" data-close="1" aria-label="Fermer">×</button></div>' + (s.flags.journal || []).slice().sort(function (a, b) { return a.n - b.n; }).map(function (p) { return lettreHtml({ titre: p.titre, recto: p.lignes, signature: '—16' }); }).join(''), null); }
     else if (E.LETTRES[k]) { openPop('<div class="who"><span>' + esc(nomPoche(k)) + '</span><button class="x" data-close="1" aria-label="Fermer">×</button></div>' + lettreHtml(k, true), null); }
-    else objetPop(nomPoche(k), E.decrire(s, k), null, true);
+    else objetPop(nomPoche(k), E.decrire(s, k === 'cuillere' && E.has(s, 'outil') ? 'outil' : k), null, true);
   });
 
   // ---------- toucher un objet de la pièce ----------
@@ -338,7 +344,11 @@
       return toast('Le téléphone sonne.');
     }
     // Pendant un ordre ou un appel, on peut toucher autre chose : agir ailleurs vaut refus (le moteur le dit sur le moniteur).
-    if (k === 'phone' && (kind === 'appel' || (t.sonne && ringT))) { sel = 'phone'; A.ring(false); A.sfx('pickup'); objetPop('', '', t.objets.phone, kind === 'appel' ? false : true); R.render(s, roomInfo()); return; }
+    if (k === 'phone' && (kind === 'appel' || (t.sonne && ringT))) {
+      sel = 'phone';
+      openPop('<div class="who"><span>LE TÉLÉPHONE SONNE</span></div><div class="ab"><button class="ch" data-tel="dec">Décrocher</button><button class="ch" data-tel="rac">Raccrocher<small>Refuser l\'appel</small></button><button class="ch" data-tel="laisser">Laisser sonner</button></div>', function () { sel = null; if (s && !s.fin) { R.render(s, roomInfo()); if (sonne()) A.ring(true); } });
+      return;
+    }
     // Téléphone : d'abord choisir qui appeler, ensuite quoi dire.
     if (k === 'phone' && t.objets.phone && t.objets.phone.length > 1) { sel = 'phone'; A.sfx('pickup'); composerPop(); R.render(s, roomInfo()); return; }
     // Le carnet : ce que tu as appris, écrit à la main (gratuit).

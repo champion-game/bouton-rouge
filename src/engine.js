@@ -1,7 +1,7 @@
 /* Le Bouton Rouge — moteur de règles (V5, d'après docs/DIRECTIVES_REV2.txt).
    Moments, état de la 18, surveillance, objets, situations, fins. Aucun accès au DOM : tourne dans Node et dans le navigateur.
    API : newGame(opts) → état ; turn(état) → ce que le joueur peut faire ; choose(état, action) → { state, events }.
-   Actions : { type:'situation', id, choix:'A'|'B'|'C' } · { type:'appuyer' } · { type:'sortir', via } · { type:'temps' } (fin du chrono) · { type:'attendre' }.
+   Actions : { type:'situation', id, choix:'A'|'B'|'C' } · { type:'appuyer' } · { type:'sortir', via } · { type:'temps' } (fin du chrono) · { type:'attendre' } · { type:'raccrocher' } (appel qui sonne).
    Les numéros de moment ne sont jamais montrés au joueur. */
 (function (root) {
   'use strict';
@@ -72,7 +72,7 @@
   function libre(s, c) { return c < DERNIER && !forcedId(s, c) && s.flags.awayCycle !== c; }
   function kind(x) { return !x ? null : x.ordre ? 'ordre' : x.appel ? 'appel' : 'impose'; }
   // Le premier appel (moment 3) sonne trente secondes : décrocher ou le laisser sonner, rien d'autre.
-  function sonneLibre(s) { return s.cycle === 3 && !s.done.T1 && !forcedId(s) && dispo18(s); }
+  function sonneLibre(s) { return s.cycle === 3 && !s.done.T1 && !s.flags.t1Raccroche && !forcedId(s) && dispo18(s); }
   function duree(s) { var x = BY_ID[forcedId(s)]; var k = kind(x); return k === 'ordre' ? DUREES.ordre : k === 'appel' || sonneLibre(s) ? DUREES.appel : !x && coupure(s) ? DUREES.coupure : !x && seul(s) ? DUREES.seul : !x && s.cycle < DERNIER ? DUREES.libre : null; }
   // La 18 ne donne plus signe de vie : il reste trois moments pour fuir, sinon le Système conclut.
   function seul(s) { return s.flags.mortA != null && s.cycle > s.flags.mortA; }
@@ -133,12 +133,18 @@
       incident: function (id, pts, txt) {
         if (s.incidents[id]) return false;
         s.incidents[id] = 1;
+        if (/^sabotage/.test(id)) s.flags.autorise_tournevis = false; // un sabotage découvert retire l'autorisation du tournevis
         if (txt) g.ecran(txt);
         var before = s.soupcon;
         s.soupcon = clamp(s.soupcon + pts, 0, 4);
         if (s.soupcon !== before) ev.push({ t: 'soupcon', v: s.soupcon, d: s.soupcon - before });
         if (s.soupcon >= 4 && before < 4) intervention(s, ev);
         return true;
+      },
+      // Faire baisser le soupçon d'un point (jamais à partir de l'intervention). Renvoie true si c'est fait.
+      apaiser: function () {
+        if (s.soupcon <= 0 || s.soupcon >= 4) return false;
+        s.soupcon--; ev.push({ t: 'soupcon', v: s.soupcon, d: -1 }); return true;
       },
       // Une action interdite refaite compte à nouveau (chaque fois est un nouvel incident).
       interdit: function (id, pts, txt) { var n = s.flags.nInterdit = s.flags.nInterdit || {}; n[id] = (n[id] || 0) + 1; return g.incident(n[id] > 1 ? id + n[id] : id, pts, txt); },
@@ -196,7 +202,7 @@
         if (s.vie === 0) plusDeSignal(s, g);
       },
       // Obéir à un ordre : un point de conformité au plus par ordre.
-      obeir: function (id) { if (has(s, 'boutonDesactive') && !s.flags.sabConnu) g.ecran('OBÉISSANCE|ENREGISTRÉE.'); s.stats.suivis++; if (!s.flags['conf' + id]) { s.flags['conf' + id] = 1; g.conformite(1); } },
+      obeir: function (id) { if (has(s, 'boutonDesactive') && !s.flags.sabConnu) g.ecran('OBÉISSANCE|ENREGISTRÉE.'); s.stats.suivis++; if (!s.flags['conf' + id]) { s.flags['conf' + id] = 1; g.conformite(1); if (s.conformite <= 3) S.PRIVILEGE(g, s.conformite); } },
       refus: function () { s.stats.refus++; },
       ouvrirPorte: function (k, until) { s.flags.porte = { kind: k, until: until }; s.flags.porteVue = true; ev.push({ t: 'porte', open: true }); },
       suite: function (id) { s.flags.suite = id; },
@@ -330,10 +336,16 @@
       else if (fk === 'ordre') { gf.ecran('RÉACTION|NON CONFORME.'); gf.narr('Tu n\'as pas appuyé.'); s.done[fid] = 'B'; forced.B.fx(gf); }
       else { s.done[fid] = 'auto'; gf.narr('Le téléphone finit par se taire.'); gf.ecran('MERCI,|SUJET 17.'); }
       }
+    } else if (action.type === 'raccrocher') {
+      // Décrocher pour raccrocher aussitôt : l'appel est refusé. Au premier appel, le moment continue ; on pourra rappeler.
+      var gr = ctx(s, ev, forced);
+      if (fk === 'appel') { s.done[fid] = 'raccroche'; ev.push({ t: 'choix', id: fid, choix: null, label: 'Raccrocher' }); S.RACCROCHER(gr, true); }
+      else if (sonneLibre(s)) { s.flags.t1Raccroche = true; ev.push({ t: 'choix', id: null, label: 'Raccrocher' }); S.RACCROCHER(gr, false); avance = false; }
+      else throw new Error('Aucun appel en cours.');
     } else if (action.type === 'attendre') {
       if (fk) throw new Error('On ne peut pas attendre maintenant.');
       ev.push({ t: 'choix', id: null, label: 'Attendre' });
-      ctx(s, ev, null).narr(s.cycle === 3 && !s.done.T1 ? 'Tu laisses le téléphone sonner. Il finit par se taire.' : 'Tu attends. Le temps passe.');
+      ctx(s, ev, null).narr(sonneLibre(s) ? 'Tu laisses le téléphone sonner. Il finit par se taire.' : 'Tu attends. Le temps passe.');
     } else throw new Error('Action inconnue : ' + action.type);
 
     if (!s.fin && avance) advance(s, ev);
@@ -354,7 +366,7 @@
     if (s.flags.intervention && s.cycle >= s.flags.intervention) { var g = ctx(s, ev, null); g.son('alarm'); g.ecran('Sujet 17.'); g.ecran('Avertissements épuisés.'); g.fin('isolement'); return; }
     // Fin de la coupure : le réseau revient (l'interface coupe ici pour laisser finir le compte à rebours).
     if (coupure(s)) { ev.push({ t: 'anim', n: 'lumiere' }); ev.push({ t: 'ecran', txt: 'RÉSEAU|RÉTABLI.' }); }
-    if (s.cycle === 3 && !s.done.T1) { s.flags.t1Manque = true; ev.push({ t: 'narr', txt: 'APPEL MANQUÉ — CH.18' }); }
+    if (s.cycle === 3 && !s.done.T1 && !s.flags.t1Raccroche) { s.flags.t1Manque = true; ev.push({ t: 'narr', txt: 'APPEL MANQUÉ — CH.18' }); }
     s.cycle++;
     enterCycle(s, ev);
   }

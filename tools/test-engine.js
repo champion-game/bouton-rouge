@@ -20,6 +20,7 @@ function actions(t, r) {
   if (t.forced && t.forced.impose && !t.forced.objet) ['A', 'B', 'C'].forEach(function (c) { if (t.forced[c] && t.forced[c].ok) l.push({ type: 'situation', id: t.forced.id, choix: c }); });
   if (t.peutAppuyer && (t.forcedKind === 'ordre' || r() < 0.15)) l.push({ type: 'appuyer' });
   if (t.forcedKind === 'ordre' || t.forcedKind === 'appel' || (t.duree && !t.forcedKind)) l.push({ type: 'temps' });
+  if ((t.sonne || t.forcedKind === 'appel') && r() < 0.2) l.push({ type: 'raccrocher' });
   if (t.peutAttendre && (r() < 0.3 || !l.length)) l.push({ type: 'attendre' });
   t.sorties.forEach(function (x) { if (r() < 0.3) l.push({ type: 'sortir', via: x.via }); });
   return l;
@@ -44,7 +45,7 @@ if (errors) ok = false;
 
 // ---------- un parcours vers chaque fin ----------
 function jouer(truth, steps, avant) {
-  var st = E.newGame({ seed: 1, truth: truth }); E.intro(st); if (avant) avant(st);
+  var st = E.newGame({ seed: 1, truth: truth }); st.flags.cible = 'trappe'; E.intro(st); if (avant) avant(st); // cible de l'inspection fixée : parcours reproductibles
   for (var i = 0; i < steps.length && !st.fin; i++) {
     var p = steps[i].split(' '), a;
     if (p[0] === 'press') a = { type: 'appuyer' }; else if (p[0] === 'temps') a = { type: 'temps' }; else if (p[0] === 'wait') a = { type: 'attendre' };
@@ -66,14 +67,14 @@ var ROUTES = {
   evasion: ['A', ['wait', 'temps', 'C1 A', 'temps', 'wait', 'C3 A', 'MALAISE A']],
   cooperation: ['A', ['wait', 'temps', 'T1 A', 'press', 'P1 A', 'TIROIR', 'T2 A', 'temps', 'C1 A', 'COMP_FORCER A', 'temps', 'T4 A', 'FUS', 'T5 A', 'C2 A', 'PLAN']],
   sauvetage: ['A', ['wait', 'temps', 'T1 A', 'temps', 'P1 A', 'TIROIR', 'C1 A', 'temps', 'wait', 'wait', 'temps', 'T4 A', 'C2 A', 'P2 A', 'P5 A']],
-  tropTard: ['A', ['wait', 'press', 'T1 A', 'press', 'press', 'press', 'P1 A', 'TIROIR', 'C1 A', 'temps', 'wait', 'wait', 'temps', 'T4 A', 'press', 'C2 A', 'P2 A', 'P5 A']],
+  tropTard: ['A', ['wait', 'press', 'T1 A', 'press', 'press', 'press', 'wait', 'C1 A', 'temps', 'press', 'wait', 'temps', 'T4 A', 'press', 'C2 A', 'P2 A', 'P5 A']],
   complice: ['B', ['wait', 'temps', 'T1 A', 'temps', 'P1 A', 'TIROIR', 'C1 A', 'temps', 'wait', 'wait', 'temps', 'T4 A', 'C2 A', 'P2 A', 'P5 A', 'RENCONTRE_B A']],
   sujet18: ['B', ['wait', 'temps', 'T1 B', 'temps', 'P1 A', 'TIROIR', 'C1 A', 'temps', 'wait', 'wait', 'press', 'T4 A', 'C2 A', 'P2 A', 'P5 A', 'RENCONTRE_B B']],
   miroir: ['C', ['wait', 'temps', 'T1 A', 'temps', 'P1 A', 'TIROIR', 'C1 A', 'temps', 'wait', 'wait', 'temps', 'T4 A', 'C2 A', 'P2 A', 'P5 A', 'RENCONTRE_C B']],
-  boucle: ['C', ['H2 A', 'press', 'T1 A', 'press', 'press', 'press', 'P1 A', 'TIROIR', 'C1 A', 'temps', 'P4 A', 'temps', 'T4 A', 'C2 A', 'P2 A', 'P5 A', 'RENCONTRE_C A']],
+  boucle: ['C', ['H2 A', 'press', 'T1 A', 'press', 'press', 'press', 'wait', 'C1 A', 'temps', 'P4 A', 'temps', 'T4 A', 'C2 A', 'P2 A', 'P5 A', 'RENCONTRE_C A']],
   isolement: ['A', ['wait', 'temps', 'wait', 'temps', 'P1 A', 'TIROIR', 'P3 B', 'press', 'P2 A', 'wait']],
   gardien: ['A', ['H2 B', 'temps', 'C1 A', 'temps', 'wait', 'C2 A', 'temps', 'wait', 'wait', 'temps', 'C3 A', 'MALAISE A']],
-  temoin: ['A', ['wait', 'press', 'C1 B', 'press', 'press', 'press', 'P1 A', 'TIROIR', 'C2 A', 'COMP_FORCER A', 'FUS', 'C3 B', 'porte']],
+  temoin: ['A', ['wait', 'press', 'C1 B', 'press', 'press', 'press', 'wait', 'C2 A', 'COMP_FORCER A', 'FUS', 'C3 B', 'porte']],
   revolte: ['A', ['wait', 'temps', 'C1 A', 'press', 'P1 A', 'TIROIR', 'C2 A', 'COMP_FORCER A', 'FUS', 'wait', 'temps', 'P4 A', 'DIFFUSER']],
   tempsEcoule: ['A', ['H2 A', 'temps', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'M16 B', 'wait', 'temps', 'wait']],
   immobile: ['A', ['wait', 'temps', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'temps', 'wait', 'wait', 'M16 B', 'wait', 'temps', 'wait']],
@@ -96,7 +97,7 @@ var T = [
   ['02 Laisser expirer un ordre n\'appuie jamais', function () { var r = E.choose(etat('A', function (s) { s.cycle = 2; }), { type: 'temps' }); return r.state.stats.presses === 0 && r.state.vie === 3; }],
   ['04 B2 arrêté après une pression garde la récompense', function () { var st = etat('A', function (s) { s.cycle = 4; s.flags.aBlesse = true; }); st = E.choose(st, { type: 'appuyer' }).state; var r = E.choose(st, { type: 'temps' }); return E.has(r.state, 'dossier') && !r.state.flags.tiroirOuvert && r.state.cycle === 5; }],
   ['04b Forcer le tiroir sous la caméra est impossible, possible pendant la coupure', function () { var st = etat('A', function (s) { s.cycle = 6; }); var vu = false; try { E.choose(st, { type: 'situation', id: 'P1', choix: 'A' }); } catch (e) { vu = true; } var st5 = etat('A', function (s) { s.cycle = 5; }); var r = E.choose(st5, { type: 'situation', id: 'P1', choix: 'A' }); return vu && E.has(r.state, 'tournevis'); }],
-  ['05 La victime reste sauvable après B1 et B2 complets', function () { var st = jouer('A', ['wait', 'press', 'wait', 'press', 'press', 'press']); return !E.horsDeCombat(st) && st.vie === 1; }],
+  ['05 La victime reste sauvable après B1 et B2 complets', function () { var st = jouer('A', ['wait', 'press', 'wait', 'press', 'press', 'press']); return !E.horsDeCombat(st) && st.vie === 2; }],
   ['06 Caméra coupée au boîtier : un gardien la rétablit trois moments plus tard', function () { var st = etat('A', function (s) { s.cycle = 6; s.items.push('tournevis'); }); st = E.choose(st, { type: 'situation', id: 'P3', choix: 'A' }).state; var a = E.has(st, 'cameraCoupee'); st = E.choose(st, { type: 'temps' }).state; st = E.choose(st, { type: 'temps' }).state; return a && st.cycle === 9 && !E.has(st, 'cameraCoupee'); }],
   ['07 Refaire une action interdite compte à nouveau', function () { var st = etat('A', function (s) { s.cycle = 8; s.done.C1 = 'A'; s.items.push('tournevis'); }); st = E.choose(st, { type: 'situation', id: 'C2', choix: 'B' }).state; var a = st.soupcon; st.cycle = 14; st.items.splice(st.items.indexOf('cameraTournee'), 1); st = E.choose(st, { type: 'situation', id: 'C2', choix: 'B' }).state; return st.soupcon === a + 1; }],
   ['08 Obéir n\'efface pas un soupçon technique', function () { var st = etat('A', function (s) { s.cycle = 2; s.soupcon = 2; }); return E.choose(st, { type: 'appuyer' }).state.soupcon === 2; }],
@@ -115,6 +116,12 @@ var T = [
     E.intro(st); for (var i = 0; i < 14 && !st.fin; i++) { var r = E.choose(st, E.turn(st).forcedKind ? { type: 'temps' } : { type: 'attendre' }); st = r.state; }
     n = st.flags.souvenirs || 0; return n >= 1 && n <= 2; }],
   ['24 Carnet, piste et souvenir sont lisibles', function () { var st = jouer('A', ['H2 A', 'temps', 'T1 A']); var c = E.carnet(st), p = E.piste(st, {}), sv = E.souvenir(st); return c.join(' ').indexOf('4 · 1') >= 0 && p.length > 0 && typeof sv.presses === 'number'; }],
+  ['25 B1 obéi : douleur jouée, aucun voyant perdu, une question accordée', function () { var st = jouer('A', ['wait', 'press']); return st.vie === 3 && st.flags.question; }],
+  ['26 Deux ordres obéis : tiroir ouvert, tournevis autorisé, pas de fouille', function () { var st = jouer('A', ['wait', 'press', 'wait', 'press', 'press', 'press']); if (!E.has(st, 'tournevis') || !st.flags.autorise_tournevis) return false; st = jouer('A', ['wait', 'press', 'wait', 'press', 'press', 'press', 'wait', 'wait', 'temps', 'wait', 'wait']); return st.cycle === 10 && E.has(st, 'tournevis'); }],
+  ['27 Raccrocher au premier appel : le moment continue, on peut rappeler', function () { var st = jouer('A', ['wait', 'temps']); var r = E.choose(st, { type: 'raccrocher' }); st = r.state; var t = E.turn(st); return st.cycle === 3 && !t.sonne && t.objets.phone && t.objets.phone.some(function (x) { return x.id === 'T1'; }); }],
+  ['28 La tasse brisée détourne l\'inspection ciblée', function () { var st = jouer('A', ['wait', 'temps', 'wait', 'temps'], function (s) { s.flags.cible = 'boitier'; }); st.items.push('tournevis'); st.flags.autorise_tournevis = true; st = E.choose(st, { type: 'situation', id: 'TASSE', choix: 'B' }).state; st.items.push('boutonDesactive'); while (st.cycle < 10 && !st.fin) st = E.choose(st, E.turn(st).forced ? { type: 'temps' } : { type: 'attendre' }).state; return E.has(st, 'boutonDesactive') && st.soupcon === 1; }],
+  ['29 Remettre le boîtier en état fait baisser le soupçon une fois', function () { var st = jouer('A', ['wait', 'temps', 'wait', 'temps', 'wait']); st.items.push('tournevis'); st = E.choose(st, { type: 'situation', id: 'P3', choix: 'A' }).state; var s1 = st.soupcon; st = E.choose(st, { type: 'situation', id: 'P3', choix: 'C' }).state; return s1 === 1 && st.soupcon === 0 && !E.has(st, 'cameraCoupee'); }],
+  ['30 La lame de fortune ouvre la grille, avec du bruit', function () { var st = jouer('A', ['RATION A', 'wait', 'temps', 'AIGUISER A', 'temps', 'AIGUISER A']); if (!E.has(st, 'outil')) return false; var s0 = st.soupcon; st = E.choose(st, { type: 'situation', id: 'P2', choix: 'A' }).state; return E.has(st, 'conduit') && st.soupcon >= s0 + 1; }],
   ['17 Recharger conserve tout (état sérialisable)', function () { var st = jouer('B', ['wait', 'temps', 'T1 A']); var c = JSON.parse(JSON.stringify(st)); return c.truth === 'B' && c.flags.ligne === 'ouverte'; }]
 ];
 console.log('\nTests d\'acceptation :');
